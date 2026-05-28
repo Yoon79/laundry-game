@@ -7,6 +7,7 @@ import * as THREE from 'three'
 import FPSMovement from './FPSMovement'
 import LaundryRoom from './LaundryRoom'
 import ClothesRoom from './ClothesRoom'
+import Exterior from './Exterior'
 import Splash from './Splash'
 import HUD from './HUD'
 
@@ -20,7 +21,7 @@ export default function GameClient() {
       {entered && <HUD locked={locked} />}
 
       <Canvas
-        camera={{ position: [0, 1.7, 10], fov: 72, near: 0.05, far: 80 }}
+        camera={{ position: [0, 3, 9], fov: 80, near: 0.05, far: 70 }}
         shadows
         gl={{
           antialias: true,
@@ -30,6 +31,7 @@ export default function GameClient() {
         style={{ background: '#FAF0E6' }}
       >
         <FPSMovement active={locked} />
+        <Exterior />
         <LaundryRoom />
         <ClothesRoom />
 

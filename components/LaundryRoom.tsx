@@ -2,23 +2,23 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import WashingMachine from './WashingMachine'
 
-// Room dimensions
-const W = 8    // width  (x: -4 to 4)
-const H = 3.6  // height (y: 0 to 3.6)
-const D = 22   // depth  (z: -11 to 11)
+// Room dimensions (half-sized)
+const W = 4    // width  (x: -2 to 2)
+const H = 3.0  // height (y: 0 to 3.0)
+const D = 11   // depth  (z: -5.5 to 5.5)
 
-const WAINSCOT_H = 1.1  // lower wall panel height
+const WAINSCOT_H = 0.9  // lower wall panel height
 
 // Doorway opening into the clothes room (centered in back wall)
-const DOOR_W = 4.0   // wide arch — matches player x-bounds ±2
-const DOOR_H = 2.5
+const DOOR_W = 2.0
+const DOOR_H = 2.2
 
-// 5 machine pairs — symmetric on z axis, spread from back to near entrance
-const MACHINE_Z = [-9, -5.5, -2, 1.5, 7]
+// 5 machine pairs — symmetric on z axis
+const MACHINE_Z = [-4, -2, 0, 2, 4]
 
-// Left machine center x: wall at -4, machine depth 0.68 → center at -4 + 0.34 = -3.66
-// Right machine center x: wall at +4, machine depth 0.68 → center at +4 - 0.34 = 3.66
-const MACHINE_X = 3.66
+// Left machine center x: wall at -2, machine depth 0.34 → center at -2 + 0.17 = -1.83
+// Right machine center x: wall at +2, machine depth 0.34 → center at +2 - 0.17 = 1.83
+const MACHINE_X = 1.83
 
 function CheckerFloor() {
   const texture = useMemo(() => {
@@ -50,7 +50,7 @@ function CheckerFloor() {
 
     const tex = new THREE.CanvasTexture(canvas)
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping
-    // Room W=8, D=22 → want ~1 unit tiles → repeat = (W/2, D/2) since 2 tiles per repeat
+    // W=4, D=11 → want ~1 unit tiles → repeat = (W/2, D/2) since 2 tiles per repeat
     tex.repeat.set(W / 2, D / 2)
     return tex
   }, [])
@@ -68,25 +68,25 @@ function PendantLight({ z }: { z: number }) {
     <group position={[0, H, z]}>
       <pointLight
         intensity={2.2}
-        distance={8}
+        distance={6}
         color="#FFE0A8"
         castShadow
         shadow-mapSize-width={512}
         shadow-mapSize-height={512}
       />
       {/* Ceiling cord */}
-      <mesh position={[0, -0.3, 0]}>
-        <cylinderGeometry args={[0.007, 0.007, 0.6, 6]} />
+      <mesh position={[0, -0.25, 0]}>
+        <cylinderGeometry args={[0.006, 0.006, 0.5, 6]} />
         <meshStandardMaterial color="#8A7060" />
       </mesh>
       {/* Shade — open-bottomed cone */}
-      <mesh position={[0, -0.78, 0]} rotation={[Math.PI, 0, 0]}>
-        <coneGeometry args={[0.28, 0.38, 24, 1, true]} />
+      <mesh position={[0, -0.65, 0]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[0.20, 0.30, 24, 1, true]} />
         <meshStandardMaterial color="#F2DFA0" side={THREE.DoubleSide} roughness={0.7} />
       </mesh>
       {/* Bulb glow */}
-      <mesh position={[0, -0.76, 0]}>
-        <sphereGeometry args={[0.055, 12, 8]} />
+      <mesh position={[0, -0.63, 0]}>
+        <sphereGeometry args={[0.040, 12, 8]} />
         <meshStandardMaterial
           color="#FFE8B0"
           emissive="#FFE8B0"
@@ -103,7 +103,7 @@ function CrownMolding() {
   const mat = (
     <meshStandardMaterial color="#FDFAF5" roughness={0.6} />
   )
-  const thick = 0.06
+  const thick = 0.05
   return (
     <group position={[0, H - thick / 2, 0]}>
       {/* Left */}
@@ -128,7 +128,7 @@ function CrownMolding() {
 // Wainscoting cap strip
 function WainscotCap() {
   const mat = <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
-  const thick = 0.04
+  const thick = 0.035
   return (
     <group position={[0, WAINSCOT_H + thick / 2, 0]}>
       {/* Left wall */}
@@ -159,9 +159,9 @@ export default function LaundryRoom() {
     <group>
       {/* ── Lighting ── */}
       <ambientLight intensity={0.5} color="#FFF5E4" />
-      <PendantLight z={-6.5} />
+      <PendantLight z={-3} />
       <PendantLight z={0} />
-      <PendantLight z={6.5} />
+      <PendantLight z={3} />
 
       {/* ── Floor ── */}
       <CheckerFloor />
@@ -200,15 +200,15 @@ export default function LaundryRoom() {
       </mesh>
       {/* Door frame — left post, right post, lintel */}
       <mesh position={[-DOOR_W / 2, DOOR_H / 2, -D / 2 + 0.002]}>
-        <boxGeometry args={[0.08, DOOR_H, 0.06]} />
+        <boxGeometry args={[0.06, DOOR_H, 0.05]} />
         <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
       </mesh>
       <mesh position={[DOOR_W / 2, DOOR_H / 2, -D / 2 + 0.002]}>
-        <boxGeometry args={[0.08, DOOR_H, 0.06]} />
+        <boxGeometry args={[0.06, DOOR_H, 0.05]} />
         <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
       </mesh>
-      <mesh position={[0, DOOR_H + 0.04, -D / 2 + 0.002]}>
-        <boxGeometry args={[DOOR_W + 0.08, 0.08, 0.06]} />
+      <mesh position={[0, DOOR_H + 0.03, -D / 2 + 0.002]}>
+        <boxGeometry args={[DOOR_W + 0.06, 0.06, 0.05]} />
         <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
       </mesh>
 
@@ -246,6 +246,46 @@ export default function LaundryRoom() {
       >
         <planeGeometry args={[D, WAINSCOT_H]} />
         <meshStandardMaterial color="#D4B5B5" />
+      </mesh>
+
+      {/* ── Front wall (entrance side, z = +D/2 = +5.5) ── */}
+      {/* Top panel */}
+      <mesh position={[0, DOOR_H + (H - DOOR_H) / 2, D / 2]}>
+        <planeGeometry args={[W, H - DOOR_H]} />
+        <meshStandardMaterial color="#F2D6D6" side={THREE.DoubleSide} />
+      </mesh>
+      {/* Left upper panel */}
+      <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, D / 2]}>
+        <planeGeometry args={[(W - DOOR_W) / 2, DOOR_H - WAINSCOT_H]} />
+        <meshStandardMaterial color="#F2D6D6" side={THREE.DoubleSide} />
+      </mesh>
+      {/* Right upper panel */}
+      <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, D / 2]}>
+        <planeGeometry args={[(W - DOOR_W) / 2, DOOR_H - WAINSCOT_H]} />
+        <meshStandardMaterial color="#F2D6D6" side={THREE.DoubleSide} />
+      </mesh>
+      {/* Left wainscoting */}
+      <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H / 2, D / 2]}>
+        <planeGeometry args={[(W - DOOR_W) / 2, WAINSCOT_H]} />
+        <meshStandardMaterial color="#D4B5B5" side={THREE.DoubleSide} />
+      </mesh>
+      {/* Right wainscoting */}
+      <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H / 2, D / 2]}>
+        <planeGeometry args={[(W - DOOR_W) / 2, WAINSCOT_H]} />
+        <meshStandardMaterial color="#D4B5B5" side={THREE.DoubleSide} />
+      </mesh>
+      {/* Front door frame — left post, right post, lintel */}
+      <mesh position={[-DOOR_W / 2, DOOR_H / 2, D / 2]}>
+        <boxGeometry args={[0.06, DOOR_H, 0.1]} />
+        <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
+      </mesh>
+      <mesh position={[DOOR_W / 2, DOOR_H / 2, D / 2]}>
+        <boxGeometry args={[0.06, DOOR_H, 0.1]} />
+        <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
+      </mesh>
+      <mesh position={[0, DOOR_H + 0.03, D / 2]}>
+        <boxGeometry args={[DOOR_W + 0.06, 0.06, 0.1]} />
+        <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
       </mesh>
 
       {/* ── Trim details ── */}
