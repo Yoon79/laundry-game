@@ -6,6 +6,7 @@ import { PointerLockControls } from '@react-three/drei'
 import * as THREE from 'three'
 import FPSMovement from './FPSMovement'
 import LaundryRoom from './LaundryRoom'
+import ClothesRoom from './ClothesRoom'
 import Splash from './Splash'
 import HUD from './HUD'
 
@@ -30,6 +31,7 @@ export default function GameClient() {
       >
         <FPSMovement active={locked} />
         <LaundryRoom />
+        <ClothesRoom />
 
         {/* Mount PointerLockControls only after the user enters */}
         {entered && (

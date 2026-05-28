@@ -9,6 +9,10 @@ const D = 22   // depth  (z: -11 to 11)
 
 const WAINSCOT_H = 1.1  // lower wall panel height
 
+// Doorway opening into the clothes room (centered in back wall)
+const DOOR_W = 4.0   // wide arch — matches player x-bounds ±2
+const DOOR_H = 2.5
+
 // 5 machine pairs — symmetric on z axis, spread from back to near entrance
 const MACHINE_Z = [-9, -5.5, -2, 1.5, 7]
 
@@ -137,9 +141,13 @@ function WainscotCap() {
         <boxGeometry args={[thick, thick, D]} />
         {mat}
       </mesh>
-      {/* Back wall */}
-      <mesh position={[0, 0, -D / 2 + 0.001]}>
-        <boxGeometry args={[W, thick, thick]} />
+      {/* Back wall — split around doorway */}
+      <mesh position={[-(W + DOOR_W) / 4, 0, -D / 2 + 0.001]}>
+        <boxGeometry args={[(W - DOOR_W) / 2, thick, thick]} />
+        {mat}
+      </mesh>
+      <mesh position={[(W + DOOR_W) / 4, 0, -D / 2 + 0.001]}>
+        <boxGeometry args={[(W - DOOR_W) / 2, thick, thick]} />
         {mat}
       </mesh>
     </group>
@@ -164,15 +172,44 @@ export default function LaundryRoom() {
         <meshStandardMaterial color="#FBF5EE" />
       </mesh>
 
-      {/* ── Back wall ── */}
-      <mesh position={[0, H / 2, -D / 2]}>
-        <planeGeometry args={[W, H]} />
+      {/* ── Back wall — split around doorway into clothes room ── */}
+      {/* Top panel: full width, above doorway */}
+      <mesh position={[0, DOOR_H + (H - DOOR_H) / 2, -D / 2]}>
+        <planeGeometry args={[W, H - DOOR_H]} />
         <meshStandardMaterial color="#F2D6D6" />
       </mesh>
-      {/* Back wainscoting */}
-      <mesh position={[0, WAINSCOT_H / 2, -D / 2 + 0.001]}>
-        <planeGeometry args={[W, WAINSCOT_H]} />
+      {/* Left upper panel */}
+      <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, -D / 2]}>
+        <planeGeometry args={[(W - DOOR_W) / 2, DOOR_H - WAINSCOT_H]} />
+        <meshStandardMaterial color="#F2D6D6" />
+      </mesh>
+      {/* Right upper panel */}
+      <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, -D / 2]}>
+        <planeGeometry args={[(W - DOOR_W) / 2, DOOR_H - WAINSCOT_H]} />
+        <meshStandardMaterial color="#F2D6D6" />
+      </mesh>
+      {/* Left wainscoting */}
+      <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H / 2, -D / 2 + 0.001]}>
+        <planeGeometry args={[(W - DOOR_W) / 2, WAINSCOT_H]} />
         <meshStandardMaterial color="#D4B5B5" />
+      </mesh>
+      {/* Right wainscoting */}
+      <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H / 2, -D / 2 + 0.001]}>
+        <planeGeometry args={[(W - DOOR_W) / 2, WAINSCOT_H]} />
+        <meshStandardMaterial color="#D4B5B5" />
+      </mesh>
+      {/* Door frame — left post, right post, lintel */}
+      <mesh position={[-DOOR_W / 2, DOOR_H / 2, -D / 2 + 0.002]}>
+        <boxGeometry args={[0.08, DOOR_H, 0.06]} />
+        <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
+      </mesh>
+      <mesh position={[DOOR_W / 2, DOOR_H / 2, -D / 2 + 0.002]}>
+        <boxGeometry args={[0.08, DOOR_H, 0.06]} />
+        <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
+      </mesh>
+      <mesh position={[0, DOOR_H + 0.04, -D / 2 + 0.002]}>
+        <boxGeometry args={[DOOR_W + 0.08, 0.08, 0.06]} />
+        <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
       </mesh>
 
       {/* ── Left wall ── */}

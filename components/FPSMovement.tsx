@@ -6,7 +6,7 @@ const WALK_SPEED = 4.5
 const EYE_HEIGHT = 1.7
 // Player stays in the central corridor
 const BOUND_X = 2.0
-const BOUND_Z_MIN = -10.5
+const BOUND_Z_MIN = -24.5   // reaches back of clothes room
 const BOUND_Z_MAX = 10.5
 
 interface Props {
