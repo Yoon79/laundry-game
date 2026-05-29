@@ -21,7 +21,7 @@ export default function GameClient() {
       {entered && <HUD locked={locked} />}
 
       <Canvas
-        camera={{ position: [0, 3, 9], fov: 80, near: 0.05, far: 70 }}
+        camera={{ position: [0, 4.5, 12], fov: 75, near: 0.05, far: 70 }}
         shadows
         gl={{
           antialias: true,

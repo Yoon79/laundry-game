@@ -133,58 +133,58 @@ export default function ClothesRoom() {
       {/* ── Left wall ── */}
       <mesh position={[-W / 2, WAINSCOT_H + (H - WAINSCOT_H) / 2, CZ]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[DEPTH, H - WAINSCOT_H]} />
-        <meshStandardMaterial color="#F5E8D8" />
+        <meshStandardMaterial color="#B0C8A8" />
       </mesh>
       <mesh position={[-W / 2, WAINSCOT_H / 2, CZ]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[DEPTH, WAINSCOT_H]} />
-        <meshStandardMaterial color="#D8C4B0" />
+        <meshStandardMaterial color="#88AA88" />
       </mesh>
 
       {/* ── Right wall ── */}
       <mesh position={[W / 2, WAINSCOT_H + (H - WAINSCOT_H) / 2, CZ]} rotation={[0, -Math.PI / 2, 0]}>
         <planeGeometry args={[DEPTH, H - WAINSCOT_H]} />
-        <meshStandardMaterial color="#F5E8D8" />
+        <meshStandardMaterial color="#B0C8A8" />
       </mesh>
       <mesh position={[W / 2, WAINSCOT_H / 2, CZ]} rotation={[0, -Math.PI / 2, 0]}>
         <planeGeometry args={[DEPTH, WAINSCOT_H]} />
-        <meshStandardMaterial color="#D8C4B0" />
+        <meshStandardMaterial color="#88AA88" />
       </mesh>
 
       {/* ── Back wall ── */}
       <mesh position={[0, H / 2, ROOM_FAR]}>
         <planeGeometry args={[W, H]} />
-        <meshStandardMaterial color="#F5E8D8" />
+        <meshStandardMaterial color="#B0C8A8" />
       </mesh>
       <mesh position={[0, WAINSCOT_H / 2, ROOM_FAR + 0.001]}>
         <planeGeometry args={[W, WAINSCOT_H]} />
-        <meshStandardMaterial color="#D8C4B0" />
+        <meshStandardMaterial color="#88AA88" />
       </mesh>
 
       {/* ── Front wall — visible from inside (mirrors laundry room door opening) ── */}
       {/* Top panel */}
       <mesh position={[0, DOOR_H + (H - DOOR_H) / 2, ROOM_NEAR]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[W, H - DOOR_H]} />
-        <meshStandardMaterial color="#F5E8D8" />
+        <meshStandardMaterial color="#B0C8A8" />
       </mesh>
       {/* Left panel */}
       <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, ROOM_NEAR]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[(W - DOOR_W) / 2, DOOR_H - WAINSCOT_H]} />
-        <meshStandardMaterial color="#F5E8D8" />
+        <meshStandardMaterial color="#B0C8A8" />
       </mesh>
       {/* Right panel */}
       <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, ROOM_NEAR]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[(W - DOOR_W) / 2, DOOR_H - WAINSCOT_H]} />
-        <meshStandardMaterial color="#F5E8D8" />
+        <meshStandardMaterial color="#B0C8A8" />
       </mesh>
       {/* Left wainscoting */}
       <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H / 2, ROOM_NEAR - 0.001]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[(W - DOOR_W) / 2, WAINSCOT_H]} />
-        <meshStandardMaterial color="#D8C4B0" />
+        <meshStandardMaterial color="#88AA88" />
       </mesh>
       {/* Right wainscoting */}
       <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H / 2, ROOM_NEAR - 0.001]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[(W - DOOR_W) / 2, WAINSCOT_H]} />
-        <meshStandardMaterial color="#D8C4B0" />
+        <meshStandardMaterial color="#88AA88" />
       </mesh>
 
       {/* ── Crown molding ── */}

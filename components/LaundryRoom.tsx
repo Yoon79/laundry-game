@@ -154,6 +154,166 @@ function WainscotCap() {
   )
 }
 
+// Wicker laundry basket
+function LaundryBasket({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* Main basket body */}
+      <mesh position={[0, 0.12, 0]}>
+        <cylinderGeometry args={[0.11, 0.085, 0.24, 16]} />
+        <meshStandardMaterial color="#C8A870" roughness={0.9} />
+      </mesh>
+      {/* Wicker weave bands */}
+      {[0.04, 0.10, 0.18, 0.22].map((y, i) => (
+        <mesh key={i} position={[0, y, 0]}>
+          <torusGeometry args={[0.10, 0.007, 6, 20]} />
+          <meshStandardMaterial color="#A87840" roughness={0.95} />
+        </mesh>
+      ))}
+      {/* Handle arc */}
+      <mesh position={[0, 0.30, 0]} rotation={[0, 0, Math.PI / 2]}>
+        <torusGeometry args={[0.085, 0.008, 6, 20, Math.PI]} />
+        <meshStandardMaterial color="#A07030" roughness={0.85} />
+      </mesh>
+    </group>
+  )
+}
+
+// Floating wall shelf with product bottles
+function WallShelf({ position, side }: { position: [number, number, number], side: 'left' | 'right' }) {
+  const rotY = side === 'left' ? Math.PI / 2 : -Math.PI / 2
+  const bottles = [
+    { x: -0.16, color: '#B8D4E8', capColor: '#8890A0' },
+    { x: 0,     color: '#C8D4B0', capColor: '#788860' },
+    { x: 0.16,  color: '#E4C8B0', capColor: '#906850' },
+  ]
+  return (
+    <group position={position} rotation={[0, rotY, 0]}>
+      {/* Shelf plank */}
+      <mesh position={[0, 0, 0.025]}>
+        <boxGeometry args={[0.46, 0.025, 0.1]} />
+        <meshStandardMaterial color="#C8A870" roughness={0.8} />
+      </mesh>
+      {/* Shelf bracket left */}
+      <mesh position={[-0.19, -0.04, 0.06]}>
+        <boxGeometry args={[0.018, 0.06, 0.09]} />
+        <meshStandardMaterial color="#B09060" roughness={0.8} />
+      </mesh>
+      {/* Shelf bracket right */}
+      <mesh position={[0.19, -0.04, 0.06]}>
+        <boxGeometry args={[0.018, 0.06, 0.09]} />
+        <meshStandardMaterial color="#B09060" roughness={0.8} />
+      </mesh>
+      {/* Bottles */}
+      {bottles.map((b, i) => (
+        <group key={i} position={[b.x, 0.065, 0.065]}>
+          <mesh position={[0, 0, 0]}>
+            <cylinderGeometry args={[0.028, 0.028, 0.1, 12]} />
+            <meshStandardMaterial color={b.color} roughness={0.5} />
+          </mesh>
+          <mesh position={[0, 0.062, 0]}>
+            <cylinderGeometry args={[0.016, 0.022, 0.025, 8]} />
+            <meshStandardMaterial color={b.capColor} roughness={0.4} />
+          </mesh>
+          {/* Label */}
+          <mesh position={[0, 0, 0.029]}>
+            <planeGeometry args={[0.042, 0.05]} />
+            <meshStandardMaterial color="#FAF0E6" roughness={0.7} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  )
+}
+
+// Hanging plant from ceiling
+function CeilingPlant({ position }: { position: [number, number, number] }) {
+  const leaves = Array.from({ length: 12 }, (_, i) => i)
+  return (
+    <group position={position}>
+      {/* Hanging cord */}
+      <mesh position={[0, -0.12, 0]}>
+        <cylinderGeometry args={[0.004, 0.004, 0.24, 4]} />
+        <meshStandardMaterial color="#8A7060" />
+      </mesh>
+      {/* Pot */}
+      <mesh position={[0, -0.30, 0]}>
+        <cylinderGeometry args={[0.075, 0.055, 0.13, 14]} />
+        <meshStandardMaterial color="#C8785A" roughness={0.85} />
+      </mesh>
+      {/* Soil */}
+      <mesh position={[0, -0.235, 0]}>
+        <cylinderGeometry args={[0.072, 0.072, 0.01, 14]} />
+        <meshStandardMaterial color="#6A4A30" roughness={1} />
+      </mesh>
+      {/* Trailing leaves */}
+      {leaves.map((i) => {
+        const angle = (i / leaves.length) * Math.PI * 2
+        const drop = 0.06 + (i % 3) * 0.07
+        const r = 0.065 + (i % 2) * 0.03
+        return (
+          <mesh
+            key={i}
+            position={[Math.cos(angle) * r, -0.33 - drop, Math.sin(angle) * r]}
+            rotation={[Math.cos(angle) * 0.6, angle, 0.3]}
+            scale={[0.8, 0.5, 1]}
+          >
+            <circleGeometry args={[0.045, 6]} />
+            <meshStandardMaterial color={i % 3 === 0 ? '#7AB868' : '#5A9848'} roughness={0.8} side={THREE.DoubleSide} />
+          </mesh>
+        )
+      })}
+    </group>
+  )
+}
+
+// Framed chalkboard sign
+function ChalkSign() {
+  const texture = useMemo(() => {
+    const c = document.createElement('canvas')
+    c.width = 256; c.height = 160
+    const ctx = c.getContext('2d')!
+    // Dark green board
+    ctx.fillStyle = '#3A5A42'
+    ctx.fillRect(0, 0, 256, 160)
+    // Chalk text lines
+    ctx.fillStyle = 'rgba(255,255,255,0.82)'
+    ctx.font = 'bold 20px serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('SWEDEN LAUNDRY', 128, 42)
+    ctx.font = '13px serif'
+    ctx.fillStyle = 'rgba(255,255,220,0.70)'
+    ctx.fillText('Wash · Dry · Fold', 128, 72)
+    ctx.fillText('Est. 2012', 128, 94)
+    // Divider line
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)'
+    ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(40, 56); ctx.lineTo(216, 56); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(40, 104); ctx.lineTo(216, 104); ctx.stroke()
+    // Corner decorations
+    ;[[30, 128], [226, 128], [30, 32], [226, 32]].forEach(([x, y]) => {
+      ctx.fillStyle = 'rgba(255,255,200,0.5)'
+      ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill()
+    })
+    return new THREE.CanvasTexture(c)
+  }, [])
+
+  return (
+    <group position={[0, H - 0.45, -D / 2 + 0.02]}>
+      {/* Frame */}
+      <mesh>
+        <boxGeometry args={[0.88, 0.56, 0.04]} />
+        <meshStandardMaterial color="#8A6040" roughness={0.7} />
+      </mesh>
+      {/* Board face */}
+      <mesh position={[0, 0, 0.022]}>
+        <planeGeometry args={[0.78, 0.46]} />
+        <meshStandardMaterial map={texture} roughness={0.9} />
+      </mesh>
+    </group>
+  )
+}
+
 export default function LaundryRoom() {
   return (
     <group>
@@ -176,27 +336,27 @@ export default function LaundryRoom() {
       {/* Top panel: full width, above doorway */}
       <mesh position={[0, DOOR_H + (H - DOOR_H) / 2, -D / 2]}>
         <planeGeometry args={[W, H - DOOR_H]} />
-        <meshStandardMaterial color="#F2D6D6" />
+        <meshStandardMaterial color="#B0C8A8" />
       </mesh>
       {/* Left upper panel */}
       <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, -D / 2]}>
         <planeGeometry args={[(W - DOOR_W) / 2, DOOR_H - WAINSCOT_H]} />
-        <meshStandardMaterial color="#F2D6D6" />
+        <meshStandardMaterial color="#B0C8A8" />
       </mesh>
       {/* Right upper panel */}
       <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, -D / 2]}>
         <planeGeometry args={[(W - DOOR_W) / 2, DOOR_H - WAINSCOT_H]} />
-        <meshStandardMaterial color="#F2D6D6" />
+        <meshStandardMaterial color="#B0C8A8" />
       </mesh>
       {/* Left wainscoting */}
       <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H / 2, -D / 2 + 0.001]}>
         <planeGeometry args={[(W - DOOR_W) / 2, WAINSCOT_H]} />
-        <meshStandardMaterial color="#D4B5B5" />
+        <meshStandardMaterial color="#88AA88" />
       </mesh>
       {/* Right wainscoting */}
       <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H / 2, -D / 2 + 0.001]}>
         <planeGeometry args={[(W - DOOR_W) / 2, WAINSCOT_H]} />
-        <meshStandardMaterial color="#D4B5B5" />
+        <meshStandardMaterial color="#88AA88" />
       </mesh>
       {/* Door frame — left post, right post, lintel */}
       <mesh position={[-DOOR_W / 2, DOOR_H / 2, -D / 2 + 0.002]}>
@@ -219,7 +379,7 @@ export default function LaundryRoom() {
         rotation={[0, Math.PI / 2, 0]}
       >
         <planeGeometry args={[D, H - WAINSCOT_H]} />
-        <meshStandardMaterial color="#F2D6D6" />
+        <meshStandardMaterial color="#B0C8A8" />
       </mesh>
       {/* Wainscoting */}
       <mesh
@@ -227,7 +387,7 @@ export default function LaundryRoom() {
         rotation={[0, Math.PI / 2, 0]}
       >
         <planeGeometry args={[D, WAINSCOT_H]} />
-        <meshStandardMaterial color="#D4B5B5" />
+        <meshStandardMaterial color="#88AA88" />
       </mesh>
 
       {/* ── Right wall ── */}
@@ -237,7 +397,7 @@ export default function LaundryRoom() {
         rotation={[0, -Math.PI / 2, 0]}
       >
         <planeGeometry args={[D, H - WAINSCOT_H]} />
-        <meshStandardMaterial color="#F2D6D6" />
+        <meshStandardMaterial color="#B0C8A8" />
       </mesh>
       {/* Wainscoting */}
       <mesh
@@ -245,52 +405,34 @@ export default function LaundryRoom() {
         rotation={[0, -Math.PI / 2, 0]}
       >
         <planeGeometry args={[D, WAINSCOT_H]} />
-        <meshStandardMaterial color="#D4B5B5" />
-      </mesh>
-
-      {/* ── Front wall (entrance side, z = +D/2 = +5.5) ── */}
-      {/* Top panel */}
-      <mesh position={[0, DOOR_H + (H - DOOR_H) / 2, D / 2]}>
-        <planeGeometry args={[W, H - DOOR_H]} />
-        <meshStandardMaterial color="#F2D6D6" side={THREE.DoubleSide} />
-      </mesh>
-      {/* Left upper panel */}
-      <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, D / 2]}>
-        <planeGeometry args={[(W - DOOR_W) / 2, DOOR_H - WAINSCOT_H]} />
-        <meshStandardMaterial color="#F2D6D6" side={THREE.DoubleSide} />
-      </mesh>
-      {/* Right upper panel */}
-      <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, D / 2]}>
-        <planeGeometry args={[(W - DOOR_W) / 2, DOOR_H - WAINSCOT_H]} />
-        <meshStandardMaterial color="#F2D6D6" side={THREE.DoubleSide} />
-      </mesh>
-      {/* Left wainscoting */}
-      <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H / 2, D / 2]}>
-        <planeGeometry args={[(W - DOOR_W) / 2, WAINSCOT_H]} />
-        <meshStandardMaterial color="#D4B5B5" side={THREE.DoubleSide} />
-      </mesh>
-      {/* Right wainscoting */}
-      <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H / 2, D / 2]}>
-        <planeGeometry args={[(W - DOOR_W) / 2, WAINSCOT_H]} />
-        <meshStandardMaterial color="#D4B5B5" side={THREE.DoubleSide} />
-      </mesh>
-      {/* Front door frame — left post, right post, lintel */}
-      <mesh position={[-DOOR_W / 2, DOOR_H / 2, D / 2]}>
-        <boxGeometry args={[0.06, DOOR_H, 0.1]} />
-        <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
-      </mesh>
-      <mesh position={[DOOR_W / 2, DOOR_H / 2, D / 2]}>
-        <boxGeometry args={[0.06, DOOR_H, 0.1]} />
-        <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
-      </mesh>
-      <mesh position={[0, DOOR_H + 0.03, D / 2]}>
-        <boxGeometry args={[DOOR_W + 0.06, 0.06, 0.1]} />
-        <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
+        <meshStandardMaterial color="#88AA88" />
       </mesh>
 
       {/* ── Trim details ── */}
       <CrownMolding />
       <WainscotCap />
+
+      {/* ── Interior decor ── */}
+      {/* Laundry baskets between machines on right side */}
+      <LaundryBasket position={[-MACHINE_X + 0.28, 0, -3]} />
+      <LaundryBasket position={[-MACHINE_X + 0.28, 0,  1]} />
+      <LaundryBasket position={[ MACHINE_X - 0.28, 0, -1]} />
+      <LaundryBasket position={[ MACHINE_X - 0.28, 0,  3]} />
+
+      {/* Wall shelves with product bottles */}
+      <WallShelf position={[-W / 2, 1.65, -3.5]} side="left" />
+      <WallShelf position={[-W / 2, 1.65,  1.5]} side="left" />
+      <WallShelf position={[ W / 2, 1.65, -3.5]} side="right" />
+      <WallShelf position={[ W / 2, 1.65,  1.5]} side="right" />
+
+      {/* Hanging plants at ceiling corners */}
+      <CeilingPlant position={[-W / 2 + 0.22, H, -4.8]} />
+      <CeilingPlant position={[ W / 2 - 0.22, H, -4.8]} />
+      <CeilingPlant position={[-W / 2 + 0.22, H,  4.5]} />
+      <CeilingPlant position={[ W / 2 - 0.22, H,  4.5]} />
+
+      {/* Chalkboard sign on back wall */}
+      <ChalkSign />
 
       {/* ── Washing machines (5 pairs, perfect symmetry) ── */}
       {MACHINE_Z.map((z, i) => (

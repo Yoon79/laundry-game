@@ -8,7 +8,7 @@ const EYE_HEIGHT = 1.7
 // Player corridor bounds
 const BOUND_X = 0.9
 const BOUND_Z_MIN = -12.2   // near the back of the clothes room (ROOM_FAR = -12.5)
-const BOUND_Z_MAX = 11.5    // exterior space extends to z ≈ 12.5
+const BOUND_Z_MAX = 13.0    // exterior space extends to z ≈ 12.5
 
 interface Props {
   active: boolean
@@ -28,8 +28,8 @@ export default function FPSMovement({ active }: Props) {
 
   // Set initial view facing the laundry entrance from outside
   useEffect(() => {
-    // Camera starts at [0, 3, 9] — look toward the front door at z=5.5
-    camera.lookAt(0, 1.2, 5.5)
+    // Camera starts at [0, 4.5, 12] — look toward the front door at z=5.5
+    camera.lookAt(0, 1.5, 5.5)
   }, [camera])
 
   useEffect(() => {
