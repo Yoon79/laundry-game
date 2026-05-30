@@ -4,7 +4,7 @@ import * as THREE from 'three'
 // Room geometry (half-sized)
 const W = 4
 const H = 3.0
-const ROOM_NEAR = -8.5   // connects to laundry room at z = -8.5
+const ROOM_NEAR = -9.5   // connects to laundry room at z = -9.5
 const ROOM_FAR  = -18.0  // back wall
 const DEPTH = Math.abs(ROOM_FAR - ROOM_NEAR)  // 9.5
 const CZ = (ROOM_NEAR + ROOM_FAR) / 2         // -13.25

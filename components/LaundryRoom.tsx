@@ -6,26 +6,25 @@ interface LaundryRoomProps {
   onSelectAlbum: (id: number) => void
 }
 
-// Room dimensions — expanded to hold 48 machines (46 albums)
-const W = 4     // width  (x: -2 to 2)
-const H = 3.0   // height (y: 0 to 3.0)
-const D = 17    // depth  (z: -8.5 to +8.5)
+// Room geometry — front wall aligns with building facade at z=5.5
+const W          = 4
+const H          = 3.0
+const ROOM_FRONT = 5.5     // front opening (matches FACADE_Z)
+const ROOM_BACK  = -9.5    // back wall (door to ClothesRoom)
+const D          = ROOM_FRONT - ROOM_BACK   // 15
+const ROOM_CZ    = (ROOM_FRONT + ROOM_BACK) / 2   // -2
 
 const WAINSCOT_H = 0.9
-
-// Doorway opening into the clothes room
 const DOOR_W = 2.0
 const DOOR_H = 2.2
 
-// 8 columns × 2 sides × 3 stacks = 48 machine slots (46 albums + 2 empty)
-// Front (z=7) = newest releases, back (z=-7) = oldest
-const MACHINE_Z = [7, 5, 3, 1, -1, -3, -5, -7]
+// 12 columns × 2 sides × 2 stacks = 48 slots (46 albums + 2 empty)
+// 1.2 m spacing, front (z≈4.8) = newest, back (z≈-8.4) = oldest
+// All positions strictly inside [ROOM_BACK, ROOM_FRONT]
+const MACHINE_Z = [4.8, 3.6, 2.4, 1.2, 0.0, -1.2, -2.4, -3.6, -4.8, -6.0, -7.2, -8.4]
 
 const MACHINE_X = 1.83
-
-// Three stacking levels
-const STACK_Y  = 0.49   // mid row
-const STACK_Y2 = 0.98   // top row
+const STACK_Y   = 0.49   // 2nd level offset
 
 function CheckerFloor() {
   const texture = useMemo(() => {
@@ -57,13 +56,12 @@ function CheckerFloor() {
 
     const tex = new THREE.CanvasTexture(canvas)
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping
-    // W=4, D=11 → want ~1 unit tiles → repeat = (W/2, D/2) since 2 tiles per repeat
     tex.repeat.set(W / 2, D / 2)
     return tex
   }, [])
 
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, ROOM_CZ]} receiveShadow>
       <planeGeometry args={[W, D]} />
       <meshStandardMaterial map={texture} />
     </mesh>
@@ -137,7 +135,7 @@ function CeilingMesh() {
   }, [])
 
   return (
-    <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, H, 0]} receiveShadow>
+    <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, H, ROOM_CZ]} receiveShadow>
       <planeGeometry args={[W, D]} />
       <meshStandardMaterial map={texture} roughness={0.55} />
     </mesh>
@@ -153,17 +151,17 @@ function CrownMolding() {
   return (
     <group position={[0, H - thick / 2, 0]}>
       {/* Left */}
-      <mesh position={[-W / 2 + thick / 2, 0, 0]}>
+      <mesh position={[-W / 2 + thick / 2, 0, ROOM_CZ]}>
         <boxGeometry args={[thick, thick, D]} />
         {mat}
       </mesh>
       {/* Right */}
-      <mesh position={[W / 2 - thick / 2, 0, 0]}>
+      <mesh position={[W / 2 - thick / 2, 0, ROOM_CZ]}>
         <boxGeometry args={[thick, thick, D]} />
         {mat}
       </mesh>
       {/* Back */}
-      <mesh position={[0, 0, -D / 2 + thick / 2]}>
+      <mesh position={[0, 0, ROOM_BACK + thick / 2]}>
         <boxGeometry args={[W, thick, thick]} />
         {mat}
       </mesh>
@@ -178,21 +176,21 @@ function WainscotCap() {
   return (
     <group position={[0, WAINSCOT_H + thick / 2, 0]}>
       {/* Left wall */}
-      <mesh position={[-W / 2 + 0.001, 0, 0]}>
+      <mesh position={[-W / 2 + 0.001, 0, ROOM_CZ]}>
         <boxGeometry args={[thick, thick, D]} />
         {mat}
       </mesh>
       {/* Right wall */}
-      <mesh position={[W / 2 - 0.001, 0, 0]}>
+      <mesh position={[W / 2 - 0.001, 0, ROOM_CZ]}>
         <boxGeometry args={[thick, thick, D]} />
         {mat}
       </mesh>
       {/* Back wall — split around doorway */}
-      <mesh position={[-(W + DOOR_W) / 4, 0, -D / 2 + 0.001]}>
+      <mesh position={[-(W + DOOR_W) / 4, 0, ROOM_BACK + 0.001]}>
         <boxGeometry args={[(W - DOOR_W) / 2, thick, thick]} />
         {mat}
       </mesh>
-      <mesh position={[(W + DOOR_W) / 4, 0, -D / 2 + 0.001]}>
+      <mesh position={[(W + DOOR_W) / 4, 0, ROOM_BACK + 0.001]}>
         <boxGeometry args={[(W - DOOR_W) / 2, thick, thick]} />
         {mat}
       </mesh>
@@ -345,7 +343,7 @@ function ChalkSign() {
   }, [])
 
   return (
-    <group position={[0, H - 0.45, -D / 2 + 0.02]}>
+    <group position={[0, H - 0.45, ROOM_BACK + 0.02]}>
       {/* Frame */}
       <mesh>
         <boxGeometry args={[0.88, 0.56, 0.04]} />
@@ -363,13 +361,14 @@ function ChalkSign() {
 export default function LaundryRoom({ onSelectAlbum }: LaundryRoomProps) {
   return (
     <group>
-      {/* ── Lighting ── */}
+      {/* ── Lighting — 6 pendants spread across D=15 ── */}
       <ambientLight intensity={0.5} color="#FFF5E4" />
-      <PendantLight z={-6} />
-      <PendantLight z={-3} />
-      <PendantLight z={0} />
-      <PendantLight z={3} />
-      <PendantLight z={6} />
+      <PendantLight z={4.2} />
+      <PendantLight z={1.5} />
+      <PendantLight z={-1.2} />
+      <PendantLight z={-4.0} />
+      <PendantLight z={-6.8} />
+      <PendantLight z={-8.8} />
 
       {/* ── Floor ── */}
       <CheckerFloor />
@@ -378,77 +377,55 @@ export default function LaundryRoom({ onSelectAlbum }: LaundryRoomProps) {
       <CeilingMesh />
 
       {/* ── Back wall — split around doorway into clothes room ── */}
-      {/* Top panel: full width, above doorway */}
-      <mesh position={[0, DOOR_H + (H - DOOR_H) / 2, -D / 2]}>
+      <mesh position={[0, DOOR_H + (H - DOOR_H) / 2, ROOM_BACK]}>
         <planeGeometry args={[W, H - DOOR_H]} />
         <meshStandardMaterial color="#B0C8A8" />
       </mesh>
-      {/* Left upper panel */}
-      <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, -D / 2]}>
+      <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, ROOM_BACK]}>
         <planeGeometry args={[(W - DOOR_W) / 2, DOOR_H - WAINSCOT_H]} />
         <meshStandardMaterial color="#B0C8A8" />
       </mesh>
-      {/* Right upper panel */}
-      <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, -D / 2]}>
+      <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H + (DOOR_H - WAINSCOT_H) / 2, ROOM_BACK]}>
         <planeGeometry args={[(W - DOOR_W) / 2, DOOR_H - WAINSCOT_H]} />
         <meshStandardMaterial color="#B0C8A8" />
       </mesh>
-      {/* Left wainscoting */}
-      <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H / 2, -D / 2 + 0.001]}>
+      <mesh position={[-(W + DOOR_W) / 4, WAINSCOT_H / 2, ROOM_BACK + 0.001]}>
         <planeGeometry args={[(W - DOOR_W) / 2, WAINSCOT_H]} />
         <meshStandardMaterial color="#88AA88" />
       </mesh>
-      {/* Right wainscoting */}
-      <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H / 2, -D / 2 + 0.001]}>
+      <mesh position={[(W + DOOR_W) / 4, WAINSCOT_H / 2, ROOM_BACK + 0.001]}>
         <planeGeometry args={[(W - DOOR_W) / 2, WAINSCOT_H]} />
         <meshStandardMaterial color="#88AA88" />
       </mesh>
-      {/* Door frame — left post, right post, lintel */}
-      <mesh position={[-DOOR_W / 2, DOOR_H / 2, -D / 2 + 0.002]}>
+      <mesh position={[-DOOR_W / 2, DOOR_H / 2, ROOM_BACK + 0.002]}>
         <boxGeometry args={[0.06, DOOR_H, 0.05]} />
         <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
       </mesh>
-      <mesh position={[DOOR_W / 2, DOOR_H / 2, -D / 2 + 0.002]}>
+      <mesh position={[DOOR_W / 2, DOOR_H / 2, ROOM_BACK + 0.002]}>
         <boxGeometry args={[0.06, DOOR_H, 0.05]} />
         <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
       </mesh>
-      <mesh position={[0, DOOR_H + 0.03, -D / 2 + 0.002]}>
+      <mesh position={[0, DOOR_H + 0.03, ROOM_BACK + 0.002]}>
         <boxGeometry args={[DOOR_W + 0.06, 0.06, 0.05]} />
         <meshStandardMaterial color="#FDFAF5" roughness={0.5} />
       </mesh>
 
       {/* ── Left wall ── */}
-      {/* Upper */}
-      <mesh
-        position={[-W / 2, WAINSCOT_H + (H - WAINSCOT_H) / 2, 0]}
-        rotation={[0, Math.PI / 2, 0]}
-      >
+      <mesh position={[-W / 2, WAINSCOT_H + (H - WAINSCOT_H) / 2, ROOM_CZ]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[D, H - WAINSCOT_H]} />
         <meshStandardMaterial color="#B0C8A8" />
       </mesh>
-      {/* Wainscoting */}
-      <mesh
-        position={[-W / 2, WAINSCOT_H / 2, 0]}
-        rotation={[0, Math.PI / 2, 0]}
-      >
+      <mesh position={[-W / 2, WAINSCOT_H / 2, ROOM_CZ]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[D, WAINSCOT_H]} />
         <meshStandardMaterial color="#88AA88" />
       </mesh>
 
       {/* ── Right wall ── */}
-      {/* Upper */}
-      <mesh
-        position={[W / 2, WAINSCOT_H + (H - WAINSCOT_H) / 2, 0]}
-        rotation={[0, -Math.PI / 2, 0]}
-      >
+      <mesh position={[W / 2, WAINSCOT_H + (H - WAINSCOT_H) / 2, ROOM_CZ]} rotation={[0, -Math.PI / 2, 0]}>
         <planeGeometry args={[D, H - WAINSCOT_H]} />
         <meshStandardMaterial color="#B0C8A8" />
       </mesh>
-      {/* Wainscoting */}
-      <mesh
-        position={[W / 2, WAINSCOT_H / 2, 0]}
-        rotation={[0, -Math.PI / 2, 0]}
-      >
+      <mesh position={[W / 2, WAINSCOT_H / 2, ROOM_CZ]} rotation={[0, -Math.PI / 2, 0]}>
         <planeGeometry args={[D, WAINSCOT_H]} />
         <meshStandardMaterial color="#88AA88" />
       </mesh>
@@ -458,65 +435,57 @@ export default function LaundryRoom({ onSelectAlbum }: LaundryRoomProps) {
       <WainscotCap />
 
       {/* ── Interior decor ── */}
-      {/* Laundry baskets between machines on right side */}
-      <LaundryBasket position={[-MACHINE_X + 0.28, 0, -3]} />
-      <LaundryBasket position={[-MACHINE_X + 0.28, 0,  1]} />
-      <LaundryBasket position={[ MACHINE_X - 0.28, 0, -1]} />
-      <LaundryBasket position={[ MACHINE_X - 0.28, 0,  3]} />
+      <LaundryBasket position={[-MACHINE_X + 0.28, 0, -2.4]} />
+      <LaundryBasket position={[-MACHINE_X + 0.28, 0,  0.0]} />
+      <LaundryBasket position={[ MACHINE_X - 0.28, 0, -1.2]} />
+      <LaundryBasket position={[ MACHINE_X - 0.28, 0,  1.2]} />
 
-      {/* Wall shelves with product bottles */}
-      <WallShelf position={[-W / 2, 1.65, -3.5]} side="left" />
-      <WallShelf position={[-W / 2, 1.65,  1.5]} side="left" />
-      <WallShelf position={[ W / 2, 1.65, -3.5]} side="right" />
-      <WallShelf position={[ W / 2, 1.65,  1.5]} side="right" />
+      <WallShelf position={[-W / 2, 1.65, -4.2]} side="left" />
+      <WallShelf position={[-W / 2, 1.65,  0.6]} side="left" />
+      <WallShelf position={[-W / 2, 1.65, -7.8]} side="left" />
+      <WallShelf position={[ W / 2, 1.65, -4.2]} side="right" />
+      <WallShelf position={[ W / 2, 1.65,  0.6]} side="right" />
+      <WallShelf position={[ W / 2, 1.65, -7.8]} side="right" />
 
-      {/* Hanging plants at ceiling corners */}
-      <CeilingPlant position={[-W / 2 + 0.22, H, -4.8]} />
-      <CeilingPlant position={[ W / 2 - 0.22, H, -4.8]} />
-      <CeilingPlant position={[-W / 2 + 0.22, H,  4.5]} />
-      <CeilingPlant position={[ W / 2 - 0.22, H,  4.5]} />
+      <CeilingPlant position={[-W / 2 + 0.22, H, ROOM_BACK + 1.0]} />
+      <CeilingPlant position={[ W / 2 - 0.22, H, ROOM_BACK + 1.0]} />
+      <CeilingPlant position={[-W / 2 + 0.22, H, ROOM_FRONT - 1.0]} />
+      <CeilingPlant position={[ W / 2 - 0.22, H, ROOM_FRONT - 1.0]} />
 
-      {/* Chalkboard sign on back wall */}
       <ChalkSign />
 
-      {/* ── Washing machines: 8 columns × 3 stacks × 2 sides = 48 slots ── */}
-      {/* Album IDs: col i → left[i*6, i*6+1, i*6+2], right[i*6+3, i*6+4, i*6+5] */}
+      {/* ── Washing machines: 12 cols × 2 stacks × 2 sides = 48 slots ── */}
+      {/* albumId = col*4 + {left-bottom=0, left-top=1, right-bottom=2, right-top=3} */}
       {MACHINE_Z.map((z, col) => {
-        const base = col * 6
-        const bracket = (x: number, y: number) => (
-          <mesh position={[x, y - 0.005, z]}>
+        const base = col * 4
+        const bracket = (x: number) => (
+          <mesh key={`br-${x}-${z}`} position={[x, STACK_Y - 0.005, z]}>
             <boxGeometry args={[0.008, 0.01, 0.30]} />
             <meshStandardMaterial color="#A09080" metalness={0.6} roughness={0.4} />
           </mesh>
         )
         const machine = (
           x: number, y: number, rotY: number,
-          albumId: number, ci: number
+          albumId: number
         ) => albumId < 46 ? (
           <WashingMachine
-            key={`${x}-${y}-${z}`}
+            key={`m-${x}-${y}-${z}`}
             position={[x, y, z]}
             rotationY={rotY}
-            colorIndex={ci}
+            colorIndex={albumId % 5}
             onSelect={() => onSelectAlbum(albumId)}
           />
         ) : null
 
         return (
           <group key={col}>
-            {/* Left: bottom / mid / top */}
-            {machine(-MACHINE_X, 0,       Math.PI / 2, base + 0, (base + 0) % 5)}
-            {machine(-MACHINE_X, STACK_Y,  Math.PI / 2, base + 1, (base + 1) % 5)}
-            {machine(-MACHINE_X, STACK_Y2, Math.PI / 2, base + 2, (base + 2) % 5)}
-            {bracket(-MACHINE_X + 0.17, STACK_Y)}
-            {bracket(-MACHINE_X + 0.17, STACK_Y2)}
+            {machine(-MACHINE_X, 0,      Math.PI / 2, base + 0)}
+            {machine(-MACHINE_X, STACK_Y, Math.PI / 2, base + 1)}
+            {bracket(-MACHINE_X + 0.17)}
 
-            {/* Right: bottom / mid / top */}
-            {machine( MACHINE_X, 0,       -Math.PI / 2, base + 3, (base + 3) % 5)}
-            {machine( MACHINE_X, STACK_Y,  -Math.PI / 2, base + 4, (base + 4) % 5)}
-            {machine( MACHINE_X, STACK_Y2, -Math.PI / 2, base + 5, (base + 5) % 5)}
-            {bracket( MACHINE_X - 0.17, STACK_Y)}
-            {bracket( MACHINE_X - 0.17, STACK_Y2)}
+            {machine( MACHINE_X, 0,      -Math.PI / 2, base + 2)}
+            {machine( MACHINE_X, STACK_Y, -Math.PI / 2, base + 3)}
+            {bracket( MACHINE_X - 0.17)}
           </group>
         )
       })}
