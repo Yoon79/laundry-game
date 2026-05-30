@@ -4,6 +4,8 @@ import WashingMachine from './WashingMachine'
 
 interface LaundryRoomProps {
   onSelectAlbum: (id: number) => void
+  deliveryTargetAlbumId?: number | null   // which machine to deliver laundry to
+  onDeliverLaundry?: (albumId: number) => void
 }
 
 // Room geometry — front wall aligns with building facade at z=5.5
@@ -358,7 +360,7 @@ function ChalkSign() {
   )
 }
 
-export default function LaundryRoom({ onSelectAlbum }: LaundryRoomProps) {
+export default function LaundryRoom({ onSelectAlbum, deliveryTargetAlbumId, onDeliverLaundry }: LaundryRoomProps) {
   return (
     <group>
       {/* ── Lighting — 6 pendants spread across D=15 ── */}
@@ -474,6 +476,9 @@ export default function LaundryRoom({ onSelectAlbum }: LaundryRoomProps) {
             rotationY={rotY}
             colorIndex={albumId % 5}
             onSelect={() => onSelectAlbum(albumId)}
+            isDeliveryTarget={deliveryTargetAlbumId === albumId}
+            onDeliver={deliveryTargetAlbumId === albumId
+              ? () => onDeliverLaundry?.(albumId) : undefined}
           />
         ) : null
 

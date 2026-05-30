@@ -15,27 +15,55 @@ interface Props {
   rotationY: number
   colorIndex: number
   onSelect?: () => void
+  isDeliveryTarget?: boolean   // glows golden when player is carrying matching laundry
+  onDeliver?: () => void       // called when clicked while isDeliveryTarget
 }
 
-export default function WashingMachine({ position, rotationY, colorIndex, onSelect }: Props) {
+export default function WashingMachine({
+  position, rotationY, colorIndex,
+  onSelect, isDeliveryTarget, onDeliver,
+}: Props) {
   const [hovered, setHovered] = useState(false)
   const bodyColor = BODY_COLORS[colorIndex % BODY_COLORS.length]
+
+  const handleClick = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation()
+    if (isDeliveryTarget && onDeliver) onDeliver()
+    else onSelect?.()
+  }
 
   return (
     <group
       position={position}
       rotation={[0, rotationY, 0]}
-      onClick={(e) => { e.stopPropagation(); onSelect?.() }}
+      onClick={handleClick}
       onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
       onPointerOut={() => setHovered(false)}
     >
+      {/* Golden delivery-target glow ring */}
+      {isDeliveryTarget && (
+        <mesh position={[0, 0.23, 0]}>
+          <boxGeometry args={[0.52, 0.52, 0.40]} />
+          <meshStandardMaterial
+            color="#FFD080"
+            emissive="#FFD080"
+            emissiveIntensity={1.2}
+            transparent
+            opacity={0.18}
+            wireframe
+          />
+        </mesh>
+      )}
+      {isDeliveryTarget && (
+        <pointLight position={[0, 0.3, 0.2]} color="#FFD080" intensity={1.0} distance={1.5} />
+      )}
       {/* Main body — front face is at local z = +0.17 */}
       <mesh position={[0, 0.23, 0]} castShadow receiveShadow>
         <boxGeometry args={[0.45, 0.46, 0.34]} />
         <meshStandardMaterial
           color={bodyColor}
-          emissive={bodyColor}
-          emissiveIntensity={hovered ? 0.22 : 0}
+          emissive={isDeliveryTarget ? '#FFD080' : bodyColor}
+          emissiveIntensity={isDeliveryTarget ? 0.4 : hovered ? 0.22 : 0}
           roughness={0.38}
           metalness={0.06}
         />
