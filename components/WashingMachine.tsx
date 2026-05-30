@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import * as THREE from 'three'
 
 // Wes Anderson pastel palette — each machine gets its own color
@@ -13,17 +14,31 @@ interface Props {
   position: [number, number, number]
   rotationY: number
   colorIndex: number
+  onSelect?: () => void
 }
 
-export default function WashingMachine({ position, rotationY, colorIndex }: Props) {
+export default function WashingMachine({ position, rotationY, colorIndex, onSelect }: Props) {
+  const [hovered, setHovered] = useState(false)
   const bodyColor = BODY_COLORS[colorIndex % BODY_COLORS.length]
 
   return (
-    <group position={position} rotation={[0, rotationY, 0]}>
+    <group
+      position={position}
+      rotation={[0, rotationY, 0]}
+      onClick={(e) => { e.stopPropagation(); onSelect?.() }}
+      onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
+      onPointerOut={() => setHovered(false)}
+    >
       {/* Main body — front face is at local z = +0.17 */}
       <mesh position={[0, 0.23, 0]} castShadow receiveShadow>
         <boxGeometry args={[0.45, 0.46, 0.34]} />
-        <meshStandardMaterial color={bodyColor} roughness={0.38} metalness={0.06} />
+        <meshStandardMaterial
+          color={bodyColor}
+          emissive={bodyColor}
+          emissiveIntensity={hovered ? 0.22 : 0}
+          roughness={0.38}
+          metalness={0.06}
+        />
       </mesh>
 
       {/* Chrome porthole ring */}

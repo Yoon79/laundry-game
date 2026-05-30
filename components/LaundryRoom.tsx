@@ -2,6 +2,10 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import WashingMachine from './WashingMachine'
 
+interface LaundryRoomProps {
+  onSelectAlbum: (id: number) => void
+}
+
 // Room dimensions (half-sized)
 const W = 4    // width  (x: -2 to 2)
 const H = 3.0  // height (y: 0 to 3.0)
@@ -356,7 +360,7 @@ function ChalkSign() {
   )
 }
 
-export default function LaundryRoom() {
+export default function LaundryRoom({ onSelectAlbum }: LaundryRoomProps) {
   return (
     <group>
       {/* ── Lighting ── */}
@@ -473,14 +477,22 @@ export default function LaundryRoom() {
       {/* Chalkboard sign on back wall */}
       <ChalkSign />
 
-      {/* ── Washing machines — 5 columns, 2 high × 2 sides ── */}
+      {/* ── Washing machines — 5 columns × 2 high × 2 sides, each clickable ── */}
       {MACHINE_Z.map((z, i) => (
         <group key={i}>
           {/* ── Left column ── */}
-          {/* Bottom */}
-          <WashingMachine position={[-MACHINE_X, 0,       z]} rotationY={ Math.PI / 2} colorIndex={i} />
-          {/* Top */}
-          <WashingMachine position={[-MACHINE_X, STACK_Y, z]} rotationY={ Math.PI / 2} colorIndex={(i + 2) % 5} />
+          <WashingMachine
+            position={[-MACHINE_X, 0, z]}
+            rotationY={Math.PI / 2}
+            colorIndex={i}
+            onSelect={() => onSelectAlbum(i)}
+          />
+          <WashingMachine
+            position={[-MACHINE_X, STACK_Y, z]}
+            rotationY={Math.PI / 2}
+            colorIndex={(i + 2) % 5}
+            onSelect={() => onSelectAlbum(i + MACHINE_Z.length)}
+          />
           {/* Stacking bracket left */}
           <mesh position={[-MACHINE_X + 0.17, STACK_Y - 0.005, z]}>
             <boxGeometry args={[0.008, 0.01, 0.30]} />
@@ -488,12 +500,20 @@ export default function LaundryRoom() {
           </mesh>
 
           {/* ── Right column ── */}
-          {/* Bottom */}
-          <WashingMachine position={[ MACHINE_X, 0,       z]} rotationY={-Math.PI / 2} colorIndex={i} />
-          {/* Top */}
-          <WashingMachine position={[ MACHINE_X, STACK_Y, z]} rotationY={-Math.PI / 2} colorIndex={(i + 3) % 5} />
+          <WashingMachine
+            position={[MACHINE_X, 0, z]}
+            rotationY={-Math.PI / 2}
+            colorIndex={i}
+            onSelect={() => onSelectAlbum(i)}
+          />
+          <WashingMachine
+            position={[MACHINE_X, STACK_Y, z]}
+            rotationY={-Math.PI / 2}
+            colorIndex={(i + 3) % 5}
+            onSelect={() => onSelectAlbum(i + MACHINE_Z.length)}
+          />
           {/* Stacking bracket right */}
-          <mesh position={[ MACHINE_X - 0.17, STACK_Y - 0.005, z]}>
+          <mesh position={[MACHINE_X - 0.17, STACK_Y - 0.005, z]}>
             <boxGeometry args={[0.008, 0.01, 0.30]} />
             <meshStandardMaterial color="#A09080" metalness={0.6} roughness={0.4} />
           </mesh>
