@@ -20,6 +20,9 @@ const MACHINE_Z = [-4, -2, 0, 2, 4]
 // Right machine center x: wall at +2, machine depth 0.34 → center at +2 - 0.17 = 1.83
 const MACHINE_X = 1.83
 
+// Stacking offset: body height 0.46 + control panel 0.027 + small gap
+const STACK_Y = 0.49
+
 function CheckerFloor() {
   const texture = useMemo(() => {
     const canvas = document.createElement('canvas')
@@ -470,21 +473,30 @@ export default function LaundryRoom() {
       {/* Chalkboard sign on back wall */}
       <ChalkSign />
 
-      {/* ── Washing machines (5 pairs, perfect symmetry) ── */}
+      {/* ── Washing machines — 5 columns, 2 high × 2 sides ── */}
       {MACHINE_Z.map((z, i) => (
         <group key={i}>
-          {/* Left — rotY = +π/2 so front (+z local) faces world +x (inward) */}
-          <WashingMachine
-            position={[-MACHINE_X, 0, z]}
-            rotationY={Math.PI / 2}
-            colorIndex={i}
-          />
-          {/* Right — rotY = -π/2 so front (+z local) faces world -x (inward) */}
-          <WashingMachine
-            position={[MACHINE_X, 0, z]}
-            rotationY={-Math.PI / 2}
-            colorIndex={i}
-          />
+          {/* ── Left column ── */}
+          {/* Bottom */}
+          <WashingMachine position={[-MACHINE_X, 0,       z]} rotationY={ Math.PI / 2} colorIndex={i} />
+          {/* Top */}
+          <WashingMachine position={[-MACHINE_X, STACK_Y, z]} rotationY={ Math.PI / 2} colorIndex={(i + 2) % 5} />
+          {/* Stacking bracket left */}
+          <mesh position={[-MACHINE_X + 0.17, STACK_Y - 0.005, z]}>
+            <boxGeometry args={[0.008, 0.01, 0.30]} />
+            <meshStandardMaterial color="#A09080" metalness={0.6} roughness={0.4} />
+          </mesh>
+
+          {/* ── Right column ── */}
+          {/* Bottom */}
+          <WashingMachine position={[ MACHINE_X, 0,       z]} rotationY={-Math.PI / 2} colorIndex={i} />
+          {/* Top */}
+          <WashingMachine position={[ MACHINE_X, STACK_Y, z]} rotationY={-Math.PI / 2} colorIndex={(i + 3) % 5} />
+          {/* Stacking bracket right */}
+          <mesh position={[ MACHINE_X - 0.17, STACK_Y - 0.005, z]}>
+            <boxGeometry args={[0.008, 0.01, 0.30]} />
+            <meshStandardMaterial color="#A09080" metalness={0.6} roughness={0.4} />
+          </mesh>
         </group>
       ))}
     </group>
