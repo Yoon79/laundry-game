@@ -5,10 +5,12 @@ import * as THREE from 'three'
 const WALK_SPEED = 3.0
 const EYE_HEIGHT = 1.7
 
-// Player corridor bounds
-const BOUND_X = 0.9
-const BOUND_Z_MIN = -12.2   // near the back of the clothes room (ROOM_FAR = -12.5)
-const BOUND_Z_MAX = 13.0    // exterior space extends to z ≈ 12.5
+// Player bounds — wide outside, narrow inside building
+const BOUND_X_INDOOR  = 0.9    // corridor width inside the building
+const BOUND_X_OUTDOOR = 6.0    // free to roam the meadow
+const BOUND_Z_MIN = -12.2      // near the back of the clothes room
+const BOUND_Z_MAX = 22.0       // allows stepping well into the meadow
+const FACADE_Z    = 5.5        // front of building
 
 interface Props {
   active: boolean
@@ -78,7 +80,8 @@ export default function FPSMovement({ active }: Props) {
     if (keys.current.d) move.current.addScaledVector(right.current, WALK_SPEED * delta)
 
     camera.position.add(move.current)
-    camera.position.x = THREE.MathUtils.clamp(camera.position.x, -BOUND_X, BOUND_X)
+    const boundX = camera.position.z > FACADE_Z - 0.3 ? BOUND_X_OUTDOOR : BOUND_X_INDOOR
+    camera.position.x = THREE.MathUtils.clamp(camera.position.x, -boundX, boundX)
     camera.position.z = THREE.MathUtils.clamp(camera.position.z, BOUND_Z_MIN, BOUND_Z_MAX)
 
     // Smooth y descent from overview height to eye level

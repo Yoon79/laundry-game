@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import BuildingShell from './BuildingShell'
+import Environment from './Environment'
 
 // ── Constants (must match LaundryRoom) ────────────────────────────
 const FACADE_Z    = 5.5
@@ -132,86 +133,39 @@ function makeWindowCanvas(side: 'left' | 'right'): THREE.CanvasTexture {
 
 // ── Sub-components ────────────────────────────────────────────────
 
-function CobblestoneFloor() {
+// Small stone plaza directly in front of the entrance
+function EntrancePlaza() {
   const texture = useMemo(() => {
     const c = document.createElement('canvas')
-    c.width = 512; c.height = 512
+    c.width = 256; c.height = 256
     const ctx = c.getContext('2d')!
     ctx.fillStyle = '#C0B8A8'
-    ctx.fillRect(0, 0, 512, 512)
-    const stoneC = ['#BDB5A5', '#CECA BA'.replace(' ', ''), '#B5AE9E', '#C8C0B0', '#D0C8B8']
+    ctx.fillRect(0, 0, 256, 256)
+    const stoneC = ['#BDB5A5', '#CECABA', '#B5AE9E', '#C8C0B0', '#D0C8B8']
     let y = 0; let row = 0
-    while (y < 512) {
-      let x = row % 2 === 0 ? 0 : -28
-      while (x < 512) {
-        const sw = 52 + (Math.sin(x * 0.3 + y * 0.2) * 6) | 0
-        const sh = 28 + (Math.cos(x * 0.2 + y * 0.4) * 4) | 0
-        ctx.fillStyle = stoneC[(row * 7 + (x / 50 | 0)) % stoneC.length]
+    while (y < 256) {
+      let x = row % 2 === 0 ? 0 : -24
+      while (x < 256) {
+        const sw = 44 + (Math.sin(x * 0.4 + y * 0.3) * 5) | 0
+        const sh = 24 + (Math.cos(x * 0.3 + y * 0.5) * 3) | 0
+        ctx.fillStyle = stoneC[(row * 7 + (x / 44 | 0)) % stoneC.length]
         ctx.fillRect(x + 2, y + 2, sw - 4, sh - 4)
         x += sw + 2
       }
-      y += 30 + (row % 3 === 0 ? 2 : 0)
-      row++
+      y += 26; row++
     }
     const tex = new THREE.CanvasTexture(c)
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping
-    tex.repeat.set(FACADE_W / 2.5, EXT_DEPTH / 2.5)
+    tex.repeat.set(3, 2)
     return tex
   }, [])
 
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, EXT_CZ]} receiveShadow>
-      <planeGeometry args={[FACADE_W + 4, EXT_DEPTH]} />
+    // Plaza: FACADE_W wide × 6 deep, sits right at building base
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, FACADE_Z + 3]} receiveShadow>
+      <planeGeometry args={[FACADE_W + 0.6, 6]} />
       <meshStandardMaterial map={texture} />
     </mesh>
-  )
-}
-
-function SkyBackground() {
-  const texture = useMemo(() => {
-    const c = document.createElement('canvas')
-    c.width = 4; c.height = 512
-    const ctx = c.getContext('2d')!
-    const g = ctx.createLinearGradient(0, 0, 0, 512)
-    g.addColorStop(0,    '#7898C0')
-    g.addColorStop(0.30, '#A8BCD8')
-    g.addColorStop(0.60, '#C8D8EC')
-    g.addColorStop(0.82, '#DDD0C4')
-    g.addColorStop(1,    '#EDE0D0')
-    ctx.fillStyle = g; ctx.fillRect(0, 0, 4, 512)
-    const tex = new THREE.CanvasTexture(c)
-    tex.wrapS = THREE.RepeatWrapping
-    return tex
-  }, [])
-
-  return (
-    <group>
-      {/* Sky behind the building */}
-      <mesh position={[0, 9, -22]} rotation={[0, 0, 0]}>
-        <planeGeometry args={[70, 26]} />
-        <meshStandardMaterial map={texture} fog={false} depthWrite={false} />
-      </mesh>
-      {/* Sky above the scene */}
-      <mesh position={[0, 22, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[90, 90]} />
-        <meshStandardMaterial color="#8AAACE" fog={false} />
-      </mesh>
-      {/* Side sky — left */}
-      <mesh position={[-32, 9, -5]} rotation={[0, Math.PI / 2, 0]}>
-        <planeGeometry args={[60, 26]} />
-        <meshStandardMaterial map={texture} fog={false} depthWrite={false} />
-      </mesh>
-      {/* Side sky — right */}
-      <mesh position={[32, 9, -5]} rotation={[0, -Math.PI / 2, 0]}>
-        <planeGeometry args={[60, 26]} />
-        <meshStandardMaterial map={texture} fog={false} depthWrite={false} />
-      </mesh>
-      {/* Sky behind player (visible when turning around) */}
-      <mesh position={[0, 9, EXT_CZ + 14]}>
-        <planeGeometry args={[70, 26]} />
-        <meshStandardMaterial map={texture} fog={false} depthWrite={false} side={THREE.BackSide} />
-      </mesh>
-    </group>
   )
 }
 
@@ -635,20 +589,21 @@ function Bench() {
 export default function Exterior() {
   return (
     <group>
-      {/* ── Outdoor lighting ── */}
+      {/* ── Outdoor lighting — warm sunny day ── */}
       <directionalLight
-        position={[5, 12, 9]}
-        intensity={2.0}
-        color="#FFF8F0"
+        position={[8, 18, 6]}
+        intensity={2.8}
+        color="#FFF5E0"
         castShadow
-        shadow-mapSize-width={512}
-        shadow-mapSize-height={512}
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
       />
-      <hemisphereLight args={['#C8D8F0', '#C0B090', 0.5]} />
+      {/* Hemisphere: sky-blue above, meadow-green below */}
+      <hemisphereLight args={['#88AECC', '#8CC458', 0.9]} />
 
-      {/* ── Environment ── */}
-      <SkyBackground />
-      <CobblestoneFloor />
+      {/* ── Environment (sky dome, meadow, hills, flowers) ── */}
+      <Environment />
+      <EntrancePlaza />
 
       {/* ── Building shell ── */}
       <BuildingFacade />
@@ -687,36 +642,7 @@ export default function Exterior() {
       {/* ── Building shell (side walls, back wall, roof, chimneys) ── */}
       <BuildingShell />
 
-      {/* ── Street side walls (outdoor corridor beside entrance) ── */}
-      <mesh
-        position={[-(FACADE_W / 2 + 0.02), H / 2, EXT_CZ]}
-        rotation={[0, -Math.PI / 2, 0]}
-      >
-        <planeGeometry args={[EXT_DEPTH, H]} />
-        <meshStandardMaterial color={MINT} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh
-        position={[FACADE_W / 2 + 0.02, H / 2, EXT_CZ]}
-        rotation={[0, Math.PI / 2, 0]}
-      >
-        <planeGeometry args={[EXT_DEPTH, H]} />
-        <meshStandardMaterial color={MINT} side={THREE.DoubleSide} />
-      </mesh>
-      {/* Wainscoting for street walls */}
-      <mesh
-        position={[-(FACADE_W / 2 + 0.02), WAINSCOT_H / 2, EXT_CZ]}
-        rotation={[0, -Math.PI / 2, 0]}
-      >
-        <planeGeometry args={[EXT_DEPTH, WAINSCOT_H]} />
-        <meshStandardMaterial color={MINT_DARK} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh
-        position={[FACADE_W / 2 + 0.02, WAINSCOT_H / 2, EXT_CZ]}
-        rotation={[0, Math.PI / 2, 0]}
-      >
-        <planeGeometry args={[EXT_DEPTH, WAINSCOT_H]} />
-        <meshStandardMaterial color={MINT_DARK} side={THREE.DoubleSide} />
-      </mesh>
+      {/* No side walls — open meadow on all sides */}
     </group>
   )
 }

@@ -28,7 +28,7 @@ export default function GameClient() {
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.1,
         }}
-        style={{ background: '#FAF0E6' }}
+        style={{ background: '#68A8D8' }}
       >
         <FPSMovement active={locked} />
         <Exterior />
