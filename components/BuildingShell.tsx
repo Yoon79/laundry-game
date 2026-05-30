@@ -8,42 +8,51 @@ const FW2        = FACADE_W / 2   // 4.25
 const H          = 3.0
 const WAINSCOT_H = 0.9
 const CORNICE_H  = 0.65
-const BLDG_FAR   = -12.5                            // back wall z (ClothesRoom ROOM_FAR)
-const BLDG_D     = FACADE_Z - BLDG_FAR              // 18
-const BLDG_CZ    = (FACADE_Z + BLDG_FAR) / 2        // -3.5
-const ROOF_Y     = H + 0.02
-const PARAPET_H  = 0.28
-const PARAPET_T  = 0.18
+const BLDG_FAR   = -12.5
+const BLDG_D     = FACADE_Z - BLDG_FAR   // 18
+const BLDG_CZ    = (FACADE_Z + BLDG_FAR) / 2   // -3.5
 
-const MINT       = '#A0C898'
-const MINT_DARK  = '#789878'
-const CREAM      = '#F0E8DC'
-const CREAM2     = '#D8CEBC'
+// ── Hip roof geometry constants ───────────────────────────────────────────
+// Eave sits just above the cornice top (H + CORNICE_H = 3.65)
+const EAVE_Y    = H + CORNICE_H + 0.14   // 3.79
+const EAVE_OH   = 0.38                   // overhang beyond wall edge
+const RIDGE_H   = 1.85                   // rise from eave to ridge
+const RIDGE_I   = 3.8                    // z-inset from eave ends to ridge starts
+
+const EAVE_W    = FW2 + EAVE_OH          // 4.63
+const FRONT_Z   = FACADE_Z  + EAVE_OH   // 5.88
+const BACK_Z    = BLDG_FAR  - EAVE_OH   // -12.88
+const RIDGE_Y   = EAVE_Y + RIDGE_H      // 5.64
+const RIDGE_FZ  = FRONT_Z  - RIDGE_I    // 2.08
+const RIDGE_BZ  = BACK_Z   + RIDGE_I    // -9.08
+const RIDGE_MZ  = (RIDGE_FZ + RIDGE_BZ) / 2   // -3.50
+const RIDGE_LEN = RIDGE_FZ - RIDGE_BZ   // 11.16
+
+const MINT      = '#A0C898'
+const MINT_DARK = '#789878'
+const CREAM     = '#F0E8DC'
+const CREAM2    = '#D8CEBC'
 
 // ── Chimney stack ─────────────────────────────────────────────────────────
 
-interface ChimneyProps { x: number; z: number }
+interface ChimneyProps { x: number; z: number; baseY?: number }
 
-function ChimneyStack({ x, z }: ChimneyProps) {
+function ChimneyStack({ x, z, baseY = EAVE_Y }: ChimneyProps) {
   return (
-    <group position={[x, ROOF_Y, z]}>
-      {/* Main brick body */}
-      <mesh position={[0, 0.40, 0]}>
-        <boxGeometry args={[0.30, 0.80, 0.30]} />
+    <group position={[x, baseY, z]}>
+      <mesh position={[0, 0.42, 0]}>
+        <boxGeometry args={[0.30, 0.84, 0.30]} />
         <meshStandardMaterial color={CREAM2} roughness={0.75} />
       </mesh>
-      {/* Cap shelf */}
-      <mesh position={[0, 0.82, 0]}>
+      <mesh position={[0, 0.86, 0]}>
         <boxGeometry args={[0.40, 0.10, 0.40]} />
         <meshStandardMaterial color={CREAM} roughness={0.55} />
       </mesh>
-      {/* Clay pot */}
-      <mesh position={[0, 0.95, 0]}>
+      <mesh position={[0, 1.00, 0]}>
         <cylinderGeometry args={[0.08, 0.11, 0.18, 10]} />
         <meshStandardMaterial color="#706050" roughness={0.80} />
       </mesh>
-      {/* Pot rim */}
-      <mesh position={[0, 1.04, 0]}>
+      <mesh position={[0, 1.09, 0]}>
         <torusGeometry args={[0.09, 0.015, 6, 16]} />
         <meshStandardMaterial color="#605040" roughness={0.80} />
       </mesh>
@@ -51,83 +60,145 @@ function ChimneyStack({ x, z }: ChimneyProps) {
   )
 }
 
-// ── Roof surface + parapet ────────────────────────────────────────────────
+// ── Hip roof (custom BufferGeometry) ──────────────────────────────────────
 
-function BuildingRoof() {
-  const roofTex = useMemo(() => {
+function HipRoof() {
+  // Canvas tile texture
+  const tileTex = useMemo(() => {
     const c = document.createElement('canvas')
     c.width = 256; c.height = 256
     const ctx = c.getContext('2d')!
-    // Dark green base
-    ctx.fillStyle = '#3A5838'
+    // Base dark green
+    ctx.fillStyle = '#364E34'
     ctx.fillRect(0, 0, 256, 256)
-    // Tile grid
-    const step = 32
-    ctx.strokeStyle = 'rgba(20,38,20,0.60)'
-    ctx.lineWidth = 2.5
-    for (let v = 0; v <= 256; v += step) {
-      ctx.beginPath(); ctx.moveTo(v, 0); ctx.lineTo(v, 256); ctx.stroke()
-      ctx.beginPath(); ctx.moveTo(0, v); ctx.lineTo(256, v); ctx.stroke()
-    }
-    // Subtle highlight per tile
-    ctx.fillStyle = 'rgba(255,255,255,0.04)'
-    for (let x = 0; x < 256; x += step) {
-      for (let y = 0; y < 256; y += step) {
-        ctx.fillRect(x + 3, y + 3, step - 6, step - 6)
+    // Horizontal tile rows (like lap shingles)
+    const rowH = 20
+    for (let y = 0; y < 256; y += rowH) {
+      const offset = ((y / rowH) % 2) * 32
+      // Row shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.20)'
+      ctx.fillRect(0, y, 256, 3)
+      // Individual tiles in row
+      for (let x = -32 + offset; x < 256; x += 64) {
+        // Tile body
+        ctx.fillStyle = `hsl(120,${22 + ((x * 3 + y * 7) & 7)}%,${23 + ((x * 5 + y * 3) & 5)}%)`
+        ctx.fillRect(x + 2, y + 3, 60, rowH - 4)
+        // Tile highlight (top edge)
+        ctx.fillStyle = 'rgba(255,255,255,0.06)'
+        ctx.fillRect(x + 2, y + 3, 60, 2)
+        // Tile right edge shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.12)'
+        ctx.fillRect(x + 60, y + 3, 2, rowH - 4)
       }
     }
     const tex = new THREE.CanvasTexture(c)
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping
-    tex.repeat.set(FACADE_W / 2, BLDG_D / 2)
+    tex.repeat.set(4, 3)
     return tex
   }, [])
 
-  const cMat = <meshStandardMaterial color={CREAM} roughness={0.50} />
+  // Build non-indexed BufferGeometry for the 6-face hip roof
+  const geo = useMemo<THREE.BufferGeometry>(() => {
+    type V3 = [number, number, number]
+    type V2 = [number, number]
+
+    const FL: V3 = [-EAVE_W, EAVE_Y, FRONT_Z]
+    const FR: V3 = [ EAVE_W, EAVE_Y, FRONT_Z]
+    const BL: V3 = [-EAVE_W, EAVE_Y, BACK_Z]
+    const BR: V3 = [ EAVE_W, EAVE_Y, BACK_Z]
+    const RF: V3 = [0, RIDGE_Y, RIDGE_FZ]
+    const RB: V3 = [0, RIDGE_Y, RIDGE_BZ]
+
+    const pos: number[] = []
+    const uvs: number[] = []
+
+    const tri = (
+      p0: V3, u0: V2,
+      p1: V3, u1: V2,
+      p2: V3, u2: V2
+    ) => {
+      pos.push(...p0, ...p1, ...p2)
+      uvs.push(...u0, ...u1, ...u2)
+    }
+
+    // ── Front hip (triangle facing +z) ──
+    tri(FL, [0, 0], FR, [1, 0], RF, [0.5, 1])
+
+    // ── Back hip (triangle facing -z) ──
+    tri(BR, [0, 0], BL, [1, 0], RB, [0.5, 1])
+
+    // ── Left slope ──  (eaveW wide, BLDG_D long, trapezoidal)
+    tri(BL, [0, 0], FL, [1, 0], RF, [1, 1])
+    tri(BL, [0, 0], RF, [1, 1], RB, [0, 1])
+
+    // ── Right slope ──
+    tri(FR, [0, 0], BR, [1, 0], RB, [1, 1])
+    tri(FR, [0, 0], RB, [1, 1], RF, [0, 1])
+
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3))
+    g.setAttribute('uv',       new THREE.BufferAttribute(new Float32Array(uvs), 2))
+    g.computeVertexNormals()
+    return g
+  }, [])
+
+  // Side chimney base y — interpolate on slope at x=±2.0
+  const sideChimneyY = EAVE_Y + RIDGE_H * (1 - 2.0 / EAVE_W) * 0.85
 
   return (
     <group>
-      {/* ── Flat roof surface ── */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, ROOF_Y, BLDG_CZ]}>
-        <planeGeometry args={[FACADE_W, BLDG_D]} />
-        <meshStandardMaterial map={roofTex} roughness={0.90} />
+      {/* ── Main hip roof surface ── */}
+      <mesh geometry={geo}>
+        <meshStandardMaterial
+          map={tileTex}
+          roughness={0.88}
+          side={THREE.DoubleSide}
+        />
       </mesh>
 
-      {/* ── Parapet walls ── */}
-      {/* Front */}
-      <mesh position={[0, ROOF_Y + PARAPET_H / 2, FACADE_Z + PARAPET_T / 2]}>
-        <boxGeometry args={[FACADE_W + PARAPET_T * 2, PARAPET_H, PARAPET_T]} />
-        {cMat}
+      {/* ── Eave fascia trim (cream band along all 4 eave edges) ── */}
+      {/* Front eave */}
+      <mesh position={[0, EAVE_Y - 0.06, FRONT_Z]}>
+        <boxGeometry args={[EAVE_W * 2 + 0.1, 0.14, 0.12]} />
+        <meshStandardMaterial color={CREAM} roughness={0.5} />
       </mesh>
-      {/* Back */}
-      <mesh position={[0, ROOF_Y + PARAPET_H / 2, BLDG_FAR - PARAPET_T / 2]}>
-        <boxGeometry args={[FACADE_W + PARAPET_T * 2, PARAPET_H, PARAPET_T]} />
-        {cMat}
+      {/* Back eave */}
+      <mesh position={[0, EAVE_Y - 0.06, BACK_Z]}>
+        <boxGeometry args={[EAVE_W * 2 + 0.1, 0.14, 0.12]} />
+        <meshStandardMaterial color={CREAM} roughness={0.5} />
       </mesh>
-      {/* Left */}
-      <mesh position={[-FW2 - PARAPET_T / 2, ROOF_Y + PARAPET_H / 2, BLDG_CZ]}>
-        <boxGeometry args={[PARAPET_T, PARAPET_H, BLDG_D + PARAPET_T * 2]} />
-        {cMat}
+      {/* Left eave */}
+      <mesh position={[-EAVE_W, EAVE_Y - 0.06, BLDG_CZ]}>
+        <boxGeometry args={[0.12, 0.14, Math.abs(BACK_Z - FRONT_Z) + 0.1]} />
+        <meshStandardMaterial color={CREAM} roughness={0.5} />
       </mesh>
-      {/* Right */}
-      <mesh position={[FW2 + PARAPET_T / 2, ROOF_Y + PARAPET_H / 2, BLDG_CZ]}>
-        <boxGeometry args={[PARAPET_T, PARAPET_H, BLDG_D + PARAPET_T * 2]} />
-        {cMat}
+      {/* Right eave */}
+      <mesh position={[EAVE_W, EAVE_Y - 0.06, BLDG_CZ]}>
+        <boxGeometry args={[0.12, 0.14, Math.abs(BACK_Z - FRONT_Z) + 0.1]} />
+        <meshStandardMaterial color={CREAM} roughness={0.5} />
       </mesh>
 
-      {/* ── Corner parapet blocks ── */}
-      {([-FW2, FW2] as number[]).flatMap((x, i) =>
-        ([FACADE_Z, BLDG_FAR] as number[]).map((z, j) => (
-          <mesh key={`c-${i}-${j}`} position={[x, ROOF_Y + PARAPET_H / 2, z]}>
-            <boxGeometry args={[PARAPET_T * 2 + 0.04, PARAPET_H + 0.06, PARAPET_T * 2 + 0.04]} />
-            {cMat}
-          </mesh>
-        ))
-      )}
+      {/* ── Ridge cap (cream strip along the ridge) ── */}
+      <mesh position={[0, RIDGE_Y + 0.06, RIDGE_MZ]}>
+        <boxGeometry args={[0.20, 0.16, RIDGE_LEN + 0.15]} />
+        <meshStandardMaterial color={CREAM} roughness={0.5} />
+      </mesh>
+      {/* Ridge end caps */}
+      <mesh position={[0, RIDGE_Y + 0.04, RIDGE_FZ]}>
+        <boxGeometry args={[0.22, 0.18, 0.22]} />
+        <meshStandardMaterial color={CREAM2} roughness={0.5} />
+      </mesh>
+      <mesh position={[0, RIDGE_Y + 0.04, RIDGE_BZ]}>
+        <boxGeometry args={[0.22, 0.18, 0.22]} />
+        <meshStandardMaterial color={CREAM2} roughness={0.5} />
+      </mesh>
 
       {/* ── Chimney stacks ── */}
-      <ChimneyStack x={-2.0} z={-2.0} />
-      <ChimneyStack x={ 2.0} z={-2.0} />
-      <ChimneyStack x={ 0.0} z={-8.5} />
+      {/* Two flanking chimneys on the side slopes */}
+      <ChimneyStack x={-1.6} z={-1.8} baseY={sideChimneyY} />
+      <ChimneyStack x={ 1.6} z={-1.8} baseY={sideChimneyY} />
+      {/* One tall chimney on the ridge */}
+      <ChimneyStack x={0} z={RIDGE_MZ} baseY={RIDGE_Y - 0.1} />
     </group>
   )
 }
@@ -180,7 +251,6 @@ function BuildingWalls() {
       </mesh>
 
       {/* ── Cornice strips on side & back walls ── */}
-      {/* Left side cornice */}
       <mesh
         position={[-FW2 - 0.06, H + CORNICE_H / 2, BLDG_CZ]}
         rotation={[0, Math.PI / 2, 0]}
@@ -188,7 +258,6 @@ function BuildingWalls() {
         <boxGeometry args={[BLDG_D, CORNICE_H, 0.16]} />
         <meshStandardMaterial color={CREAM} roughness={0.45} />
       </mesh>
-      {/* Right side cornice */}
       <mesh
         position={[FW2 + 0.06, H + CORNICE_H / 2, BLDG_CZ]}
         rotation={[0, Math.PI / 2, 0]}
@@ -196,14 +265,12 @@ function BuildingWalls() {
         <boxGeometry args={[BLDG_D, CORNICE_H, 0.16]} />
         <meshStandardMaterial color={CREAM} roughness={0.45} />
       </mesh>
-      {/* Back wall cornice */}
       <mesh position={[0, H + CORNICE_H / 2, BLDG_FAR - 0.06]}>
         <boxGeometry args={[FACADE_W + 0.18, CORNICE_H, 0.16]} />
         <meshStandardMaterial color={CREAM} roughness={0.45} />
       </mesh>
 
-      {/* ── Wainscot cap strips on side/back ── */}
-      {/* Left */}
+      {/* ── Wainscot cap strips ── */}
       <mesh
         position={[-FW2 - 0.002, WAINSCOT_H + 0.02, BLDG_CZ]}
         rotation={[0, Math.PI / 2, 0]}
@@ -211,7 +278,6 @@ function BuildingWalls() {
         <boxGeometry args={[BLDG_D, 0.04, 0.10]} />
         <meshStandardMaterial color="#FDFAF5" roughness={0.50} />
       </mesh>
-      {/* Right */}
       <mesh
         position={[FW2 + 0.002, WAINSCOT_H + 0.02, BLDG_CZ]}
         rotation={[0, Math.PI / 2, 0]}
@@ -219,7 +285,6 @@ function BuildingWalls() {
         <boxGeometry args={[BLDG_D, 0.04, 0.10]} />
         <meshStandardMaterial color="#FDFAF5" roughness={0.50} />
       </mesh>
-      {/* Back */}
       <mesh position={[0, WAINSCOT_H + 0.02, BLDG_FAR + 0.003]}>
         <boxGeometry args={[FACADE_W, 0.04, 0.10]} />
         <meshStandardMaterial color="#FDFAF5" roughness={0.50} />
@@ -231,24 +296,21 @@ function BuildingWalls() {
 // ── Entrance door frame (wall thickness detail) ───────────────────────────
 
 function EntranceDoorFrame() {
-  const WALL_T  = 0.28
-  const DOOR_W  = 2.0
-  const DOOR_H  = 2.2
-  const fz      = FACADE_Z - WALL_T / 2
-  const mat     = <meshStandardMaterial color={CREAM} roughness={0.50} />
+  const WALL_T = 0.28
+  const DOOR_W = 2.0
+  const DOOR_H = 2.2
+  const fz     = FACADE_Z - WALL_T / 2
+  const mat    = <meshStandardMaterial color={CREAM} roughness={0.50} />
   return (
     <group>
-      {/* Lintel (top of opening) */}
       <mesh position={[0, DOOR_H + 0.1, fz]}>
         <boxGeometry args={[DOOR_W + 0.04, 0.22, WALL_T]} />
         {mat}
       </mesh>
-      {/* Left jamb */}
       <mesh position={[-(DOOR_W / 2 + 0.13), DOOR_H / 2, fz]}>
         <boxGeometry args={[0.26, DOOR_H + 0.04, WALL_T]} />
         {mat}
       </mesh>
-      {/* Right jamb */}
       <mesh position={[DOOR_W / 2 + 0.13, DOOR_H / 2, fz]}>
         <boxGeometry args={[0.26, DOOR_H + 0.04, WALL_T]} />
         {mat}
@@ -263,7 +325,7 @@ export default function BuildingShell() {
   return (
     <group>
       <BuildingWalls />
-      <BuildingRoof />
+      <HipRoof />
       <EntranceDoorFrame />
     </group>
   )
