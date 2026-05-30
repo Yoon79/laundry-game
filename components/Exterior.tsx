@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
+import BuildingShell from './BuildingShell'
 
 // ── Constants (must match LaundryRoom) ────────────────────────────
 const FACADE_Z    = 5.5
@@ -169,24 +170,48 @@ function CobblestoneFloor() {
 function SkyBackground() {
   const texture = useMemo(() => {
     const c = document.createElement('canvas')
-    c.width = 4; c.height = 256
+    c.width = 4; c.height = 512
     const ctx = c.getContext('2d')!
-    const g = ctx.createLinearGradient(0, 0, 0, 256)
-    g.addColorStop(0, '#C0CCE0')
-    g.addColorStop(0.5, '#D8E4F0')
-    g.addColorStop(0.85, '#E8DED8')
-    g.addColorStop(1, '#F0E0D0')
-    ctx.fillStyle = g; ctx.fillRect(0, 0, 4, 256)
+    const g = ctx.createLinearGradient(0, 0, 0, 512)
+    g.addColorStop(0,    '#7898C0')
+    g.addColorStop(0.30, '#A8BCD8')
+    g.addColorStop(0.60, '#C8D8EC')
+    g.addColorStop(0.82, '#DDD0C4')
+    g.addColorStop(1,    '#EDE0D0')
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 4, 512)
     const tex = new THREE.CanvasTexture(c)
     tex.wrapS = THREE.RepeatWrapping
     return tex
   }, [])
 
   return (
-    <mesh position={[0, 6, FACADE_Z + EXT_DEPTH + 5]}>
-      <planeGeometry args={[40, 18]} />
-      <meshStandardMaterial map={texture} fog={false} />
-    </mesh>
+    <group>
+      {/* Sky behind the building */}
+      <mesh position={[0, 9, -22]} rotation={[0, 0, 0]}>
+        <planeGeometry args={[70, 26]} />
+        <meshStandardMaterial map={texture} fog={false} depthWrite={false} />
+      </mesh>
+      {/* Sky above the scene */}
+      <mesh position={[0, 22, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[90, 90]} />
+        <meshStandardMaterial color="#8AAACE" fog={false} />
+      </mesh>
+      {/* Side sky — left */}
+      <mesh position={[-32, 9, -5]} rotation={[0, Math.PI / 2, 0]}>
+        <planeGeometry args={[60, 26]} />
+        <meshStandardMaterial map={texture} fog={false} depthWrite={false} />
+      </mesh>
+      {/* Side sky — right */}
+      <mesh position={[32, 9, -5]} rotation={[0, -Math.PI / 2, 0]}>
+        <planeGeometry args={[60, 26]} />
+        <meshStandardMaterial map={texture} fog={false} depthWrite={false} />
+      </mesh>
+      {/* Sky behind player (visible when turning around) */}
+      <mesh position={[0, 9, EXT_CZ + 14]}>
+        <planeGeometry args={[70, 26]} />
+        <meshStandardMaterial map={texture} fog={false} depthWrite={false} side={THREE.BackSide} />
+      </mesh>
+    </group>
   )
 }
 
@@ -659,14 +684,38 @@ export default function Exterior() {
       {/* ── Bench ── */}
       <Bench />
 
-      {/* ── Exterior side corridor walls (close off the corridor sides) ── */}
-      <mesh position={[-(FACADE_W / 2 + 0.02), H / 2, EXT_CZ]} rotation={[0, -Math.PI / 2, 0]}>
+      {/* ── Building shell (side walls, back wall, roof, chimneys) ── */}
+      <BuildingShell />
+
+      {/* ── Street side walls (outdoor corridor beside entrance) ── */}
+      <mesh
+        position={[-(FACADE_W / 2 + 0.02), H / 2, EXT_CZ]}
+        rotation={[0, -Math.PI / 2, 0]}
+      >
         <planeGeometry args={[EXT_DEPTH, H]} />
-        <meshStandardMaterial color="#F0D8D0" />
+        <meshStandardMaterial color={MINT} side={THREE.DoubleSide} />
       </mesh>
-      <mesh position={[FACADE_W / 2 + 0.02, H / 2, EXT_CZ]} rotation={[0, Math.PI / 2, 0]}>
+      <mesh
+        position={[FACADE_W / 2 + 0.02, H / 2, EXT_CZ]}
+        rotation={[0, Math.PI / 2, 0]}
+      >
         <planeGeometry args={[EXT_DEPTH, H]} />
-        <meshStandardMaterial color="#F0D8D0" />
+        <meshStandardMaterial color={MINT} side={THREE.DoubleSide} />
+      </mesh>
+      {/* Wainscoting for street walls */}
+      <mesh
+        position={[-(FACADE_W / 2 + 0.02), WAINSCOT_H / 2, EXT_CZ]}
+        rotation={[0, -Math.PI / 2, 0]}
+      >
+        <planeGeometry args={[EXT_DEPTH, WAINSCOT_H]} />
+        <meshStandardMaterial color={MINT_DARK} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh
+        position={[FACADE_W / 2 + 0.02, WAINSCOT_H / 2, EXT_CZ]}
+        rotation={[0, Math.PI / 2, 0]}
+      >
+        <planeGeometry args={[EXT_DEPTH, WAINSCOT_H]} />
+        <meshStandardMaterial color={MINT_DARK} side={THREE.DoubleSide} />
       </mesh>
     </group>
   )

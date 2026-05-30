@@ -98,6 +98,45 @@ function PendantLight({ z }: { z: number }) {
   )
 }
 
+// Suspended ceiling with subtle tile grid
+function CeilingMesh() {
+  const texture = useMemo(() => {
+    const c = document.createElement('canvas')
+    c.width = 512; c.height = 512
+    const ctx = c.getContext('2d')!
+    // Warm cream base
+    ctx.fillStyle = '#F8F2E8'
+    ctx.fillRect(0, 0, 512, 512)
+    // Tile recessed grid
+    const step = 128
+    ctx.strokeStyle = 'rgba(160,138,115,0.22)'
+    ctx.lineWidth = 3
+    for (let v = 0; v <= 512; v += step) {
+      ctx.beginPath(); ctx.moveTo(v, 0); ctx.lineTo(v, 512); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(0, v); ctx.lineTo(512, v); ctx.stroke()
+    }
+    // Inner bevel shadow per tile
+    ctx.strokeStyle = 'rgba(190,165,140,0.13)'
+    ctx.lineWidth = 10
+    for (let x = 0; x < 512; x += step) {
+      for (let y = 0; y < 512; y += step) {
+        ctx.strokeRect(x + 12, y + 12, step - 24, step - 24)
+      }
+    }
+    const tex = new THREE.CanvasTexture(c)
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping
+    tex.repeat.set(W / 1.5, D / 1.5)
+    return tex
+  }, [])
+
+  return (
+    <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, H, 0]} receiveShadow>
+      <planeGeometry args={[W, D]} />
+      <meshStandardMaterial map={texture} roughness={0.55} />
+    </mesh>
+  )
+}
+
 // Crown molding strip where wall meets ceiling
 function CrownMolding() {
   const mat = (
@@ -326,11 +365,8 @@ export default function LaundryRoom() {
       {/* ── Floor ── */}
       <CheckerFloor />
 
-      {/* ── Ceiling ── */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, H, 0]} receiveShadow>
-        <planeGeometry args={[W, D]} />
-        <meshStandardMaterial color="#FBF5EE" />
-      </mesh>
+      {/* ── Ceiling (tile grid texture) ── */}
+      <CeilingMesh />
 
       {/* ── Back wall — split around doorway into clothes room ── */}
       {/* Top panel: full width, above doorway */}
