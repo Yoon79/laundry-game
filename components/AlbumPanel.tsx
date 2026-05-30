@@ -61,9 +61,12 @@ export default function AlbumPanel({ album, onClose }: Props) {
             {album.title}
           </h2>
 
-          {/* Track count badge */}
-          <p className="text-[11px]" style={{ color: '#8A6A40' }}>
-            {album.tracks.length}곡
+          {/* Album description */}
+          <p
+            className="text-[12px] leading-relaxed mt-1"
+            style={{ color: '#5A4030' }}
+          >
+            {album.description}
           </p>
         </div>
 
@@ -72,28 +75,39 @@ export default function AlbumPanel({ album, onClose }: Props) {
           {album.tracks.map((track) => (
             <div
               key={track.number}
-              className="flex items-baseline justify-between py-[5px] text-[12px]"
-              style={{
-                borderBottom: '1px solid rgba(180,150,100,0.15)',
-                color: '#3A2810',
-              }}
+              className="py-[7px] text-[12px]"
+              style={{ borderBottom: '1px solid rgba(180,150,100,0.15)' }}
             >
-              <div className="flex items-baseline gap-3 min-w-0">
-                <span
-                  className="shrink-0 text-[10px] tabular-nums"
-                  style={{ color: '#A08050', width: '1.6em', textAlign: 'right' }}
-                >
-                  {track.number}
-                </span>
-                <span className="truncate">{track.title}</span>
+              {/* Title row */}
+              <div className="flex items-baseline justify-between">
+                <div className="flex items-baseline gap-3 min-w-0">
+                  <span
+                    className="shrink-0 text-[10px] tabular-nums"
+                    style={{ color: '#A08050', width: '1.6em', textAlign: 'right' }}
+                  >
+                    {track.number}
+                  </span>
+                  <span className="font-medium" style={{ color: '#3A2810' }}>
+                    {track.title}
+                  </span>
+                </div>
+                {track.duration && (
+                  <span
+                    className="shrink-0 ml-4 tabular-nums text-[11px]"
+                    style={{ color: '#9A7A50' }}
+                  >
+                    {track.duration}
+                  </span>
+                )}
               </div>
-              {track.duration && (
-                <span
-                  className="shrink-0 ml-4 tabular-nums text-[11px]"
-                  style={{ color: '#9A7A50' }}
+              {/* Description */}
+              {track.description && (
+                <p
+                  className="mt-[3px] ml-[calc(1.6em+0.75rem)] text-[11px] leading-relaxed"
+                  style={{ color: '#8A6A40' }}
                 >
-                  {track.duration}
-                </span>
+                  {track.description}
+                </p>
               )}
             </div>
           ))}

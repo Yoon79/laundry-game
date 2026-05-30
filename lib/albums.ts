@@ -2,6 +2,7 @@ export interface Track {
   number: number
   title: string
   duration?: string
+  description?: string
 }
 
 export interface Album {
@@ -10,391 +11,598 @@ export interface Album {
   year: string
   type: '정규' | 'EP' | '싱글'
   color: string
+  description: string
   tracks: Track[]
 }
 
-// Pastel palette (synced with WashingMachine.tsx BODY_COLORS)
-const C = ['#E8B4B8','#B8D4E8','#C8D8B8','#F0E8C0','#D8C8E8']
+const C = ['#E8B4B8', '#B8D4E8', '#C8D8B8', '#F0E8C0', '#D8C8E8']
 const col = (id: number) => C[id % 5]
 
-// 46 albums — newest (id=0) → oldest (id=45)
-// Ordered front-to-back in the laundry room
 const ALBUMS: Album[] = [
-  // ── id 0–5 · front column ──────────────────────────────────────────
+  // ── 0 ──────────────────────────────────────────────────────────────
   {
     id: 0, title: '파도와 파랑', year: '2026', type: '싱글', color: col(0),
+    description: '바다를 닮은 시간들 속에서 용기를 내어 파도처럼 부서지는 이야기.',
     tracks: [
-      { number: 1, title: '파랑', duration: '2:54' },
-      { number: 2, title: '파도', duration: '2:52' },
+      { number: 1, title: '파랑', duration: '2:54',
+        description: '어둠 속에서도 서로의 연결을 통해 희망을 잃지 않는 감정의 인내를 파도와 바다의 이미지로 담아낸 곡.' },
+      { number: 2, title: '파도', duration: '2:52',
+        description: '광활한 세계 앞에서 작지만 누군가의 용기를 보며 자신도 꿈을 향해 나아가려는 마음을 담은 곡.' },
     ],
   },
+  // ── 1 ──────────────────────────────────────────────────────────────
   {
     id: 1, title: '사랑을 낭비하면서', year: '2026', type: '싱글', color: col(1),
+    description: '많은 것들이 나를 울려도 함께라면 강해질 수 있다는, 아주 느린 속도로 걸어가는 사랑의 이야기.',
     tracks: [
-      { number: 1, title: '사랑을 낭비하면서', duration: '3:02' },
+      { number: 1, title: '사랑을 낭비하면서', duration: '3:02',
+        description: '말없이 나누는 눈빛과 미소로 소통하는 두 사람. 서로에 대한 감정적 빚을 기꺼이 지며 함께 느린 걸음으로 나아가는 헌신적 사랑.' },
     ],
   },
+  // ── 2 ──────────────────────────────────────────────────────────────
   {
     id: 2, title: '영영', year: '2026', type: '싱글', color: col(2),
+    description: '쓴맛과 단맛이 공존하는 사랑이라는 이상한 물질에 대하여. 어두운 밤을 지나 달콤한 아침을 기다리는 두 곡.',
     tracks: [
-      { number: 1, title: '영영', duration: '2:38' },
-      { number: 2, title: '아침에 봐', duration: '2:50' },
+      { number: 1, title: '영영', duration: '2:38',
+        description: '일방적인 그리움과 이기적인 의존 욕구를 담은 곡. 나 없어도 괜찮은 당신에게, 당신에게만은 꼭 필요한 존재가 되고 싶은 마음.' },
+      { number: 2, title: '아침에 봐', duration: '2:50',
+        description: '고통을 쿠키로 구워내는 비유로 시작하는 곡. 힘든 것을 완전히 소화하고 내일을 맞이하기 전 달콤한 휴식을 권하는 노래.' },
     ],
   },
+  // ── 3 ──────────────────────────────────────────────────────────────
   {
     id: 3, title: '시선', year: '2025', type: '싱글', color: col(3),
+    description: '사랑은 세상을 이기는 유일한 것이기도 하고, 한없이 작아지게 만드는 무게이기도 하다. 그럼에도 사랑할 수밖에 없는 이유.',
     tracks: [
-      { number: 1, title: '시선', duration: '2:53' },
+      { number: 1, title: '시선', duration: '2:53',
+        description: '사랑하는 사람의 미세한 움직임 하나하나를 바라보며 이것이 진짜 사랑인지 수많은 착각인지 묻는 곡. 그래도 그 시선 속에서 당신은 더없이 아름답다.' },
     ],
   },
+  // ── 4 ──────────────────────────────────────────────────────────────
   {
     id: 4, title: 'RE: 나도!', year: '2025', type: '싱글', color: col(4),
+    description: '말 대신 행동으로 사랑을 전하는 날들. 두 글자면 충분한 대답 — \'나도!\'',
     tracks: [
-      { number: 1, title: '그래 열대야 때문이겠지 뭐', duration: '3:18' },
+      { number: 1, title: '그래 열대야 때문이겠지 뭐', duration: '3:18',
+        description: '매일 사랑한다 해도 내 마음의 반도 전하지 못한다는 걸 알면서도, 소소한 일상 속에서 당신이 사랑스러운 이유를 찾는 곡.' },
     ],
   },
+  // ── 5 ──────────────────────────────────────────────────────────────
   {
     id: 5, title: '그래 열대야 때문이겠지 뭐', year: '2025', type: '싱글', color: col(5),
+    description: '낮 동안 눌러두었던 감정들이 밤이 되면 부풀어 오른다. 더운 여름밤, 당신 때문에 잠 못 드는 마음을 열대야 탓으로 돌리는 곡.',
     tracks: [
-      { number: 1, title: '그래 열대야 때문이겠지 뭐', duration: '3:09' },
+      { number: 1, title: '그래 열대야 때문이겠지 뭐', duration: '3:09',
+        description: '당신 생각에 밤잠을 설치면서도 \'그래, 열대야 때문이겠지\'라고 애써 외면하는 마음. 무방비 상태로 드러나는 취약함과 편안함을 잃어버린 고통.' },
     ],
   },
-
-  // ── id 6–11 ────────────────────────────────────────────────────────
+  // ── 6 ──────────────────────────────────────────────────────────────
   {
     id: 6, title: '오렌지빛을 쥐고', year: '2024', type: 'EP', color: col(6),
+    description: '여름부터 겨울까지 두 멤버가 주고받은 일기들. 치과를 충동적으로 가거나 어두운 거실에서 악보를 쓰던 일상의 이야기들.',
     tracks: [
-      { number: 1, title: '새벽 왈츠 졸린', duration: '3:45' },
-      { number: 2, title: '꾹꾹', duration: '4:20' },
-      { number: 3, title: '해로운 희망을 껴안고 너와 휘청일 수 있다면', duration: '4:15' },
-      { number: 4, title: '내 유일한 슬픔으로', duration: '4:30' },
-      { number: 5, title: '찬란', duration: '3:50' },
-      { number: 6, title: '나비', duration: '4:00' },
+      { number: 1, title: '새벽 왈츠 졸린', duration: '3:45',
+        description: '졸음이 쏟아지는 새벽, 왈츠 리듬 속에 실려 오는 나른한 감성.' },
+      { number: 2, title: '꾹꾹', duration: '4:20',
+        description: '꾹꾹 눌러담은 감정들, 꾹꾹 눌러 보내는 마음. 일상의 작은 제스처에 담긴 애정.' },
+      { number: 3, title: '해로운 희망을 껴안고 너와 휘청일 수 있다면', duration: '4:15',
+        description: '결과를 알면서도 그 희망을 버리지 못하고 함께 비틀거리고 싶은, 이롭지 않은 기대를 안은 채 걷는 두 사람.' },
+      { number: 4, title: '내 유일한 슬픔으로', duration: '4:30',
+        description: '이광석 피처링. 모든 슬픔 중 당신만이 내 유일한 슬픔이라는, 역설적으로 아름다운 애도.' },
+      { number: 5, title: '찬란', duration: '3:50',
+        description: '빛나는 순간들을 온전히 껴안는 것에 대하여. 지금 이 순간의 찬란함을 놓치지 않으려는 마음.' },
+      { number: 6, title: '나비', duration: '4:00',
+        description: '나비처럼 가볍고 자유롭게, 그러나 결국 다시 돌아오는 존재에 대한 이야기.' },
     ],
   },
+  // ── 7 ──────────────────────────────────────────────────────────────
   {
     id: 7, title: 'Samsara', year: '2024', type: '싱글', color: col(7),
+    description: '몇 번을 다시 태어나도, 그 어떤 생에서도 서로를 찾아내자는 윤회의 약속.',
     tracks: [
-      { number: 1, title: 'Samsara' },
+      { number: 1, title: 'Samsara',
+        description: '바람과 빗속에 실려 오는 낯익은 향기. 기다림과 부드러운 그리움 속에서 여러 생을 걸쳐 이어지는 연결을 담은 곡.' },
     ],
   },
+  // ── 8 ──────────────────────────────────────────────────────────────
   {
     id: 8, title: '유일', year: '2024', type: '싱글', color: col(8),
+    description: '내게 유일한 사랑아, 훨훨 날아가렴. 나는 언제나 너의 돌아올 곳이 되어줄게.',
     tracks: [
-      { number: 1, title: '유일' },
+      { number: 1, title: '유일',
+        description: '아무 걱정 말고 너만의 세상으로 힘껏 날아오르라는 헌신적인 응원. 언제든 돌아올 수 있는 영원한 안식처가 되겠다는 사랑.' },
     ],
   },
+  // ── 9 ──────────────────────────────────────────────────────────────
   {
     id: 9, title: '푸른동경', year: '2024', type: 'EP', color: col(9),
+    description: '파랑은 차갑기도 하고 가장 뜨거운 불꽃의 색이기도 하다. 그리움은 동시에 따뜻하고 차갑다.',
     tracks: [
-      { number: 1, title: '푸른동경' },
-      { number: 2, title: '일렁이는 말들' },
-      { number: 3, title: '얼굴' },
-      { number: 4, title: '어떻게 하나요' },
-      { number: 5, title: '밤' },
+      { number: 1, title: '푸른동경',
+        description: '깨지기 쉬운 희망과 자유와 절망 사이의 긴장. 내 마음속 파란 말들을 다 비워내면 적당히 사랑하는 법을 배울 수 있을까.' },
+      { number: 2, title: '일렁이는 말들',
+        description: '당신의 따뜻한 말들이 일으키는 파문이 내 삶의 방향을 바꾼다. 우리만의 세계 안에서 일렁이는 이야기.' },
+      { number: 3, title: '얼굴',
+        description: '살아온 시간들이 얼굴에 드러난다는 것. 당신에게 그런 든든한 얼굴이 되어주고 싶다는 소망.' },
+      { number: 4, title: '어떻게 하나요',
+        description: '이별 후 기억들이 힘을 잃어가는 과정. 이 공허함을 어떻게 견뎌야 하는지 묻는 곡.' },
+      { number: 5, title: '밤',
+        description: '늦은 밤, 당신을 생각하며 세상 모든 신들에게 아름다운 꿈을 꾸길 기도하는 마음.' },
     ],
   },
+  // ── 10 ─────────────────────────────────────────────────────────────
   {
     id: 10, title: '미안해 (feat. 범진)', year: '2023', type: '싱글', color: col(10),
+    description: '서로 최선을 다했다고 믿었지만 그렇지 않았음을 뒤늦게 깨닫는 두 사람의 이야기.',
     tracks: [
-      { number: 1, title: '미안해 (feat. 범진)' },
+      { number: 1, title: '미안해 (feat. 범진)',
+        description: '남녀의 대조적인 감정을 담은 어쿠스틱 듀엣. 두 사람이 반복해서 건네는 \'미안해\'는 서로 전혀 다른 무게를 지닌다.' },
     ],
   },
+  // ── 11 ─────────────────────────────────────────────────────────────
   {
     id: 11, title: '이토록 아름다운 오월에', year: '2023', type: '싱글', color: col(11),
+    description: '오월은 이토록 아름다워서 자꾸만 사랑을 하게 된다.',
     tracks: [
-      { number: 1, title: '눈맞춤' },
-      { number: 2, title: 'May' },
-      { number: 3, title: '문득' },
+      { number: 1, title: '눈맞춤',
+        description: '일찍 눈을 뜨고 자는 상대를 바라보다 눈이 마주치는 순간. 그 눈빛으로 사랑을 전하려는 아침의 이야기.' },
+      { number: 2, title: 'May',
+        description: '완전하지 않았던 관계 속에서도 오월의 아름다움이 상실을 더 아프게 한다. 당신이 사랑했던 것들을 기억하겠다는 약속.' },
+      { number: 3, title: '문득',
+        description: '밥 먹고 양치하고 커피 마시는 평범한 순간순간, 문득 솟구치는 애정. 참을 수 없어 말해버리고 싶은 충동.' },
     ],
   },
-
-  // ── id 12–17 ───────────────────────────────────────────────────────
+  // ── 12 ─────────────────────────────────────────────────────────────
   {
     id: 12, title: '꿈결', year: '2022', type: 'EP', color: col(12),
+    description: '잠에 들면 나의 눈꺼풀 위에서 춤을 추는 그대에게.',
     tracks: [
-      { number: 1, title: 'just say it' },
-      { number: 2, title: 'my butterfly' },
-      { number: 3, title: '전화' },
-      { number: 4, title: '비스듬히' },
-      { number: 5, title: '매직카펫' },
+      { number: 1, title: 'just say it',
+        description: '모든 것을 자유롭게 내주고 그 이후의 공허함을 견디는 법을 배우는 것에 대하여.' },
+      { number: 2, title: 'my butterfly',
+        description: '함께 심은 꽃이 피어날 수 있도록 돌아와 달라는 간절한 바람.' },
+      { number: 3, title: '전화',
+        description: '전화기 너머 목소리에 고개를 들어 바라보면, 습관처럼 굳어진 패턴을 깨는 순간의 아름다움.' },
+      { number: 4, title: '비스듬히',
+        description: '꼿꼿이 서서 버티는 것이 힘에 부칠 때, 서로에게 기대어 몸을 비스듬히 기울여보자는 위로.' },
+      { number: 5, title: '매직카펫',
+        description: '눈을 뜨기 전 꿈속으로 찾아가 기적이 실제로 존재함을 보여주고 싶은 마음.' },
     ],
   },
+  // ── 13 ─────────────────────────────────────────────────────────────
   {
     id: 13, title: '우리는 우리를', year: '2022', type: '싱글', color: col(13),
+    description: '우리는 서로를 취약하고 불안하게 만들기도 하지만, 동시에 가장 강하게 만들어준다.',
     tracks: [
-      { number: 1, title: '모래성' },
-      { number: 2, title: '척' },
+      { number: 1, title: '모래성',
+        description: '무한한 신뢰와 사랑을 받으면서도 자신을 의심하는 나약함. 그럼에도 우리가 쌓아온 작은 성, 나의 우주를 지키겠다는 다짐.' },
+      { number: 2, title: '척',
+        description: '거칠고 불분명한 순간들을 함께 헤쳐나가는 법을 배우는 것. 속마음과 표현이 다를 때도 깊은 헌신으로 이해를 구하는 노래.' },
     ],
   },
+  // ── 14 ─────────────────────────────────────────────────────────────
   {
     id: 14, title: '사랑의 모양', year: '2021', type: 'EP', color: col(14),
+    description: '사랑은 이토록 다양한 모양으로 존재하네요.',
     tracks: [
-      { number: 1, title: '안부' },
-      { number: 2, title: 'flower rain' },
-      { number: 3, title: 'moonbow' },
-      { number: 4, title: '춤추자' },
-      { number: 5, title: '사랑' },
+      { number: 1, title: '안부',
+        description: '당신의 하루 하루가 평온하고 행복하기를 바라는 마음을 담아 안부를 묻는 노래.' },
+      { number: 2, title: 'flower rain',
+        description: '소중한 기억들을 품으며 꽃에게 사랑을 묻는 사람. 나약하지만 애틋한 그리움.' },
+      { number: 3, title: 'moonbow',
+        description: '문보우(달무지개)를 발견한 사람에게 행운이 깃든다는 이야기. 당신이 내 문보우라는 고백.' },
+      { number: 4, title: '춤추자',
+        description: '풀리지 않는 걱정들을 잠시 내려두고, 남은 시간을 함께 기쁘게 춤추자는 청.' },
+      { number: 5, title: '사랑',
+        description: '나를 동시에 약하게도, 강하게도 만드는 특별한 종류의 사랑에 대한 성찰.' },
     ],
   },
+  // ── 15 ─────────────────────────────────────────────────────────────
   {
     id: 15, title: '우리가 핀 2 - 조각', year: '2021', type: 'EP', color: col(15),
+    description: '후회와 그리움, 누군가를 향하는 마음의 조각들.',
     tracks: [
-      { number: 1, title: '선잠' },
-      { number: 2, title: '다 사랑 같아 (Vocal 짙은)' },
-      { number: 3, title: '좋아하고만 싶어 (Vocal 위수)' },
-      { number: 4, title: '왜 우리가 (Vocal 이아람)' },
-      { number: 5, title: '바다' },
+      { number: 1, title: '선잠',
+        description: '잊었다고 생각했는데 예고도 없이 꿈에 나타난 그 사람 때문에 엉망이 된 마음.' },
+      { number: 2, title: '다 사랑 같아 (Vocal 짙은)',
+        description: '유난히 선명하게 남은 기억들이 잘 버텨오던 마음을 한순간에 무너뜨린다.' },
+      { number: 3, title: '좋아하고만 싶어 (Vocal 위수)',
+        description: '누군가를 좋아하는 마음 하나로 시간 가는 줄 모르며 흘러가던 나날들이 시들어버릴까 두려운 감정.' },
+      { number: 4, title: '왜 우리가 (Vocal 이아람)',
+        description: '당신의 다정함과 나의 이기심 속에서 가장 중요한 것을 모르고 있었음을 깨닫는 순간.' },
+      { number: 5, title: '바다',
+        description: '그대라는 바다를 가지고 싶다. 잔잔함과 폭풍 모두 기꺼이 함께 견디겠다는 고백.' },
     ],
   },
+  // ── 16 ─────────────────────────────────────────────────────────────
   {
     id: 16, title: '우리가 핀 1 - 잔상(殘像)', year: '2020', type: 'EP', color: col(16),
+    description: '사랑했던 정원에서 피어난 우리의 모습. 아프기도, 아프도록 아름답기도.',
     tracks: [
-      { number: 1, title: '끝나지 않는 계절의 기억에 머물러줘 (With 예빛)' },
-      { number: 2, title: 'stay with me (With 최유리)' },
-      { number: 3, title: '권태 (With 보라미유)' },
-      { number: 4, title: 'lullaby, cat (With 루싸이트 토끼)' },
-      { number: 5, title: '시인' },
-      { number: 6, title: 'sunset (With 이강승)' },
+      { number: 1, title: '끝나지 않는 계절의 기억에 머물러줘 (With 예빛)',
+        description: '흩날리는 벚꽃 향기처럼 남겨진 기억 속에 머물러 달라는 간청.' },
+      { number: 2, title: 'stay with me (With 최유리)',
+        description: '적당한 인사를 건널 말을 찾지 못해 침묵이 생기는 순간, 그 공백을 메우려는 간절함.' },
+      { number: 3, title: '권태 (With 보라미유)',
+        description: '한때 사랑했던 사람의 조용한 존재가 이제 외로운 공허함이 되어버린 권태.' },
+      { number: 4, title: 'lullaby, cat (With 루싸이트 토끼)',
+        description: '꿈속에서의 재회를 꿈꾸며, 그 꿈 안에서 함께하길 바라는 자장가.' },
+      { number: 5, title: '시인',
+        description: '당신의 시가 아름다운 것은 당신이 좋은 사람이기 때문이라는 찬사.' },
+      { number: 6, title: 'sunset (With 이강승)',
+        description: '영화의 한 장면처럼 노을 앞에 나란히 선 순간을 담은 곡.' },
     ],
   },
+  // ── 17 ─────────────────────────────────────────────────────────────
   {
     id: 17, title: '사월', year: '2020', type: '싱글', color: col(17),
+    description: '꽃이 만개한 봄에도 잊히지 않는 그리움과 끝나지 않는 기다림.',
     tracks: [
-      { number: 1, title: '사월' },
+      { number: 1, title: '사월',
+        description: '완연한 봄, 꽃이 피어도 사라지지 않는 그리움. 잊어서는 안 되는 기억과 여전히 이어지는 기다림을 담은 사월.' },
     ],
   },
-
-  // ── id 18–23 ───────────────────────────────────────────────────────
+  // ── 18 ─────────────────────────────────────────────────────────────
   {
     id: 18, title: '미지', year: '2019', type: '싱글', color: col(18),
+    description: '알 수 없기에 더 신비롭고, 동시에 두려운 마음을 담은 세 곡.',
     tracks: [
-      { number: 1, title: '우리는 너무 많은 것을 (WE)' },
-      { number: 2, title: '미지 (Q)' },
-      { number: 3, title: '밤산책 (Walkin\' in the moonlight)' },
+      { number: 1, title: '우리는 너무 많은 것을 (WE)',
+        description: '부서짐을 통해서도 새로운 성장이 가능함을 이야기하는 곡. 지나온 기억들의 회복력.' },
+      { number: 2, title: '미지 (Q)',
+        description: '연결의 순간들이 진정한 의미를 지녔는지, 아니면 덧없이 스쳐지나간 것인지 묻는 진실성에 대한 탐구.' },
+      { number: 3, title: '밤산책 (Walkin\' in the moonlight)',
+        description: '밤 산책에서 상대방의 걸음걸이에 맞추어 속도를 늦추는 화자. 연결과 말없는 교감을 그린 곡.' },
     ],
   },
+  // ── 19 ─────────────────────────────────────────────────────────────
   {
     id: 19, title: '내가 사랑하는 시간', year: '2019', type: 'EP', color: col(19),
+    description: '따뜻한 향수와 사랑, 감정의 온기를 담은 미니 앨범.',
     tracks: [
-      { number: 1, title: '그만할게' },
-      { number: 2, title: '긴 긴 인사 (Feat.이민혁)' },
-      { number: 3, title: '시무룩' },
-      { number: 4, title: '너, 나' },
-      { number: 5, title: '내가 사랑하는 시간' },
+      { number: 1, title: '그만할게',
+        description: '진심이 없는 감정을 쏟아내는 것을 그만하기로 결심하는 독백. 의미 없는 말들 속에서 의미를 찾다가 놓아주는 이야기.' },
+      { number: 2, title: '긴 긴 인사 (Feat.이민혁)',
+        description: '익숙함이 소중한 것을 둔감하게 만드는 방식에 대한 탐구.' },
+      { number: 3, title: '시무룩',
+        description: '사랑하는 사람이 다른 누군가와 사랑에 빠지는 것을 지켜보는 복잡한 감정. 질투와 상처, 그러나 지워지지 않는 애정.' },
+      { number: 4, title: '너, 나',
+        description: '\'너는 너고 나는 나, 그러나 나는 나\'라는 미니멀한 성찰.' },
+      { number: 5, title: '내가 사랑하는 시간',
+        description: '달콤한 말들에 기꺼이 항복하고 소중한 순간들 속에서 자라나는 감정. 이것이 사랑인지 스스로 묻는 노래.' },
     ],
   },
+  // ── 20 ─────────────────────────────────────────────────────────────
   {
     id: 20, title: 'Rain', year: '2019', type: '싱글', color: col(20),
+    description: '봄의 계절, 고요히 울려 퍼지는 빗소리.',
     tracks: [
-      { number: 1, title: 'Rain' },
-      { number: 2, title: 'Rainbow' },
+      { number: 1, title: 'Rain',
+        description: '비가 올 때 떠오르는 사람이 있으면 그 사람을 좋아하는 거라던데. 비 오는 날 어느 한 사람이 궁금해지는 설렘.' },
+      { number: 2, title: 'Rainbow',
+        description: '누군가의 세계 안으로 들어서는 순간 발끝이 닿는 곳마다 찬란한 무지개 빛으로 물드는 이야기.' },
     ],
   },
+  // ── 21 ─────────────────────────────────────────────────────────────
   {
     id: 21, title: 'Be Your Christmas', year: '2018', type: 'EP', color: col(21),
+    description: '어릴 적 손꼽아 기다리던 크리스마스처럼, 당신이 내 크리스마스가 되어줘.',
     tracks: [
-      { number: 1, title: 'Snowball (Feat. 바닐라 어쿠스틱)' },
-      { number: 2, title: 'Be Your Christmas (Feat. 볼빨간사춘기)' },
-      { number: 3, title: '그 겨울 (Feat. 스무살 & 레터플로우)' },
-      { number: 4, title: 'Like Christmas (2018 Remastered)' },
-      { number: 5, title: 'Just Christmas (2018 Remastered)' },
+      { number: 1, title: 'Snowball (Feat. 바닐라 어쿠스틱)',
+        description: '눈덩이처럼 나의 작은 세계를 가볍게 흔들어버리는 당신에 대한 노래.' },
+      { number: 2, title: 'Be Your Christmas (Feat. 볼빨간사춘기)',
+        description: '\'당신은 나의 크리스마스, 나도 그대의 크리스마스가 될게요.\' 서로의 크리스마스가 되고 싶은 듀엣.' },
+      { number: 3, title: '그 겨울 (Feat. 스무살 & 레터플로우)',
+        description: '수많은 겨울이 지나도 지워지지 않는 그 겨울의 기억.' },
+      { number: 4, title: 'Like Christmas (2018 Remastered)',
+        description: '당신 곁에 있는 모든 순간이 크리스마스처럼 느껴진다는 고백의 리마스터.' },
+      { number: 5, title: 'Just Christmas (2018 Remastered)',
+        description: '모두에게 메리 크리스마스를. 따뜻한 밀크티 같은 재즈 힐링 사운드의 리마스터.' },
     ],
   },
+  // ── 22 ─────────────────────────────────────────────────────────────
   {
     id: 22, title: '그 여름', year: '2018', type: '싱글', color: col(22),
+    description: '눈부시게 빛나던 그 여름. 어설픔이 오히려 더 아름다웠던 청춘의 계절.',
     tracks: [
-      { number: 1, title: '그 여름' },
+      { number: 1, title: '그 여름',
+        description: '\'내가 어릴 때, 당신이 어릴 때\'의 미숙함이 오히려 여름을 더 빛나게 했던 이야기.' },
     ],
   },
+  // ── 23 ─────────────────────────────────────────────────────────────
   {
     id: 23, title: '우리집', year: '2018', type: 'EP', color: col(23),
+    description: '집으로의 초대는 특별하다. 나의 취향과 습관과 정체성이 담긴 공간으로 당신을 초대하는 이야기.',
     tracks: [
-      { number: 1, title: '우리집에 놀러와요' },
-      { number: 2, title: '바람 (Wish)' },
-      { number: 3, title: '안아줄까 (Feat. 주성근 of 1415)' },
-      { number: 4, title: '졸려요 (Zzz)' },
-      { number: 5, title: '여행 (Dear)' },
-      { number: 6, title: '장면 (Scene)' },
+      { number: 1, title: '우리집에 놀러와요',
+        description: '나의 개인적인 공간을 공유하고 자신을 드러내는 것의 의미.' },
+      { number: 2, title: '바람 (Wish)',
+        description: '피할 새도 없이 불어오는 바람처럼 어느새 불어온 사랑. 자연스러운 감정의 필연성.' },
+      { number: 3, title: '안아줄까 (Feat. 주성근 of 1415)',
+        description: '감정적 취약함과 짝사랑의 고통. 사랑받지 못할지도 모른다는 두려움.' },
+      { number: 4, title: '졸려요 (Zzz)',
+        description: '늦은 밤의 피로와 아스라이 피어나는 궁금증. 이렇게 나른한 내 모습도 흥미롭게 봐줄까.' },
+      { number: 5, title: '여행 (Dear)',
+        description: '낯설고 아름다운 풍경을 걷다 그리운 사람을 떠올리는 편지 같은 여행기.' },
+      { number: 6, title: '장면 (Scene)',
+        description: '눈을 감아야만 더 선명해지는 장면들이 있다. 기억 속에 선명하게 남은 순간들.' },
     ],
   },
-
-  // ── id 24–29 ───────────────────────────────────────────────────────
+  // ── 24 ─────────────────────────────────────────────────────────────
   {
     id: 24, title: '바람 (Wish)', year: '2017', type: '싱글', color: col(24),
+    description: '알 수 없는 이유로 자꾸만 한숨을 쉬고, 돌아보게 되는 그리움.',
     tracks: [
-      { number: 1, title: '바람 (Wish)' },
+      { number: 1, title: '바람 (Wish)',
+        description: '내 마음 속으로 그리고 손끝으로 바람처럼 불어오는 당신. 피할 수 없이 찾아오는 감정의 필연성.' },
     ],
   },
+  // ── 25 ─────────────────────────────────────────────────────────────
   {
     id: 25, title: '여름밤', year: '2017', type: '싱글', color: col(25),
+    description: '더위를 피해 올려다본 밤하늘 위로 쏟아지는 설레는 감정들.',
     tracks: [
-      { number: 1, title: '여름밤' },
+      { number: 1, title: '여름밤',
+        description: '열대야에 지친 등 뒤로 방울지는 여름처럼, 당신을 향한 나의 마음도 숨길 수 없다.' },
     ],
   },
+  // ── 26 ─────────────────────────────────────────────────────────────
   {
     id: 26, title: 'Like Christmas', year: '2016', type: '싱글', color: col(26),
+    description: '당신이 내 곁에서 이름을 불러줄 때마다 크리스마스처럼 느껴진다.',
     tracks: [
-      { number: 1, title: 'Like Christmas' },
+      { number: 1, title: 'Like Christmas',
+        description: '당신이 곁에 있고 내 이름을 부를 때마다 크리스마스 같은 설레임을 주는 고백.' },
     ],
   },
+  // ── 27 ─────────────────────────────────────────────────────────────
   {
     id: 27, title: '마음', year: '2016', type: '정규', color: col(27),
+    description: '설렘, 벅참, 서툴지만 애틋했던 감정들. 단정 지을 수 없이 뒤섞인 그 마음에 대하여.',
     tracks: [
-      { number:  1, title: '어려운 말' },
-      { number:  2, title: 'foggy' },
-      { number:  3, title: '처음이라서 (With 이루마)' },
-      { number:  4, title: 'your color' },
-      { number:  5, title: '월화수목금토일' },
-      { number:  6, title: '두 손 너에게 (With 최백호)' },
-      { number:  7, title: '시절' },
-      { number:  8, title: '싱숭생숭해' },
-      { number:  9, title: '보고싶어 (With 레터플로우)' },
-      { number: 10, title: '별' },
-      { number: 11, title: '기념일' },
-      { number: 12, title: '고마워' },
+      { number:  1, title: '어려운 말',
+        description: '삼켜버린 말들과 기다림의 공허함. 과거의 기억에 갇혀 오지 않는 사람을 기다리는 이야기.' },
+      { number:  2, title: 'foggy',
+        description: '아무도 원하지 않는 대화가 끝없이 이어지는 안갯속. 서로에게 서서히 항복해가는 연인의 초상.' },
+      { number:  3, title: '처음이라서 (With 이루마)',
+        description: '서툴고 부족했던 첫 순간들이 나중에 되돌아보면 얼마나 벅차게 느껴지는지. 이루마와 함께한 피아노 듀엣.' },
+      { number:  4, title: 'your color',
+        description: '사랑에 빠지는 순간 마치 아이의 그림처럼 온 세상이 잔상으로 물드는 경험.' },
+      { number:  5, title: '월화수목금토일',
+        description: '일상의 모든 요일이 누군가의 존재로 흘러간다. 그 사람으로 가득 찬 평범한 하루들.' },
+      { number:  6, title: '두 손 너에게 (With 최백호)',
+        description: '할아버지와 손녀 혹은 아버지와 딸이 밤하늘을 바라보며 나누는 조용하고 다정한 대화.' },
+      { number:  7, title: '시절',
+        description: '변하지 않을 것이라 믿었던 우리의 매일들이 많이 변해버렸음을 깨닫는 쓸쓸한 감사.' },
+      { number:  8, title: '싱숭생숭해',
+        description: '좋아하는 사람 앞에서 어색하고 부자연스러워지는 풋풋한 설렘. 문자를 보내며 떨리는 마음.' },
+      { number:  9, title: '보고싶어 (With 레터플로우)',
+        description: '보고 싶은 사람을 향해 가는 길, 시간이 유독 천천히 흐르는 것처럼 느껴진다.' },
+      { number: 10, title: '별',
+        description: '저 멀리서 빛나는 당신을 향해 올려다보며 전하는 애정.' },
+      { number: 11, title: '기념일',
+        description: '오직 둘에게만 특별한 날, 혼자 걷는 길에서 아무데도 없는 그 사람을 찾아 헤매는 고독한 독백.' },
+      { number: 12, title: '고마워',
+        description: '멀리 떠나간 누군가에게 조용하고 담담하게 건네는 진심 어린 격려와 감사.' },
     ],
   },
+  // ── 28 ─────────────────────────────────────────────────────────────
   {
     id: 28, title: '시절', year: '2016', type: '싱글', color: col(28),
+    description: '그 시절 우리의 이야기. 변하지 않을 것이라 믿었던 매일이 돌아보면 너무 많이 변해있다.',
     tracks: [
-      { number: 1, title: '시절' },
+      { number: 1, title: '시절',
+        description: '그 시절 함께했던 기억들을 돌아보며 느끼는 씁쓸하고도 따뜻한 감사.' },
     ],
   },
+  // ── 29 ─────────────────────────────────────────────────────────────
   {
     id: 29, title: '두 손, 너에게 (Feat. 최백호)', year: '2015', type: '싱글', color: col(29),
+    description: '진심으로 위로가 필요한 순간을 위해. 최백호와 스웨덴세탁소가 함께 만든 위로의 노래.',
     tracks: [
-      { number: 1, title: '두 손, 너에게 (Feat. 최백호)' },
+      { number: 1, title: '두 손, 너에게 (Feat. 최백호)',
+        description: '뜻하지 않게 단둘이 남겨진 할아버지와 손녀. 밤하늘을 바라보며 나누는 다정하고 조용한 대화.' },
     ],
   },
-
-  // ── id 30–35 ───────────────────────────────────────────────────────
+  // ── 30 ─────────────────────────────────────────────────────────────
   {
     id: 30, title: '기념일', year: '2015', type: '싱글', color: col(30),
+    description: '오직 둘에게만 특별한 날, 전할 수 없는 쓸쓸한 독백.',
     tracks: [
-      { number: 1, title: '기념일' },
+      { number: 1, title: '기념일',
+        description: '조금 더 행복할 수도 있었던 그 날을 상상하며, 한때 설레었던 그 날을 기다리던 당신을 떠올리는 곡.' },
     ],
   },
+  // ── 31 ─────────────────────────────────────────────────────────────
   {
     id: 31, title: '고요', year: '2015', type: '싱글', color: col(31),
+    description: '이슬이 사는 숲속을 걷는 듯한 동화 같은 이야기. 자연의 고요한 속삭임을 담은 세 곡.',
     tracks: [
-      { number: 1, title: '이슬' },
-      { number: 2, title: '숲' },
-      { number: 3, title: '꽃' },
+      { number: 1, title: '이슬',
+        description: '흔들리는 나뭇잎 위의 이슬처럼 아슬아슬하고 순간적인 존재. 사랑을 이슬에 빗댄 몰입감 있는 숲의 분위기.' },
+      { number: 2, title: '숲',
+        description: '부모님과 함께한 숲 산책에서 느낀 포근한 감정. 자연의 풍요로움이 주는 안도감.' },
+      { number: 3, title: '꽃',
+        description: '자신이 얼마나 아름다운 존재인지 깨닫지 못하는 누군가에게 꽃의 비유로 전하는 이야기.' },
     ],
   },
+  // ── 32 ─────────────────────────────────────────────────────────────
   {
     id: 32, title: '순간', year: '2014', type: 'EP', color: col(32),
+    description: '지극히 평범하고 사소한 순간들이 내게 특별함을 전할 때.',
     tracks: [
-      { number: 1, title: 'The moment' },
-      { number: 2, title: 'Magical' },
-      { number: 3, title: '미안해 (feat. 레터플로우)' },
-      { number: 4, title: 'Why are you so cute?' },
-      { number: 5, title: 'Night' },
-      { number: 6, title: '꿈에 입장' },
-      { number: 7, title: '안돼' },
+      { number: 1, title: 'The moment',
+        description: '짝사랑하는 사람의 마음속에서 하루 종일 한 사람이 자리를 차지하고 있는 감정.' },
+      { number: 2, title: 'Magical',
+        description: '조건 없이 존재하는 것만으로 누군가에게 소중한 사람이 될 수 있다는 메시지. 스스로에게도 전하고 싶은 말.' },
+      { number: 3, title: '미안해 (feat. 레터플로우)',
+        description: '최선을 다했다고 믿었지만 그렇지 않았음을 깨닫는 남녀의 상반된 감정.' },
+      { number: 4, title: 'Why are you so cute?',
+        description: '스웨덴세탁소 첫 우쿨렐레 편곡 곡. 솔직하게 전하는 다정한 애정 표현.' },
+      { number: 5, title: 'Night',
+        description: '사랑에 빠지면 세상 모든 것이 \'우리\'를 위해 존재하는 것 같은 느낌. 모든 연인들의 마음.' },
+      { number: 6, title: '꿈에 입장',
+        description: '소중한 꿈에서 깨어나기 싫은 마음. 다시 잠들어 그 꿈 속으로 돌아가고 싶은 달콤한 아쉬움.' },
+      { number: 7, title: '안돼',
+        description: '잊고 싶지만 실제로는 잊고 싶지 않은 모순. 그 사람에게 직접 말을 건네듯 전달되는 곡.' },
     ],
   },
+  // ── 33 ─────────────────────────────────────────────────────────────
   {
     id: 33, title: '흩어진다', year: '2014', type: '싱글', color: col(33),
+    description: '스웨덴세탁소와 레터플로우의 감각적인 만남. 텅 비고 견디기 힘든 일상의 순간들 속에서 흩어지는 감정들.',
     tracks: [
-      { number: 1, title: '흩어진다' },
+      { number: 1, title: '흩어진다',
+        description: '공허하고 버거운 일상 속에서 감정들이 서서히 흩어지는 경험을 담은 협업곡.' },
     ],
   },
+  // ── 34 ─────────────────────────────────────────────────────────────
   {
     id: 34, title: 'Night', year: '2014', type: '싱글', color: col(34),
+    description: '밤 아래 두 사람이 천천히 흐르는 친밀한 순간. 성숙한 감성의 사운드.',
     tracks: [
-      { number: 1, title: 'Night' },
+      { number: 1, title: 'Night',
+        description: '사랑에 빠진 모든 연인들의 마음을 담은 곡. 사랑을 할 때 모든 것이 \'우리\'를 위해 존재하는 것 같은 그 감각.' },
     ],
   },
+  // ── 35 ─────────────────────────────────────────────────────────────
   {
     id: 35, title: '안돼', year: '2014', type: '싱글', color: col(35),
+    description: '봄이 오면 떠오르는 고통스러운 기억들. 아무리 지우려 해도 지워지지 않는 일상의 흔적들.',
     tracks: [
-      { number: 1, title: '안돼' },
+      { number: 1, title: '안돼',
+        description: '함께했던 평범한 것들이 너무 일상적이어서 오히려 지워낼 수 없다. 밝은 햇살을 손으로 가리는 것처럼 결국 소용없는 망각의 시도.' },
     ],
   },
-
-  // ── id 36–41 ───────────────────────────────────────────────────────
+  // ── 36 ─────────────────────────────────────────────────────────────
   {
     id: 36, title: '잠들 때까지', year: '2013', type: '정규', color: col(36),
+    description: '마음 편히 네가 잠들 때까지 노래를 들려줄게. 낯설지만 공감되는 감정들을 담은 데뷔 앨범.',
     tracks: [
-      { number:  1, title: '답답한 새벽' },
-      { number:  2, title: '쓰여지지 않은 삶' },
-      { number:  3, title: '목소리 (with 정기고)' },
-      { number:  4, title: '그래도 나 사랑하지' },
-      { number:  5, title: '화해쏭' },
-      { number:  6, title: '버려진 것들' },
-      { number:  7, title: '그 곳의 우린 (with 피콕)' },
-      { number:  8, title: '다시, 봄' },
-      { number:  9, title: '달 달 무슨 달 (with 남보라)' },
-      { number: 10, title: '단 한 번도 넌' },
-      { number: 11, title: '내 친구 기타' },
-      { number: 12, title: 'Good night baby' },
+      { number:  1, title: '답답한 새벽',
+        description: '잠드는 것이 일상의 실수들로부터 도피처 같아지는 새벽. 깊어지는 밤이 오히려 그리움을 심화시킨다.' },
+      { number:  2, title: '쓰여지지 않은 삶',
+        description: '영화 \'더 울프 오브 월 스트리트\' 대사에서 영감을 받은 곡. 계획되지 않은 삶의 순간들에 대하여.' },
+      { number:  3, title: '목소리 (with 정기고)',
+        description: '이미 마음이 떠난 남자와 이별을 감지하는 여자. 함께 걸어가면서도 점점 멀어지는 두 사람.' },
+      { number:  4, title: '그래도 나 사랑하지',
+        description: '변하지 않는 사랑을 계속 확인받으려는 마음과, 시간이 흘러도 사랑하는 마음.' },
+      { number:  5, title: '화해쏭',
+        description: '말다툼은 금방 커지지만 사과는 망설여지는 편안한 관계. 빠르게 싸우고 천천히 화해하는 연인들.' },
+      { number:  6, title: '버려진 것들',
+        description: '도시에 버려진 사물들에 인간적 감정을 부여하며 도시 생활 이면의 이기심을 드러내는 곡.' },
+      { number:  7, title: '그 곳의 우린 (with 피콕)',
+        description: '소중한 기억이 담긴 그 장소로 함께 돌아가고 싶다는 공동의 바람.' },
+      { number:  8, title: '다시, 봄',
+        description: '봄이 돌아온 지금, 과거의 그 날을 새로운 시선으로 바라보는 성찰.' },
+      { number:  9, title: '달 달 무슨 달 (with 남보라)',
+        description: '달을 바라보며 잠 못 드는 그리움. 전통 동요를 현대적으로 재해석한 협업곡.' },
+      { number: 10, title: '단 한 번도 넌',
+        description: '관계 속에서 감추는 면들에 대한 답답함. 모든 작은 것까지 알고 싶지만 상대는 자신을 드러내지 않는다.' },
+      { number: 11, title: '내 친구 기타',
+        description: '9년간의 기타와의 사랑을 유쾌하게 노래한 솔로 트랙. 단 한 번의 녹음으로 완성.' },
+      { number: 12, title: 'Good night baby',
+        description: '누군가의 삶에 더 이상 없는 존재이지만 그래도 편안한 꿈을 빌어주는 이별 후 인사.' },
     ],
   },
+  // ── 37 ─────────────────────────────────────────────────────────────
   {
     id: 37, title: '목소리', year: '2013', type: '싱글', color: col(37),
+    description: '정기고와 스웨덴세탁소의 감성 듀엣. R&B Soul 장르의 만남.',
     tracks: [
-      { number: 1, title: '목소리 (with 정기고)' },
+      { number: 1, title: '목소리 (with 정기고)',
+        description: '이미 마음이 떠난 남자와 이별을 예감하는 여자가 불확실한 결말을 향해 함께 걸어가는 관계의 긴장감.' },
     ],
   },
+  // ── 38 ─────────────────────────────────────────────────────────────
   {
     id: 38, title: '버려진 것들', year: '2013', type: '싱글', color: col(38),
+    description: '오염되지 않은 소녀들이 쓴 기묘한 이야기들. 도시의 숨겨진 이면을 탐구.',
     tracks: [
-      { number: 1, title: '버려진 것들' },
+      { number: 1, title: '버려진 것들',
+        description: '도시에 버려진 사물들에 인간적 감정을 투영하는 곡. 아름다운 기억만 간직하는 도시 생활의 이면과 위선.' },
     ],
   },
+  // ── 39 ─────────────────────────────────────────────────────────────
   {
     id: 39, title: '다시, 봄', year: '2013', type: '싱글', color: col(39),
+    description: '봄의 한가운데에서 한때 빛났던 그 날을 새로운 눈으로 바라보는 이야기.',
     tracks: [
-      { number: 1, title: '다시, 봄' },
+      { number: 1, title: '다시, 봄',
+        description: '눈을 감으면 떠오르는 흐릿한 기억들을 붙잡으려는 노력. 한때 빛났지만 이제 더 이상 아름답지 않은 추억.' },
     ],
   },
+  // ── 40 ─────────────────────────────────────────────────────────────
   {
     id: 40, title: '단 한 번도 넌', year: '2013', type: '싱글', color: col(40),
+    description: '추상과 감정이입, 그 위에 올려진 목소리.',
     tracks: [
-      { number: 1, title: '단 한 번도 넌' },
-      { number: 2, title: '쓰여지지 않은 삶' },
+      { number: 1, title: '단 한 번도 넌',
+        description: '사소한 것까지 다 알고 싶지만 상대는 언제나 자신을 감추는 답답함. 관계 안에서 느끼는 거리감.' },
+      { number: 2, title: '쓰여지지 않은 삶',
+        description: '살아온 삶이 아직 쓰이지 않았다는 것, 그리고 앞으로 펼쳐질 무한한 가능성에 대하여.' },
     ],
   },
+  // ── 41 ─────────────────────────────────────────────────────────────
   {
     id: 41, title: '달 달 무슨 달', year: '2013', type: '싱글', color: col(41),
+    description: '세 여자의 목소리로 전하는 희망과 그리움의 노래. 남보라와 함께.',
     tracks: [
-      { number: 1, title: '달 달 무슨 달' },
+      { number: 1, title: '달 달 무슨 달',
+        description: '잠을 청하려 달을 바라보지만 달이 아름다울수록 그 사람 생각이 더 짙어진다. 보고픔에 잠들지 못하는 밤.' },
     ],
   },
-
-  // ── id 42–45 · rear column ─────────────────────────────────────────
+  // ── 42 ─────────────────────────────────────────────────────────────
   {
     id: 42, title: 'Just Christmas', year: '2012', type: '싱글', color: col(42),
+    description: '스웨덴세탁소와 함께 기다리는 크리스마스의 기적. 따스한 밀크티 같은 힐링 재즈.',
     tracks: [
-      { number: 1, title: 'Just Christmas' },
+      { number: 1, title: 'Just Christmas',
+        description: '예리한 기타 사운드 대신 따뜻하고 부드러운 재즈로 감성을 촉촉하게 적시는 크리스마스 헌정곡.' },
     ],
   },
+  // ── 43 ─────────────────────────────────────────────────────────────
   {
     id: 43, title: 'From. Paris', year: '2012', type: 'EP', color: col(43),
+    description: '청춘을 보내는 솔직한 감정들. 지극히 평범한 밴드 멤버들의 이야기.',
     tracks: [
-      { number: 1, title: '입맛이 없어요' },
-      { number: 2, title: 'From. Paris' },
-      { number: 3, title: 'As For Me' },
-      { number: 4, title: 'Paradise' },
-      { number: 5, title: '동행' },
-      { number: 6, title: 'Happy Birthday Waltz' },
-      { number: 7, title: '우리가 있던 시간' },
+      { number: 1, title: '입맛이 없어요',
+        description: '따뜻함을 나눠주던 사람을 잃은 슬픔으로 식욕을 잃는 이야기.' },
+      { number: 2, title: 'From. Paris',
+        description: '짝사랑하던 친구가 파리에서 새로운 사랑을 만났다는 편지. 그 새 사랑에게 친구를 맡기는 마음.' },
+      { number: 3, title: 'As For Me',
+        description: '헤어짐이 최선이었음을 알면서도 계속 사랑하는 여자의 내면 독백.' },
+      { number: 4, title: 'Paradise',
+        description: '사랑을 하면 누구나 철없어진다는 공감의 노래. 사랑 앞에서 유치해지는 것의 위안.' },
+      { number: 5, title: '동행',
+        description: '삶을 함께 걸어가는 소중한 사람들에 대한 찬사. 행복과 활력을 주는 동행의 의미.' },
+      { number: 6, title: 'Happy Birthday Waltz',
+        description: '왈츠 리듬으로 생일의 설렘을 표현한 곡. 사랑하는 사람의 기쁨을 위해 종일 고민하는 행복.' },
+      { number: 7, title: '우리가 있던 시간',
+        description: '\'우리\'였던 시간들에 대한 향수. 어설픈 사랑 표현을 이해하지 못했던 것에 대한 뒤늦은 미안함.' },
     ],
   },
+  // ── 44 ─────────────────────────────────────────────────────────────
   {
     id: 44, title: '우리가 있던 시간', year: '2012', type: '싱글', color: col(44),
+    description: '홍대 소무대를 중심으로 조용히 활동하는 스웨덴세탁소의 두 번째 싱글.',
     tracks: [
-      { number: 1, title: '우리가 있던 시간' },
-      { number: 2, title: 'As for me' },
+      { number: 1, title: '우리가 있던 시간',
+        description: '\'우리\'였던 순간들을 그리워하며, 상대의 서툰 사랑 표현을 알아채지 못한 것에 대한 후회.' },
+      { number: 2, title: 'As for me',
+        description: '헤어지는 것이 최선이었음을 인정하면서도 계속 사랑하고 있는 여자의 내면 고백.' },
     ],
   },
+  // ── 45 ─────────────────────────────────────────────────────────────
   {
     id: 45, title: 'Happy Birthday Waltz', year: '2012', type: '싱글', color: col(45),
+    description: '지친 어깨를 위한 힐링 사운드. 행복을 선물하고 싶은 마음을 담은 첫 번째 디지털 싱글.',
     tracks: [
-      { number: 1, title: 'Happy Birthday Waltz' },
-      { number: 2, title: 'Paradise' },
+      { number: 1, title: 'Happy Birthday Waltz',
+        description: '왈츠 리듬에 실린 생일의 기쁨. 사랑하는 사람을 기쁘게 할 방법을 종일 고민하는 행복한 설렘.' },
+      { number: 2, title: 'Paradise',
+        description: '사랑은 누구나 어리숙하게 만든다. 낭만적인 사랑이 불러오는 다양한 감정들을 사랑스럽게 담은 곡.' },
     ],
   },
 ]
