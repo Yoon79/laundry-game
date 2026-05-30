@@ -64,7 +64,7 @@ const ALBUMS: Album[] = [
     id: 4, title: 'RE: 나도!', year: '2025', type: '싱글', color: col(4),
     description: '말 대신 행동으로 사랑을 전하는 날들. 두 글자면 충분한 대답 — \'나도!\'',
     tracks: [
-      { number: 1, title: '그래 열대야 때문이겠지 뭐', duration: '3:18',
+      { number: 1, title: 'RE: 나도!', duration: '3:18',
         description: '매일 사랑한다 해도 내 마음의 반도 전하지 못한다는 걸 알면서도, 소소한 일상 속에서 당신이 사랑스러운 이유를 찾는 곡.' },
     ],
   },
