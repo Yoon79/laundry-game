@@ -42,21 +42,222 @@ function CeilingRail({ z }: { z: number }) {
   )
 }
 
+// ── Clothing type system ─────────────────────────────────────────────────
+
+type ClothingType = 'tshirt' | 'dress' | 'pants' | 'coat'
+
+// Per-type plane config: [width, height, centerY from rail]
+const CLOTHING_CONFIG: Record<ClothingType, [number, number, number]> = {
+  tshirt: [0.24, 0.29, -0.285],
+  dress:  [0.25, 0.44, -0.36],
+  pants:  [0.23, 0.40, -0.34],
+  coat:   [0.28, 0.47, -0.385],
+}
+
+// Clothing type pattern per row: 3 rows × 5 items
+const ITEM_TYPES: ClothingType[][] = [
+  ['coat',   'tshirt', 'dress',  'pants', 'tshirt'],
+  ['tshirt', 'dress',  'coat',   'tshirt', 'pants'],
+  ['dress',  'pants',  'tshirt', 'coat',  'dress'],
+]
+
+function makeClothingCanvas(type: ClothingType, color: string): THREE.CanvasTexture {
+  const W = 256, H = 384
+  const c = document.createElement('canvas')
+  c.width = W; c.height = H
+  const ctx = c.getContext('2d')!
+  ctx.clearRect(0, 0, W, H)
+
+  if (type === 'tshirt') {
+    // ── T-shirt ──
+    ctx.fillStyle = color
+    ctx.beginPath()
+    ctx.moveTo(W*0.36, 4)
+    ctx.lineTo(W*0.08, 4)
+    ctx.lineTo(W*0.0,  H*0.09)
+    ctx.lineTo(W*0.0,  H*0.24)
+    ctx.lineTo(W*0.21, H*0.20)
+    ctx.lineTo(W*0.20, H*0.96)
+    ctx.lineTo(W*0.80, H*0.96)
+    ctx.lineTo(W*0.79, H*0.20)
+    ctx.lineTo(W*1.0,  H*0.24)
+    ctx.lineTo(W*1.0,  H*0.09)
+    ctx.lineTo(W*0.92, 4)
+    ctx.lineTo(W*0.64, 4)
+    ctx.quadraticCurveTo(W*0.5, H*0.17, W*0.36, 4)
+    ctx.closePath()
+    ctx.fill()
+    // Collar stitch
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)'
+    ctx.lineWidth = 2.5
+    ctx.beginPath()
+    ctx.moveTo(W*0.36, 4)
+    ctx.quadraticCurveTo(W*0.5, H*0.17, W*0.64, 4)
+    ctx.stroke()
+    // Center fold
+    ctx.strokeStyle = 'rgba(0,0,0,0.07)'
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    ctx.moveTo(W*0.5, H*0.22); ctx.lineTo(W*0.5, H*0.93); ctx.stroke()
+    // Sleeve seam
+    ctx.beginPath()
+    ctx.moveTo(W*0.21, H*0.20); ctx.lineTo(W*0.0, H*0.09); ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(W*0.79, H*0.20); ctx.lineTo(W*1.0, H*0.09); ctx.stroke()
+
+  } else if (type === 'dress') {
+    // ── Dress/원피스 ──
+    ctx.fillStyle = color
+    ctx.beginPath()
+    ctx.moveTo(W*0.38, 4)
+    ctx.lineTo(W*0.12, 4)
+    ctx.lineTo(W*0.06, H*0.04)
+    ctx.lineTo(W*0.04, H*0.11)
+    ctx.lineTo(W*0.19, H*0.09)
+    ctx.lineTo(W*0.21, H*0.38)   // waist left
+    ctx.lineTo(W*0.04, H*0.97)   // skirt hem left (flared)
+    ctx.lineTo(W*0.96, H*0.97)   // skirt hem right
+    ctx.lineTo(W*0.79, H*0.38)   // waist right
+    ctx.lineTo(W*0.81, H*0.09)
+    ctx.lineTo(W*0.96, H*0.11)
+    ctx.lineTo(W*0.94, H*0.04)
+    ctx.lineTo(W*0.88, 4)
+    ctx.lineTo(W*0.62, 4)
+    ctx.quadraticCurveTo(W*0.5, H*0.15, W*0.38, 4)
+    ctx.closePath()
+    ctx.fill()
+    // Waist belt
+    ctx.fillStyle = 'rgba(0,0,0,0.14)'
+    ctx.fillRect(W*0.21, H*0.355, W*0.58, H*0.04)
+    // Skirt shading (both sides)
+    ctx.fillStyle = 'rgba(0,0,0,0.07)'
+    ctx.beginPath()
+    ctx.moveTo(W*0.21, H*0.40); ctx.lineTo(W*0.04, H*0.97); ctx.lineTo(W*0.28, H*0.97); ctx.closePath(); ctx.fill()
+    ctx.beginPath()
+    ctx.moveTo(W*0.79, H*0.40); ctx.lineTo(W*0.96, H*0.97); ctx.lineTo(W*0.72, H*0.97); ctx.closePath(); ctx.fill()
+    // Neckline stitch
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.moveTo(W*0.38, 4)
+    ctx.quadraticCurveTo(W*0.5, H*0.15, W*0.62, 4)
+    ctx.stroke()
+    // Skirt center fold
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)'
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    ctx.moveTo(W*0.5, H*0.40); ctx.lineTo(W*0.5, H*0.95); ctx.stroke()
+
+  } else if (type === 'pants') {
+    // ── Pants/바지 ──
+    ctx.fillStyle = color
+    ctx.beginPath()
+    ctx.moveTo(W*0.06, 4)
+    ctx.lineTo(W*0.94, 4)
+    ctx.lineTo(W*0.92, H*0.40)
+    ctx.lineTo(W*0.94, H*0.97)
+    ctx.lineTo(W*0.55, H*0.97)
+    ctx.lineTo(W*0.52, H*0.42)
+    ctx.quadraticCurveTo(W*0.5, H*0.49, W*0.48, H*0.42)
+    ctx.lineTo(W*0.45, H*0.97)
+    ctx.lineTo(W*0.06, H*0.97)
+    ctx.lineTo(W*0.08, H*0.40)
+    ctx.closePath()
+    ctx.fill()
+    // Waistband
+    ctx.fillStyle = 'rgba(0,0,0,0.13)'
+    ctx.fillRect(W*0.06, 4, W*0.88, H*0.09)
+    // Waistband highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.12)'
+    ctx.fillRect(W*0.06, 4, W*0.88, H*0.03)
+    // Belt loops
+    for (let i = 0; i < 4; i++) {
+      ctx.fillStyle = 'rgba(0,0,0,0.18)'
+      ctx.fillRect(W*(0.20 + i*0.20), 4, W*0.045, H*0.08)
+    }
+    // Leg seam
+    ctx.strokeStyle = 'rgba(0,0,0,0.10)'
+    ctx.lineWidth = 1.5
+    ctx.beginPath(); ctx.moveTo(W*0.5, H*0.10); ctx.lineTo(W*0.5, H*0.44); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(W*0.50, H*0.44); ctx.lineTo(W*0.46, H*0.95); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(W*0.50, H*0.44); ctx.lineTo(W*0.54, H*0.95); ctx.stroke()
+    // Outer leg crease
+    ctx.beginPath(); ctx.moveTo(W*0.30, H*0.10); ctx.lineTo(W*0.28, H*0.95); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(W*0.70, H*0.10); ctx.lineTo(W*0.72, H*0.95); ctx.stroke()
+
+  } else {
+    // ── Coat/코트 ──
+    ctx.fillStyle = color
+    ctx.beginPath()
+    ctx.moveTo(W*0.36, 4)
+    ctx.lineTo(W*0.06, 4)
+    ctx.lineTo(W*0.0,  H*0.08)
+    ctx.lineTo(W*0.0,  H*0.30)   // long sleeve
+    ctx.lineTo(W*0.17, H*0.27)
+    ctx.lineTo(W*0.16, H*0.97)
+    ctx.lineTo(W*0.84, H*0.97)
+    ctx.lineTo(W*0.83, H*0.27)
+    ctx.lineTo(W*1.0,  H*0.30)
+    ctx.lineTo(W*1.0,  H*0.08)
+    ctx.lineTo(W*0.94, 4)
+    ctx.lineTo(W*0.64, 4)
+    ctx.lineTo(W*0.70, H*0.22)   // right lapel point
+    ctx.lineTo(W*0.56, H*0.29)   // center V
+    ctx.lineTo(W*0.30, H*0.22)   // left lapel point
+    ctx.closePath()
+    ctx.fill()
+    // Lapel highlights
+    ctx.fillStyle = 'rgba(255,255,255,0.14)'
+    ctx.beginPath()
+    ctx.moveTo(W*0.36, 4); ctx.lineTo(W*0.30, H*0.22); ctx.lineTo(W*0.56, H*0.29); ctx.lineTo(W*0.56, 4); ctx.closePath(); ctx.fill()
+    ctx.beginPath()
+    ctx.moveTo(W*0.64, 4); ctx.lineTo(W*0.70, H*0.22); ctx.lineTo(W*0.56, H*0.29); ctx.lineTo(W*0.56, 4); ctx.closePath(); ctx.fill()
+    // Buttons
+    for (let i = 0; i < 4; i++) {
+      ctx.fillStyle = 'rgba(255,255,255,0.60)'
+      ctx.beginPath(); ctx.arc(W*0.5, H*(0.32 + i*0.13), 5, 0, Math.PI*2); ctx.fill()
+      ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1; ctx.stroke()
+    }
+    // Pockets
+    ctx.strokeStyle = 'rgba(0,0,0,0.14)'; ctx.lineWidth = 2
+    ctx.strokeRect(W*0.22, H*0.74, W*0.20, H*0.08)
+    ctx.strokeRect(W*0.58, H*0.74, W*0.20, H*0.08)
+    // Sleeve seam
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)'; ctx.lineWidth = 1.5
+    ctx.beginPath(); ctx.moveTo(W*0.17, H*0.27); ctx.lineTo(W*0.0, H*0.08); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(W*0.83, H*0.27); ctx.lineTo(W*1.0, H*0.08); ctx.stroke()
+    // Center front seam
+    ctx.beginPath(); ctx.moveTo(W*0.5, H*0.30); ctx.lineTo(W*0.5, H*0.95); ctx.stroke()
+  }
+
+  // Subtle fabric sheen highlight (left side)
+  ctx.fillStyle = 'rgba(255,255,255,0.04)'
+  ctx.fillRect(W*0.10, H*0.05, W*0.18, H*0.88)
+
+  const tex = new THREE.CanvasTexture(c)
+  return tex
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+
 interface HangingItemProps {
   position: [number, number, number]
   color: string
+  type: ClothingType
 }
 
-function HangingItem({ position, color }: HangingItemProps) {
+function HangingItem({ position, color, type }: HangingItemProps) {
+  const clothingTex = useMemo(() => makeClothingCanvas(type, color), [type, color])
+  const [pw, ph, cy] = CLOTHING_CONFIG[type]
+
   return (
-    // Group origin sits at the rail; geometry hangs downward
     <group position={position}>
       {/* Vertical hook stem */}
       <mesh position={[0, -0.05, 0]}>
         <cylinderGeometry args={[0.005, 0.005, 0.1, 6]} />
         <meshStandardMaterial color={HANGER_MAT_COLOR} metalness={0.75} roughness={0.25} />
       </mesh>
-      {/* Horizontal shoulder bar (along X) */}
+      {/* Horizontal shoulder bar */}
       <mesh position={[0, -0.115, 0]} rotation={[0, 0, Math.PI / 2]}>
         <cylinderGeometry args={[0.0035, 0.0035, 0.23, 6]} />
         <meshStandardMaterial color={HANGER_MAT_COLOR} metalness={0.75} roughness={0.25} />
@@ -71,10 +272,16 @@ function HangingItem({ position, color }: HangingItemProps) {
         <cylinderGeometry args={[0.003, 0.003, 0.05, 6]} />
         <meshStandardMaterial color={HANGER_MAT_COLOR} metalness={0.75} roughness={0.25} />
       </mesh>
-      {/* Garment — faces ±Z so player sees front as they walk through */}
-      <mesh position={[0, -0.36, 0]}>
-        <planeGeometry args={[0.21, 0.39]} />
-        <meshStandardMaterial color={color} roughness={0.88} side={THREE.DoubleSide} />
+      {/* Garment (canvas silhouette texture, transparent background) */}
+      <mesh position={[0, cy, 0]}>
+        <planeGeometry args={[pw, ph]} />
+        <meshStandardMaterial
+          map={clothingTex}
+          side={THREE.DoubleSide}
+          transparent
+          alphaTest={0.08}
+          roughness={0.85}
+        />
       </mesh>
     </group>
   )
@@ -248,7 +455,7 @@ export default function ClothesRoom() {
         <CeilingRail key={z} z={z} />
       ))}
 
-      {/* ── Hanging clothes — 3 rows × 5 items, color-sorted per row ── */}
+      {/* ── Hanging clothes — 3 rows × 5 items, clothing-type per item ── */}
       {RAIL_Z.map((z, railIdx) => (
         <group key={railIdx}>
           {CLOTHES_X.map((x, itemIdx) => (
@@ -256,6 +463,7 @@ export default function ClothesRoom() {
               key={itemIdx}
               position={[x, H - 0.04, z]}
               color={RAIL_COLORS[railIdx][itemIdx]}
+              type={ITEM_TYPES[railIdx][itemIdx]}
             />
           ))}
         </group>
