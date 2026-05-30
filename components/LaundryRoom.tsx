@@ -6,26 +6,26 @@ interface LaundryRoomProps {
   onSelectAlbum: (id: number) => void
 }
 
-// Room dimensions (half-sized)
-const W = 4    // width  (x: -2 to 2)
-const H = 3.0  // height (y: 0 to 3.0)
-const D = 11   // depth  (z: -5.5 to 5.5)
+// Room dimensions — expanded to hold 48 machines (46 albums)
+const W = 4     // width  (x: -2 to 2)
+const H = 3.0   // height (y: 0 to 3.0)
+const D = 17    // depth  (z: -8.5 to +8.5)
 
-const WAINSCOT_H = 0.9  // lower wall panel height
+const WAINSCOT_H = 0.9
 
-// Doorway opening into the clothes room (centered in back wall)
+// Doorway opening into the clothes room
 const DOOR_W = 2.0
 const DOOR_H = 2.2
 
-// 5 machine pairs — symmetric on z axis
-const MACHINE_Z = [-4, -2, 0, 2, 4]
+// 8 columns × 2 sides × 3 stacks = 48 machine slots (46 albums + 2 empty)
+// Front (z=7) = newest releases, back (z=-7) = oldest
+const MACHINE_Z = [7, 5, 3, 1, -1, -3, -5, -7]
 
-// Left machine center x: wall at -2, machine depth 0.34 → center at -2 + 0.17 = -1.83
-// Right machine center x: wall at +2, machine depth 0.34 → center at +2 - 0.17 = 1.83
 const MACHINE_X = 1.83
 
-// Stacking offset: body height 0.46 + control panel 0.027 + small gap
-const STACK_Y = 0.49
+// Three stacking levels
+const STACK_Y  = 0.49   // mid row
+const STACK_Y2 = 0.98   // top row
 
 function CheckerFloor() {
   const texture = useMemo(() => {
@@ -365,9 +365,11 @@ export default function LaundryRoom({ onSelectAlbum }: LaundryRoomProps) {
     <group>
       {/* ── Lighting ── */}
       <ambientLight intensity={0.5} color="#FFF5E4" />
+      <PendantLight z={-6} />
       <PendantLight z={-3} />
       <PendantLight z={0} />
       <PendantLight z={3} />
+      <PendantLight z={6} />
 
       {/* ── Floor ── */}
       <CheckerFloor />
@@ -477,48 +479,47 @@ export default function LaundryRoom({ onSelectAlbum }: LaundryRoomProps) {
       {/* Chalkboard sign on back wall */}
       <ChalkSign />
 
-      {/* ── Washing machines — 5 columns × 2 high × 2 sides, each clickable ── */}
-      {MACHINE_Z.map((z, i) => (
-        <group key={i}>
-          {/* ── Left column ── */}
-          <WashingMachine
-            position={[-MACHINE_X, 0, z]}
-            rotationY={Math.PI / 2}
-            colorIndex={i}
-            onSelect={() => onSelectAlbum(i)}
-          />
-          <WashingMachine
-            position={[-MACHINE_X, STACK_Y, z]}
-            rotationY={Math.PI / 2}
-            colorIndex={(i + 2) % 5}
-            onSelect={() => onSelectAlbum(i + MACHINE_Z.length)}
-          />
-          {/* Stacking bracket left */}
-          <mesh position={[-MACHINE_X + 0.17, STACK_Y - 0.005, z]}>
+      {/* ── Washing machines: 8 columns × 3 stacks × 2 sides = 48 slots ── */}
+      {/* Album IDs: col i → left[i*6, i*6+1, i*6+2], right[i*6+3, i*6+4, i*6+5] */}
+      {MACHINE_Z.map((z, col) => {
+        const base = col * 6
+        const bracket = (x: number, y: number) => (
+          <mesh position={[x, y - 0.005, z]}>
             <boxGeometry args={[0.008, 0.01, 0.30]} />
             <meshStandardMaterial color="#A09080" metalness={0.6} roughness={0.4} />
           </mesh>
+        )
+        const machine = (
+          x: number, y: number, rotY: number,
+          albumId: number, ci: number
+        ) => albumId < 46 ? (
+          <WashingMachine
+            key={`${x}-${y}-${z}`}
+            position={[x, y, z]}
+            rotationY={rotY}
+            colorIndex={ci}
+            onSelect={() => onSelectAlbum(albumId)}
+          />
+        ) : null
 
-          {/* ── Right column ── */}
-          <WashingMachine
-            position={[MACHINE_X, 0, z]}
-            rotationY={-Math.PI / 2}
-            colorIndex={i}
-            onSelect={() => onSelectAlbum(i)}
-          />
-          <WashingMachine
-            position={[MACHINE_X, STACK_Y, z]}
-            rotationY={-Math.PI / 2}
-            colorIndex={(i + 3) % 5}
-            onSelect={() => onSelectAlbum(i + MACHINE_Z.length)}
-          />
-          {/* Stacking bracket right */}
-          <mesh position={[MACHINE_X - 0.17, STACK_Y - 0.005, z]}>
-            <boxGeometry args={[0.008, 0.01, 0.30]} />
-            <meshStandardMaterial color="#A09080" metalness={0.6} roughness={0.4} />
-          </mesh>
-        </group>
-      ))}
+        return (
+          <group key={col}>
+            {/* Left: bottom / mid / top */}
+            {machine(-MACHINE_X, 0,       Math.PI / 2, base + 0, (base + 0) % 5)}
+            {machine(-MACHINE_X, STACK_Y,  Math.PI / 2, base + 1, (base + 1) % 5)}
+            {machine(-MACHINE_X, STACK_Y2, Math.PI / 2, base + 2, (base + 2) % 5)}
+            {bracket(-MACHINE_X + 0.17, STACK_Y)}
+            {bracket(-MACHINE_X + 0.17, STACK_Y2)}
+
+            {/* Right: bottom / mid / top */}
+            {machine( MACHINE_X, 0,       -Math.PI / 2, base + 3, (base + 3) % 5)}
+            {machine( MACHINE_X, STACK_Y,  -Math.PI / 2, base + 4, (base + 4) % 5)}
+            {machine( MACHINE_X, STACK_Y2, -Math.PI / 2, base + 5, (base + 5) % 5)}
+            {bracket( MACHINE_X - 0.17, STACK_Y)}
+            {bracket( MACHINE_X - 0.17, STACK_Y2)}
+          </group>
+        )
+      })}
     </group>
   )
 }

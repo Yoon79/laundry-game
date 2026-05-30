@@ -8,12 +8,14 @@ interface Props {
 }
 
 export default function AlbumPanel({ album, onClose }: Props) {
-  const totalSeconds = album.tracks.reduce((sum, t) => {
-    const [m, s] = t.duration.split(':').map(Number)
+  const knownDurations = album.tracks.filter(t => t.duration && t.duration !== '4:00')
+  const totalSeconds = knownDurations.reduce((sum, t) => {
+    const [m, s] = t.duration!.split(':').map(Number)
     return sum + m * 60 + s
   }, 0)
   const totalMin = Math.floor(totalSeconds / 60)
   const totalSec = totalSeconds % 60
+  const showTotal = knownDurations.length === album.tracks.length
 
   return (
     /* Full-screen backdrop */
@@ -44,7 +46,7 @@ export default function AlbumPanel({ album, onClose }: Props) {
             style={{ color: '#9A7A50' }}
           >
             <span>Sweden Laundry</span>
-            <span>{album.year} · {album.type}</span>
+            <span>{album.year} · {album.type === '정규' ? 'LP' : album.type}</span>
           </div>
 
           {/* Album title */}
@@ -58,19 +60,10 @@ export default function AlbumPanel({ album, onClose }: Props) {
           >
             {album.title}
           </h2>
-          <p
-            className="text-[11px] tracking-wider mb-3"
-            style={{ color: '#8A6A40' }}
-          >
-            {album.titleEn}
-          </p>
 
-          {/* Description */}
-          <p
-            className="text-[12px] leading-relaxed"
-            style={{ color: '#5A4030' }}
-          >
-            {album.description}
+          {/* Track count badge */}
+          <p className="text-[11px]" style={{ color: '#8A6A40' }}>
+            {album.tracks.length}곡
           </p>
         </div>
 
@@ -94,12 +87,14 @@ export default function AlbumPanel({ album, onClose }: Props) {
                 </span>
                 <span className="truncate">{track.title}</span>
               </div>
-              <span
-                className="shrink-0 ml-4 tabular-nums text-[11px]"
-                style={{ color: '#9A7A50' }}
-              >
-                {track.duration}
-              </span>
+              {track.duration && (
+                <span
+                  className="shrink-0 ml-4 tabular-nums text-[11px]"
+                  style={{ color: '#9A7A50' }}
+                >
+                  {track.duration}
+                </span>
+              )}
             </div>
           ))}
 
@@ -109,7 +104,9 @@ export default function AlbumPanel({ album, onClose }: Props) {
             style={{ color: '#9A7A50', borderTop: '1px solid #D8C8A8' }}
           >
             <span>{album.tracks.length} tracks</span>
-            <span>{totalMin}:{String(totalSec).padStart(2, '0')} total</span>
+            {showTotal && (
+              <span>{totalMin}:{String(totalSec).padStart(2, '0')} total</span>
+            )}
           </div>
         </div>
 

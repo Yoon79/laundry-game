@@ -8,9 +8,9 @@ const FW2        = FACADE_W / 2   // 4.25
 const H          = 3.0
 const WAINSCOT_H = 0.9
 const CORNICE_H  = 0.65
-const BLDG_FAR   = -12.5
-const BLDG_D     = FACADE_Z - BLDG_FAR   // 18
-const BLDG_CZ    = (FACADE_Z + BLDG_FAR) / 2   // -3.5
+const BLDG_FAR   = -18.0
+const BLDG_D     = FACADE_Z - BLDG_FAR   // 23.5
+const BLDG_CZ    = (FACADE_Z + BLDG_FAR) / 2   // -6.25
 
 // ── Hip roof geometry constants ───────────────────────────────────────────
 // Eave sits just above the cornice top (H + CORNICE_H = 3.65)

@@ -8,7 +8,7 @@ const EYE_HEIGHT = 1.7
 // Player bounds — wide outside, narrow inside building
 const BOUND_X_INDOOR  = 0.9    // corridor width inside the building
 const BOUND_X_OUTDOOR = 6.0    // free to roam the meadow
-const BOUND_Z_MIN = -12.2      // near the back of the clothes room
+const BOUND_Z_MIN = -17.5      // near the back of the clothes room
 const BOUND_Z_MAX = 22.0       // allows stepping well into the meadow
 const FACADE_Z    = 5.5        // front of building
 

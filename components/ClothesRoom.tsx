@@ -4,10 +4,10 @@ import * as THREE from 'three'
 // Room geometry (half-sized)
 const W = 4
 const H = 3.0
-const ROOM_NEAR = -5.5   // connects to laundry room at z = -5.5
-const ROOM_FAR  = -12.5  // back wall
-const DEPTH = Math.abs(ROOM_FAR - ROOM_NEAR)  // 7
-const CZ = (ROOM_NEAR + ROOM_FAR) / 2         // -9 (center z for floor/ceiling planes)
+const ROOM_NEAR = -8.5   // connects to laundry room at z = -8.5
+const ROOM_FAR  = -18.0  // back wall
+const DEPTH = Math.abs(ROOM_FAR - ROOM_NEAR)  // 9.5
+const CZ = (ROOM_NEAR + ROOM_FAR) / 2         // -13.25
 const WAINSCOT_H = 0.9
 
 // Doorway dimensions (must match LaundryRoom's DOOR_W / DOOR_H)
@@ -15,7 +15,7 @@ const DOOR_W = 2.0
 const DOOR_H = 2.2
 
 // Ceiling rails — run along X axis (left-right) at these Z positions
-const RAIL_Z = [-7, -9, -11]
+const RAIL_Z = [-10.5, -13.25, -16.0]
 const RAIL_HALF = 1.7   // rail extends from x = -1.7 to 1.7
 
 // Hanging positions per rail (5 items, evenly spaced within rail)
