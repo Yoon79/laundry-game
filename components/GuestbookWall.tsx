@@ -14,17 +14,25 @@ const WALL_Z   = 5.58       // just in front of facade exterior face
 const NOTE_W   = 0.28       // width in world units
 const NOTE_H   = 0.20       // height in world units
 
-// 9 note positions [x, y] — spread across the whole facade front
-// Top row: above door/window arch level (y > 2.86)
-// Mid rows: in window height zone (naturally overlap decorations = charm)
-// Left/right bands stay near outer pilasters
+// 9 note positions [x, y] — start from CENTER and expand outward.
+// Order matters: slot 0 is the very first note placed, spreads ring by ring.
+// x=0 at y<2.2 is the door opening → first note is just above door.
+// Side strips (x≈±1.3) allow lower y (eye level).
 const NOTE_SLOTS: [number, number][] = [
-  // Top row — above arches, near cornice
-  [-3.0, 2.74], [ 0.0, 2.78], [ 3.0, 2.72],
-  // Mid-upper row — left section, right section, near-door strips
-  [-3.6, 2.10], [-1.4, 2.18], [ 1.4, 2.14], [ 3.6, 2.06],
-  // Lower row — outer bands below windows
-  [-3.5, 1.42], [ 3.5, 1.38],
+  // ① Center — above door (first note placed here)
+  [ 0.0, 2.22],
+  // ② Ring 1 — close to center, both sides at eye level
+  [-1.3, 1.82],
+  [ 1.3, 1.78],
+  // ③ Ring 2 — widening, into window zones (overlap is charming)
+  [-2.5, 1.95],
+  [ 2.5, 1.90],
+  // ④ Ring 3 — lower, side strips near door
+  [-1.6, 1.28],
+  [ 1.6, 1.24],
+  // ⑤ Ring 4 — outer edges, mid height
+  [-3.6, 1.65],
+  [ 3.6, 1.60],
 ]
 const SLOT_MAX = NOTE_SLOTS.length  // 9
 
