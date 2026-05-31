@@ -126,12 +126,12 @@ export default function GameClient() {
   const [pickedUpIds, setPickedUpIds]   = useState<Set<number>>(new Set())
   const [behindItem,  setBehindItem]    = useState<LostItem | null>(null)
 
-  // Exit pointer lock whenever any overlay panel is open
+  // Exit pointer lock whenever any overlay panel opens
   useEffect(() => {
-    if (selectedAlbumId !== null || behindItem !== null || showGuestbookInput) {
+    if (showGuestbookInput || selectedAlbumId !== null || behindItem !== null || shareEntry !== null) {
       document.exitPointerLock()
     }
-  }, [selectedAlbumId, behindItem, showGuestbookInput])
+  }, [showGuestbookInput, selectedAlbumId, behindItem, shareEntry])
 
   const handleSelectAlbum = (id: number) => {
     if (carriedItem) return   // can't open album panel while carrying laundry
@@ -155,7 +155,10 @@ export default function GameClient() {
   const closeAlbumPanel  = () => setSelectedAlbumId(null)
 
   const selectedAlbum = selectedAlbumId !== null ? (ALBUMS[selectedAlbumId] ?? null) : null
-  const totalFound = pickedUpIds.size
+  const totalFound    = pickedUpIds.size
+
+  // True whenever ANY overlay panel is open — used to suppress pointer lock
+  const anyOverlayOpen = showGuestbookInput || selectedAlbum !== null || behindItem !== null || shareEntry !== null
 
   return (
     <div className="relative w-full h-full">
@@ -339,8 +342,8 @@ export default function GameClient() {
         <LaundryRoomFrames />
         <ClothesRoomFrames />
 
-        {/* PointerLockControls — desktop only */}
-        {entered && !isMobile && (
+        {/* PointerLockControls — desktop only, unmount when any overlay is open */}
+        {entered && !isMobile && !anyOverlayOpen && (
           <PointerLockControls
             onLock={() => setLocked(true)}
             onUnlock={() => setLocked(false)}
