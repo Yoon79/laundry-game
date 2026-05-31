@@ -12,10 +12,10 @@ body {
   height: 100%;
   overflow: hidden;
   background: #faf0e6;
-  font-family: 'Mona', sans-serif;
+  font-family: 'Mona12', sans-serif;
 }
 
 /* Global Mona font override */
 * {
-  font-family: 'Mona', sans-serif;
+  font-family: 'Mona12', sans-serif;
 }

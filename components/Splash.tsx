@@ -18,21 +18,21 @@ export default function Splash({ onEnter }: Props) {
 
         <p
           className="text-center text-[10px] tracking-[0.55em] text-[#A07860] mb-4 uppercase"
-          style={{ fontFamily: "'Mona', sans-serif" }}
+          style={{ fontFamily: "'Mona12', sans-serif" }}
         >
           presents
         </p>
         <div className="w-20 h-px bg-[#C8A08A] mx-auto mb-5" />
         <h1
           className="text-center text-[56px] leading-tight text-[#3D2B1E]"
-          style={{ fontFamily: "'Mona', sans-serif" }}
+          style={{ fontFamily: "'Mona12', sans-serif" }}
         >
           스웨덴세탁소
         </h1>
         <div className="w-20 h-px bg-[#C8A08A] mx-auto mt-5 mb-4" />
         <p
           className="text-center text-[11px] tracking-[0.4em] text-[#A07860] uppercase"
-          style={{ fontFamily: "'Mona', sans-serif" }}
+          style={{ fontFamily: "'Mona12', sans-serif" }}
         >
           Sweden Laundry
         </p>
@@ -42,7 +42,7 @@ export default function Splash({ onEnter }: Props) {
       <button
         onClick={onEnter}
         className="mt-10 text-[#A07860] text-[11px] tracking-[0.45em] uppercase transition-colors hover:text-[#3D2B1E] cursor-pointer animate-pulse"
-        style={{ fontFamily: "'Mona', sans-serif" }}
+        style={{ fontFamily: "'Mona12', sans-serif" }}
       >
         ↓ &nbsp;Enter the Laundry&nbsp; ↓
       </button>

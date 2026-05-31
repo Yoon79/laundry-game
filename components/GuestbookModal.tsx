@@ -30,7 +30,7 @@ export default function GuestbookModal({ onSubmit, onClose }: Props) {
           border: '2px solid #C8A870',
           padding: '36px 32px 28px',
           boxShadow: '0 24px 60px rgba(0,0,0,0.50)',
-          fontFamily: "'Mona', sans-serif",
+          fontFamily: "'Mona12', sans-serif",
         }}
         onClick={e => e.stopPropagation()}
       >
@@ -43,7 +43,7 @@ export default function GuestbookModal({ onSubmit, onClose }: Props) {
         </div>
         <h2
           style={{
-            fontFamily: "'Mona', sans-serif",
+            fontFamily: "'Mona12', sans-serif",
             fontSize: 22, color: '#2A1A08', marginBottom: 18,
           }}
         >
@@ -64,7 +64,7 @@ export default function GuestbookModal({ onSubmit, onClose }: Props) {
             padding: '12px 14px',
             fontSize: 13,
             color: '#3A2810',
-            fontFamily: "'Mona', sans-serif",
+            fontFamily: "'Mona12', sans-serif",
             lineHeight: 1.65,
             outline: 'none',
             marginBottom: 8,

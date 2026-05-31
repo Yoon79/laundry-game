@@ -74,7 +74,7 @@ export default function ShareModal({ entry, onClose }: Props) {
           border: '2px solid #C8A870',
           padding: '32px 28px 24px',
           boxShadow: '0 24px 60px rgba(0,0,0,0.55)',
-          fontFamily: "'Mona', sans-serif",
+          fontFamily: "'Mona12', sans-serif",
         }}
         onClick={e => e.stopPropagation()}
       >
@@ -88,7 +88,7 @@ export default function ShareModal({ entry, onClose }: Props) {
         >
           <p
             style={{
-              fontFamily: "'Mona', sans-serif",
+              fontFamily: "'Mona12', sans-serif",
               fontSize: 15, color: '#3A2810', lineHeight: 1.7,
             }}
           >

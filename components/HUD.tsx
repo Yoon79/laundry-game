@@ -15,7 +15,7 @@ export default function HUD({ locked }: Props) {
         <div className="absolute inset-0 flex items-end justify-center pb-16">
           <p
             className="text-[#5A3E32]/70 text-[10px] tracking-[0.45em] uppercase animate-pulse"
-            style={{ fontFamily: "'Mona', sans-serif" }}
+            style={{ fontFamily: "'Mona12', sans-serif" }}
           >
             Click to explore
           </p>
@@ -27,7 +27,7 @@ export default function HUD({ locked }: Props) {
         <div className="absolute bottom-7 left-1/2 -translate-x-1/2">
           <p
             className="text-[#5A3E32]/35 text-[9px] tracking-[0.35em] uppercase"
-            style={{ fontFamily: "'Mona', sans-serif" }}
+            style={{ fontFamily: "'Mona12', sans-serif" }}
           >
             WASD 이동 &nbsp;·&nbsp; 마우스 시점 &nbsp;·&nbsp; ESC 일시정지
           </p>
