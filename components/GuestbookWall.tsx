@@ -5,12 +5,12 @@ import * as THREE from 'three'
 import type { GuestbookEntry } from '@/lib/guestbook'
 
 // ── Stand world position ──────────────────────────────────────────────────────
-// Placed to the LEFT of the bench [3.0, 0, 6.4], between bench and entrance.
-// rotationY faces the sign slightly toward approaching visitors.
+// Behind and to the left of bench [3.0, 0, 6.4], propped against the building.
+// PZ < bench z=6.4 → sign appears behind the bench when viewed from outside.
 
-const PX    =  2.2     // world x (left of bench)
-const PZ    =  7.0     // world z (slightly toward player)
-const ROT_Y =  0.30    // slight rotation toward entrance
+const PX    =  2.4     // world x (left of bench)
+const PZ    =  5.95    // world z — behind bench, near building wall (z=5.5)
+const ROT_Y =  0.18    // slight angle toward approaching visitor
 
 // ── Easel geometry constants ──────────────────────────────────────────────────
 const LEG_R  = 0.018   // leg cylinder radius
@@ -39,23 +39,48 @@ const TILTS = [-1.3, 0.9, -0.6, 1.5, -0.9, 0.4, -1.4, 0.8, -0.3]
 
 // ── Cork texture (module-level, created once) ─────────────────────────────────
 
+// ── Wes Anderson palette ──────────────────────────────────────────────────────
+// Ties to the building: MINT walls (#A0C898), CREAM cornice (#F0E8DC),
+// warm amber board, dusty rose title → coherent, cinematic.
+
+const WA_CREAM  = '#EDE4CE'   // legs / top rail
+const WA_MINT   = '#98B890'   // side/bottom rails (matches building)
+const WA_AMBER  = '#C4A040'   // cork board face
+const WA_PLATE  = '#E8CFC0'   // title plate (dusty rose-peach)
+const WA_WOOD   = '#8A5C28'   // foot caps / back leg
+
 let _corkTex: THREE.CanvasTexture | null = null
 function getCorkTex() {
   if (_corkTex) return _corkTex
   const W = 128, H = 256
   const c = document.createElement('canvas'); c.width = W; c.height = H
   const ctx = c.getContext('2d')!
-  ctx.fillStyle = '#C8A870'; ctx.fillRect(0, 0, W, H)
+
+  // Rich amber cork base
+  ctx.fillStyle = WA_AMBER; ctx.fillRect(0, 0, W, H)
+
+  // Horizontal grain in amber tones
   for (let i = 0; i < 52; i++) {
     const yy = (i / 52) * H
-    const l = 43 + Math.round(Math.sin(i * 0.7) * 7)
-    ctx.fillStyle = `hsl(34, 48%, ${l}%)`; ctx.fillRect(0, yy, W, 2 + (i % 3))
+    const l = 38 + Math.round(Math.sin(i * 0.72) * 6)
+    ctx.fillStyle = `hsl(40, 68%, ${l}%)`
+    ctx.fillRect(0, yy, W, 2 + (i % 3))
   }
-  for (let i = 0; i < 20; i++) {
+
+  // Darker cork cell patches
+  for (let i = 0; i < 18; i++) {
     const x = (i * 37) % W, y = (i * 53 + 17) % H
-    ctx.fillStyle = 'rgba(90,50,18,0.12)'
-    ctx.beginPath(); ctx.ellipse(x, y, 9+i%7, 3+i%3, i*0.3, 0, Math.PI*2); ctx.fill()
+    ctx.fillStyle = 'rgba(100,60,12,0.14)'
+    ctx.beginPath(); ctx.ellipse(x, y, 9+i%7, 3+i%3, i*0.32, 0, Math.PI*2); ctx.fill()
   }
+
+  // Lighter honey highlights
+  for (let i = 0; i < 10; i++) {
+    const x = (i * 61) % W, y = (i * 43) % H
+    ctx.fillStyle = 'rgba(255,210,80,0.08)'
+    ctx.beginPath(); ctx.ellipse(x, y, 12+i%9, 4+i%3, i*0.45, 0, Math.PI*2); ctx.fill()
+  }
+
   const t = new THREE.CanvasTexture(c)
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1.2, 2.5)
   _corkTex = t; return t
@@ -67,13 +92,23 @@ function getTitleTex() {
   const W = 220, H = 56
   const c = document.createElement('canvas'); c.width = W; c.height = H
   const ctx = c.getContext('2d')!
+
+  // Dusty rose-peach plate
   const g = ctx.createLinearGradient(0, 0, 0, H)
-  g.addColorStop(0, '#D4A840'); g.addColorStop(1, '#B88C28')
+  g.addColorStop(0, '#EED4C4'); g.addColorStop(1, '#D8B8A8')
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H)
-  ctx.shadowColor = 'rgba(0,0,0,0.30)'; ctx.shadowBlur = 2
-  ctx.fillStyle = '#3A1808'; ctx.font = 'bold 28px serif'
+
+  // Thin border
+  ctx.strokeStyle = 'rgba(120,70,40,0.30)'; ctx.lineWidth = 1.5
+  ctx.strokeRect(4, 4, W-8, H-8)
+
+  // Text
+  ctx.shadowColor = 'rgba(80,30,10,0.22)'; ctx.shadowBlur = 1.5
+  ctx.fillStyle = '#4A2410'; ctx.font = 'bold 26px serif'
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
   ctx.fillText('방  명  록', W/2, H/2)
+  ctx.shadowBlur = 0
+
   _titleTex = new THREE.CanvasTexture(c); return _titleTex
 }
 
@@ -89,53 +124,46 @@ function EaselStand() {
   const backLen  = Math.sqrt(BACK_D * BACK_D + LEG_H * LEG_H) // ≈ 1.36 m
   const backAng  = Math.atan(BACK_D / LEG_H)                   // ≈ 0.284 rad
 
-  const woodMat  = <meshStandardMaterial color="#7A5018" roughness={0.60} />
-  const frameMat = <meshStandardMaterial color="#6A3E14" roughness={0.65} />
+  // Wes Anderson palette materials
+  const legMat   = <meshStandardMaterial color={WA_CREAM} roughness={0.55} />
+  const railTopB = <meshStandardMaterial color={WA_CREAM} roughness={0.55} />  // top+bottom rail
+  const railSide = <meshStandardMaterial color={WA_MINT}  roughness={0.58} />  // side rails
+  const backMat  = <meshStandardMaterial color={WA_WOOD}  roughness={0.72} />
   const FT = 0.048  // frame rail thickness
   const FD = 0.040  // frame depth
 
   return (
     <group>
-      {/* ── Front-left leg ── */}
-      <mesh
-        position={[-SPREAD / 2, LEG_H / 2, 0]}
-        rotation={[0, 0, frontAng]}
-      >
-        <cylinderGeometry args={[LEG_R, LEG_R * 1.2, frontLen, 8]} />{woodMat}
+      {/* ── Front-left leg (CREAM) ── */}
+      <mesh position={[-SPREAD / 2, LEG_H / 2, 0]} rotation={[0, 0, frontAng]}>
+        <cylinderGeometry args={[LEG_R, LEG_R * 1.2, frontLen, 8]} />{legMat}
       </mesh>
 
-      {/* ── Front-right leg ── */}
-      <mesh
-        position={[SPREAD / 2, LEG_H / 2, 0]}
-        rotation={[0, 0, -frontAng]}
-      >
-        <cylinderGeometry args={[LEG_R, LEG_R * 1.2, frontLen, 8]} />{woodMat}
+      {/* ── Front-right leg (CREAM) ── */}
+      <mesh position={[SPREAD / 2, LEG_H / 2, 0]} rotation={[0, 0, -frontAng]}>
+        <cylinderGeometry args={[LEG_R, LEG_R * 1.2, frontLen, 8]} />{legMat}
       </mesh>
 
-      {/* ── Back support leg ── */}
-      <mesh
-        position={[0, LEG_H / 2, -BACK_D / 2]}
-        rotation={[backAng, 0, 0]}
-      >
-        <cylinderGeometry args={[LEG_R * 0.85, LEG_R, backLen, 8]} />{woodMat}
+      {/* ── Back support leg (warm wood) ── */}
+      <mesh position={[0, LEG_H / 2, -BACK_D / 2]} rotation={[backAng, 0, 0]}>
+        <cylinderGeometry args={[LEG_R * 0.85, LEG_R, backLen, 8]} />{backMat}
       </mesh>
 
-      {/* ── Top crossbar (hinge bar) ── */}
+      {/* ── Top crossbar (hinge, CREAM) ── */}
       <mesh position={[0, LEG_H, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[LEG_R * 0.8, LEG_R * 0.8, SPREAD * 1.2, 8]} />{woodMat}
+        <cylinderGeometry args={[LEG_R * 0.8, LEG_R * 0.8, SPREAD * 1.2, 8]} />{legMat}
       </mesh>
 
-      {/* ── Bottom rope / cross-brace ── */}
+      {/* ── Bottom rope / brace (dusty rope color) ── */}
       <mesh position={[0, 0.14, 0]} rotation={[0, 0, Math.PI / 2]}>
         <cylinderGeometry args={[0.006, 0.006, SPREAD * 1.6, 6]} />
-        <meshStandardMaterial color="#A07840" roughness={0.85} />
+        <meshStandardMaterial color="#C8A870" roughness={0.88} />
       </mesh>
 
-      {/* ── Rubber foot caps ── */}
+      {/* ── Foot caps (warm wood) ── */}
       {([-SPREAD / 2, SPREAD / 2] as number[]).map((x, i) => (
         <mesh key={i} position={[x, 0.01, 0]}>
-          <cylinderGeometry args={[0.025, 0.025, 0.02, 8]} />
-          <meshStandardMaterial color="#2A1808" roughness={0.95} />
+          <cylinderGeometry args={[0.025, 0.025, 0.02, 8]} />{backMat}
         </mesh>
       ))}
 
@@ -145,30 +173,30 @@ function EaselStand() {
         <meshStandardMaterial map={corkTex} roughness={0.92} />
       </mesh>
 
-      {/* ── Wooden frame ── */}
+      {/* ── Frame rails: top+bottom CREAM, sides MINT ── */}
       {/* Top rail */}
       <mesh position={[0, BY + BH/2 - FT/2, 0.025]}>
-        <boxGeometry args={[BW, FT, FD]} />{frameMat}
+        <boxGeometry args={[BW, FT, FD]} />{railTopB}
       </mesh>
       {/* Bottom rail */}
       <mesh position={[0, BY - BH/2 + FT/2, 0.025]}>
-        <boxGeometry args={[BW, FT, FD]} />{frameMat}
+        <boxGeometry args={[BW, FT, FD]} />{railTopB}
       </mesh>
-      {/* Left rail */}
+      {/* Left rail (MINT) */}
       <mesh position={[-BW/2 + FT/2, BY, 0.025]}>
-        <boxGeometry args={[FT, BH - FT*2, FD]} />{frameMat}
+        <boxGeometry args={[FT, BH - FT*2, FD]} />{railSide}
       </mesh>
-      {/* Right rail */}
+      {/* Right rail (MINT) */}
       <mesh position={[BW/2 - FT/2, BY, 0.025]}>
-        <boxGeometry args={[FT, BH - FT*2, FD]} />{frameMat}
+        <boxGeometry args={[FT, BH - FT*2, FD]} />{railSide}
       </mesh>
 
-      {/* ── Corner brass pegs ── */}
+      {/* ── Corner pegs (dusty rose, matching title plate) ── */}
       {([[-1,1],[1,1],[-1,-1],[1,-1]] as const).map(([sx,sy],i) => (
         <mesh key={i}
           position={[sx*(BW/2 - FT*1.4), BY + sy*(BH/2 - FT*1.4), 0.048]}>
           <sphereGeometry args={[0.016, 8, 6]} />
-          <meshStandardMaterial color="#C89040" metalness={0.72} roughness={0.28} />
+          <meshStandardMaterial color={WA_PLATE} metalness={0.20} roughness={0.55} />
         </mesh>
       ))}
 
