@@ -586,7 +586,11 @@ function Bench() {
 
 // ── Main export ───────────────────────────────────────────────────
 
-export default function Exterior() {
+interface ExteriorProps {
+  onBenchClick?: () => void
+}
+
+export default function Exterior({ onBenchClick }: ExteriorProps) {
   return (
     <group>
       {/* ── Outdoor lighting — warm sunny day ── */}
@@ -636,8 +640,15 @@ export default function Exterior() {
       <FlowerPot x={2.6}  z={FACADE_Z + 0.42} flowerColor="#F0C860" size={0.9} />
       <FlowerPot x={3.6}  z={FACADE_Z + 0.45} flowerColor="#E890A8" size={1.0} />
 
-      {/* ── Bench ── */}
-      <Bench />
+      {/* ── Bench (clickable) ── */}
+      <group onClick={(e) => { e.stopPropagation(); onBenchClick?.() }}>
+        <Bench />
+        {/* Invisible enlarged hit area */}
+        <mesh position={[0, 0.4, 0]} visible={false}>
+          <boxGeometry args={[1.0, 0.8, 0.6]} />
+          <meshStandardMaterial />
+        </mesh>
+      </group>
 
       {/* ── Building shell (side walls, back wall, roof, chimneys) ── */}
       <BuildingShell />

@@ -18,6 +18,10 @@ import BehindPhoto from './BehindPhoto'
 import MobileControls from './MobileControls'
 import OrientationGuard from './OrientationGuard'
 import ALBUMS from '@/lib/albums'
+import type { GuestbookEntry } from '@/lib/guestbook'
+import GuestbookModal from './GuestbookModal'
+import GuestbookWall from './GuestbookWall'
+import ShareModal from './ShareModal'
 
 export default function GameClient() {
   const [entered, setEntered] = useState(false)
@@ -69,6 +73,38 @@ export default function GameClient() {
 
   // ── Album panel ───────────────────────────────────────────────────
   const [selectedAlbumId, setSelectedAlbumId] = useState<number | null>(null)
+
+  // ── Guestbook ─────────────────────────────────────────────────────
+  const [showSitPrompt, setShowSitPrompt]       = useState(false)
+  const [showGuestbookInput, setShowGuestbookInput] = useState(false)
+  const [guestbookEntries, setGuestbookEntries] = useState<GuestbookEntry[]>(() => {
+    if (typeof window === 'undefined') return []
+    try { return JSON.parse(localStorage.getItem('sweden-laundry-guestbook') ?? '[]') } catch { return [] }
+  })
+  const [shareEntry, setShareEntry]             = useState<GuestbookEntry | null>(null)
+
+  // Persist entries to localStorage
+  useEffect(() => {
+    localStorage.setItem('sweden-laundry-guestbook', JSON.stringify(guestbookEntries))
+  }, [guestbookEntries])
+
+  const handleBenchClick = () => {
+    document.exitPointerLock()
+    setShowSitPrompt(true)
+  }
+  const handleSit = () => {
+    setShowSitPrompt(false)
+    setShowGuestbookInput(true)
+  }
+  const handleGuestbookSubmit = (text: string) => {
+    const entry: GuestbookEntry = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      text,
+      timestamp: Date.now(),
+    }
+    setGuestbookEntries(prev => [entry, ...prev])
+    setShowGuestbookInput(false)
+  }
 
   // ── Lost laundry game ─────────────────────────────────────────────
   const [carriedItem, setCarriedItem]   = useState<LostItem | null>(null)
@@ -205,6 +241,65 @@ export default function GameClient() {
         </div>
       )}
 
+      {/* ── Bench "앉기" prompt ── */}
+      {showSitPrompt && (
+        <div
+          className="fixed inset-0 z-30 flex items-end justify-center pb-32"
+          style={{ pointerEvents: 'none' }}
+        >
+          <div
+            className="flex flex-col items-center gap-3"
+            style={{ pointerEvents: 'auto' }}
+          >
+            <p
+              className="text-[11px] tracking-[0.22em] uppercase"
+              style={{ color: 'rgba(255,255,255,0.60)', fontFamily: 'var(--font-space-mono)' }}
+            >
+              벤치를 발견했어요
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleSit}
+                className="px-8 py-3 text-[12px] tracking-[0.18em] uppercase"
+                style={{
+                  background: '#FAF0E6', color: '#3A1808',
+                  fontFamily: 'var(--font-space-mono)',
+                  border: 'none',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.40)',
+                }}
+              >
+                🪑 앉기
+              </button>
+              <button
+                onClick={() => setShowSitPrompt(false)}
+                className="px-5 py-3 text-[12px] tracking-widest uppercase"
+                style={{
+                  background: 'rgba(20,12,6,0.60)', color: 'rgba(255,255,255,0.55)',
+                  fontFamily: 'var(--font-space-mono)',
+                  border: '1px solid rgba(255,255,255,0.18)',
+                  backdropFilter: 'blur(4px)',
+                }}
+              >
+                그냥 지나가기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Guestbook input modal ── */}
+      {showGuestbookInput && (
+        <GuestbookModal
+          onSubmit={handleGuestbookSubmit}
+          onClose={() => setShowGuestbookInput(false)}
+        />
+      )}
+
+      {/* ── Share modal ── */}
+      {shareEntry && (
+        <ShareModal entry={shareEntry} onClose={() => setShareEntry(null)} />
+      )}
+
       {/* ── Album panel ── */}
       {selectedAlbum && <AlbumPanel album={selectedAlbum} onClose={closeAlbumPanel} />}
 
@@ -223,7 +318,8 @@ export default function GameClient() {
         style={{ background: '#68A8D8' }}
       >
         <FPSMovement active={fpsActive} isMobile={isMobile} />
-        <Exterior />
+        <Exterior onBenchClick={handleBenchClick} />
+        <GuestbookWall entries={guestbookEntries} onSelectEntry={setShareEntry} />
         <LaundryRoom
           onSelectAlbum={handleSelectAlbum}
           deliveryTargetAlbumId={carriedItem?.albumId ?? null}
