@@ -75,7 +75,7 @@ export default function GameClient() {
   const [selectedAlbumId, setSelectedAlbumId] = useState<number | null>(null)
 
   // ── Guestbook ─────────────────────────────────────────────────────
-  const [showSitPrompt, setShowSitPrompt]       = useState(false)
+  const [sittingMode, setSittingMode]           = useState(false)
   const [showGuestbookInput, setShowGuestbookInput] = useState(false)
   const [guestbookEntries, setGuestbookEntries] = useState<GuestbookEntry[]>(() => {
     if (typeof window === 'undefined') return []
@@ -88,14 +88,21 @@ export default function GameClient() {
     localStorage.setItem('sweden-laundry-guestbook', JSON.stringify(guestbookEntries))
   }, [guestbookEntries])
 
+  // Bench click → immediately sit (camera animates, no prompt)
   const handleBenchClick = () => {
     document.exitPointerLock()
-    setShowSitPrompt(true)
+    setSittingMode(true)
   }
-  const handleSit = () => {
-    setShowSitPrompt(false)
+  const handleStandUp = () => {
+    setSittingMode(false)
+  }
+
+  // Board (easel cork) click → open guestbook input
+  const handleBoardClick = () => {
+    document.exitPointerLock()
     setShowGuestbookInput(true)
   }
+
   const handleGuestbookSubmit = (text: string) => {
     const entry: GuestbookEntry = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -241,49 +248,22 @@ export default function GameClient() {
         </div>
       )}
 
-      {/* ── Bench "앉기" prompt ── */}
-      {showSitPrompt && (
-        <div
-          className="fixed inset-0 z-30 flex items-end justify-center pb-32"
-          style={{ pointerEvents: 'none' }}
-        >
-          <div
-            className="flex flex-col items-center gap-3"
-            style={{ pointerEvents: 'auto' }}
+      {/* ── 일어나기 버튼 (앉아있을 때만) ── */}
+      {sittingMode && !selectedAlbum && !behindItem && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-20">
+          <button
+            onClick={handleStandUp}
+            className="px-8 py-3 text-[12px] tracking-[0.18em] uppercase"
+            style={{
+              background: '#FAF0E6',
+              color: '#3A1808',
+              fontFamily: 'var(--font-space-mono)',
+              border: 'none',
+              boxShadow: '0 6px 24px rgba(0,0,0,0.45)',
+            }}
           >
-            <p
-              className="text-[11px] tracking-[0.22em] uppercase"
-              style={{ color: 'rgba(255,255,255,0.60)', fontFamily: 'var(--font-space-mono)' }}
-            >
-              벤치를 발견했어요
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={handleSit}
-                className="px-8 py-3 text-[12px] tracking-[0.18em] uppercase"
-                style={{
-                  background: '#FAF0E6', color: '#3A1808',
-                  fontFamily: 'var(--font-space-mono)',
-                  border: 'none',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.40)',
-                }}
-              >
-                🪑 앉기
-              </button>
-              <button
-                onClick={() => setShowSitPrompt(false)}
-                className="px-5 py-3 text-[12px] tracking-widest uppercase"
-                style={{
-                  background: 'rgba(20,12,6,0.60)', color: 'rgba(255,255,255,0.55)',
-                  fontFamily: 'var(--font-space-mono)',
-                  border: '1px solid rgba(255,255,255,0.18)',
-                  backdropFilter: 'blur(4px)',
-                }}
-              >
-                그냥 지나가기
-              </button>
-            </div>
-          </div>
+            🚶 일어나기
+          </button>
         </div>
       )}
 
@@ -317,9 +297,13 @@ export default function GameClient() {
         }}
         style={{ background: '#68A8D8' }}
       >
-        <FPSMovement active={fpsActive} isMobile={isMobile} />
+        <FPSMovement active={fpsActive} isMobile={isMobile} sitting={sittingMode} />
         <Exterior onBenchClick={handleBenchClick} />
-        <GuestbookWall entries={guestbookEntries} onSelectEntry={setShareEntry} />
+        <GuestbookWall
+          entries={guestbookEntries}
+          onSelectEntry={setShareEntry}
+          onClickBoard={handleBoardClick}
+        />
         <LaundryRoom
           onSelectAlbum={handleSelectAlbum}
           deliveryTargetAlbumId={carriedItem?.albumId ?? null}

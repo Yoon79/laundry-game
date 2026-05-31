@@ -13,12 +13,18 @@ const BOUND_Z_MIN = -17.5
 const BOUND_Z_MAX = 22.0
 const FACADE_Z    = 5.5
 
+// ── Bench sitting camera ──────────────────────────────────────────────────────
+// Bench is at [3.0, 0, 6.4]. Sitting position looks AWAY from building (outward).
+const SIT_POS  = new THREE.Vector3(3.0, 1.05, 6.75)   // seated eye level
+const SIT_LOOK = new THREE.Vector3(1.5, 0.85, 14.0)   // looking toward meadow
+
 interface Props {
   active: boolean
   isMobile?: boolean
+  sitting?: boolean   // camera animates to bench view, ignores movement
 }
 
-export default function FPSMovement({ active, isMobile = false }: Props) {
+export default function FPSMovement({ active, isMobile = false, sitting = false }: Props) {
   const { camera } = useThree()
   const keys  = useRef({ w: false, a: false, s: false, d: false })
   const fwd   = useRef(new THREE.Vector3())
@@ -28,10 +34,12 @@ export default function FPSMovement({ active, isMobile = false }: Props) {
 
   const prevActive   = useRef(false)
   const descendingY  = useRef(false)
+  const sitTargetQ   = useRef(new THREE.Quaternion())
+  const sitTempMat   = useRef(new THREE.Matrix4())
 
   // Set initial camera direction + correct rotation order for FPS
   useEffect(() => {
-    camera.rotation.order = 'YXZ'   // prevents gimbal lock for FPS look
+    camera.rotation.order = 'YXZ'
     camera.lookAt(0, 1.5, 5.5)
   }, [camera])
 
@@ -59,6 +67,20 @@ export default function FPSMovement({ active, isMobile = false }: Props) {
   }, [isMobile])
 
   useFrame((_, delta) => {
+    // ── Sitting mode: smoothly move to bench view, face outward ──────────
+    if (sitting) {
+      // Lerp position to seated spot
+      camera.position.lerp(SIT_POS, delta * 3.8)
+
+      // Slerp rotation toward outward look direction
+      sitTempMat.current.lookAt(camera.position, SIT_LOOK, UP.current)
+      sitTargetQ.current.setFromRotationMatrix(sitTempMat.current)
+      camera.quaternion.slerp(sitTargetQ.current, delta * 3.0)
+
+      prevActive.current = false   // reset so descent fires on stand-up
+      return
+    }
+
     if (!active) {
       prevActive.current = false
       return
@@ -92,7 +114,6 @@ export default function FPSMovement({ active, isMobile = false }: Props) {
     move.current.set(0, 0, 0)
 
     if (isMobile) {
-      // Joystick: x = strafe, y = forward/back (positive y = push down = backward)
       const jx = touchState.joystick.x
       const jy = touchState.joystick.y
       if (Math.abs(jx) > 0.08 || Math.abs(jy) > 0.08) {
@@ -100,7 +121,6 @@ export default function FPSMovement({ active, isMobile = false }: Props) {
         move.current.addScaledVector(right.current, jx * WALK_SPEED * delta)
       }
     } else {
-      // WASD
       if (keys.current.w) move.current.addScaledVector(fwd.current,  WALK_SPEED * delta)
       if (keys.current.s) move.current.addScaledVector(fwd.current, -WALK_SPEED * delta)
       if (keys.current.a) move.current.addScaledVector(right.current, -WALK_SPEED * delta)

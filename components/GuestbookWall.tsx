@@ -114,7 +114,7 @@ function getTitleTex() {
 
 // ── Easel stand component ─────────────────────────────────────────────────────
 
-function EaselStand() {
+function EaselStand({ onBoardClick }: { onBoardClick?: () => void }) {
   const corkTex  = useMemo(() => getCorkTex(), [])
   const titleTex = useMemo(() => getTitleTex(), [])
 
@@ -167,8 +167,12 @@ function EaselStand() {
         </mesh>
       ))}
 
-      {/* ── Cork board surface ── */}
-      <mesh position={[0, BY, 0.02]}>
+      {/* ── Cork board surface (clickable → open guestbook form) ── */}
+      <mesh
+        position={[0, BY, 0.02]}
+        onClick={(e) => { e.stopPropagation(); onBoardClick?.() }}
+        onPointerOver={(e) => { e.stopPropagation() }}
+      >
         <planeGeometry args={[BW - FT * 2, BH - FT * 2]} />
         <meshStandardMaterial map={corkTex} roughness={0.92} />
       </mesh>
@@ -308,14 +312,14 @@ function Note({ entry, slotIndex, onSelect }: NoteProps) {
 interface GuestbookWallProps {
   entries: GuestbookEntry[]
   onSelectEntry: (entry: GuestbookEntry) => void
+  onClickBoard?: () => void
 }
 
-export default function GuestbookWall({ entries, onSelectEntry }: GuestbookWallProps) {
+export default function GuestbookWall({ entries, onSelectEntry, onClickBoard }: GuestbookWallProps) {
   const visible = entries.slice(0, SLOT_MAX)
   return (
-    // Stand group — rotated slightly toward visitor, placed left of bench
     <group position={[PX, 0, PZ]} rotation={[0, ROT_Y, 0]}>
-      <EaselStand />
+      <EaselStand onBoardClick={onClickBoard} />
       {visible.map((entry, i) => (
         <Note key={entry.id} entry={entry} slotIndex={i} onSelect={onSelectEntry} />
       ))}
