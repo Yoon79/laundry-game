@@ -185,7 +185,7 @@ function EaselStand({ onBoardClick }: { onBoardClick?: () => void }) {
       </mesh>
       {/* Hover glow point light */}
       {boardHovered && (
-        <pointLight position={[0, BY, 0.6]} color="#FFD060" intensity={2.5} distance={1.2} />
+        <pointLight position={[0, BY, 0.6]} color="#FFD060" intensity={0.8} distance={1.2} />
       )}
 
       {/* ── Frame rails: top+bottom CREAM, sides MINT ── */}
