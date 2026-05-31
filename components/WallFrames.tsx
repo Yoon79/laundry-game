@@ -169,14 +169,19 @@ interface FrameProps {
   tilt?: number
 }
 
+// Photo state for contain mode: actual texture + computed plane dimensions
+interface PhotoState { tex: THREE.Texture; planW: number; planH: number }
+
 function WallFrame({ position, rotationY, artIndex, photoIndex, size = 'portrait', tilt = 0 }: FrameProps) {
   const [fw, fh] = SIZES[size]
   const pw = fw - 0.076; const ph = fh - 0.076
 
-  // Start with canvas fallback; upgrade to real photo when loaded
-  const [photoTex, setPhotoTex] = useState<THREE.Texture>(() => getArtTexture(artIndex))
+  // Canvas fallback occupies the full photo area
+  const fallbackTex = useMemo(() => getArtTexture(artIndex), [artIndex])
+  const [photo, setPhoto] = useState<PhotoState | null>(null)
 
   useEffect(() => {
+    setPhoto(null)   // reset when frame changes
     if (!photoIndex) return
     const loader = new THREE.TextureLoader()
     let cancelled = false
@@ -184,28 +189,24 @@ function WallFrame({ position, rotationY, artIndex, photoIndex, size = 'portrait
       `/photos/photo${photoIndex}.png`,
       (tex) => {
         if (cancelled) return
-        // object-fit: cover — fill frame, maintain photo's own aspect ratio, crop edges
+        // object-fit: contain — show full photo, letterbox around it
         const img = tex.image as HTMLImageElement
-        const texAspect = img.naturalWidth / img.naturalHeight
+        const photoAspect = img.naturalWidth / img.naturalHeight
         const frameAspect = pw / ph
-        tex.wrapS = THREE.ClampToEdgeWrapping
-        tex.wrapT = THREE.ClampToEdgeWrapping
-        if (texAspect > frameAspect) {
-          // Photo wider than frame → crop sides
-          const s = frameAspect / texAspect
-          tex.repeat.set(s, 1)
-          tex.offset.set((1 - s) / 2, 0)
+        let planW: number, planH: number
+        if (photoAspect > frameAspect) {
+          // Photo wider → fit by width, letterbox top/bottom
+          planW = pw
+          planH = pw / photoAspect
         } else {
-          // Photo taller than frame → crop top/bottom
-          const s = texAspect / frameAspect
-          tex.repeat.set(1, s)
-          tex.offset.set(0, (1 - s) / 2)
+          // Photo taller → fit by height, letterbox left/right
+          planH = ph
+          planW = ph * photoAspect
         }
-        tex.needsUpdate = true
-        setPhotoTex(tex)
+        setPhoto({ tex, planW, planH })
       },
       undefined,
-      () => { /* file not found — keep canvas art */ }
+      () => { /* file not found — keep canvas art fallback */ }
     )
     return () => { cancelled = true }
   }, [photoIndex, artIndex, pw, ph])
@@ -227,10 +228,15 @@ function WallFrame({ position, rotationY, artIndex, photoIndex, size = 'portrait
         <boxGeometry args={[fw - 0.017, fh - 0.017, 0.014]} />
         <meshStandardMaterial color="#FAF4EC" roughness={0.78} />
       </mesh>
-      {/* Photo */}
-      <mesh position={[0, 0, 0.028]}>
+      {/* Inner mat surface — visible in letterbox areas */}
+      <mesh position={[0, 0, 0.027]}>
         <planeGeometry args={[pw, ph]} />
-        <meshStandardMaterial map={photoTex} roughness={0.52} />
+        <meshStandardMaterial color="#FAF4EC" roughness={0.80} />
+      </mesh>
+      {/* Photo — contained (may be smaller than pw×ph if aspect differs) */}
+      <mesh position={[0, 0, 0.028]}>
+        <planeGeometry args={[photo?.planW ?? pw, photo?.planH ?? ph]} />
+        <meshStandardMaterial map={photo?.tex ?? fallbackTex} roughness={0.52} />
       </mesh>
       {/* Glass sheen */}
       <mesh position={[0, 0, 0.030]}>
