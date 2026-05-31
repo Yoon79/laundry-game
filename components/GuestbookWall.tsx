@@ -5,18 +5,31 @@ import * as THREE from 'three'
 import type { GuestbookEntry } from '@/lib/guestbook'
 
 // ── Layout constants ──────────────────────────────────────────────────────────
-// Notes appear on the facade wall (z ≈ 5.5) to the right of the entrance,
-// roughly above the bench which is at [3.0, 0, 6.4].
+// Notes appear on the EXTERIOR facade face (z = FACADE_Z + 0.06),
+// scattered across the large wall visible when approaching the entrance.
+// FACADE_Z = 5.5, facade spans x from -4.25 to 4.25.
+// Windows at x=±2.88 — notes intentionally overlap for a lived-in look.
 
-const WALL_Z   = 5.55       // just in front of facade
-const NOTE_W   = 0.30       // width in world units
-const NOTE_H   = 0.22       // height in world units
-const COL_X    = [3.20, 3.60, 3.90]  // x columns
-const ROW_Y    = [2.35, 1.95, 1.55]  // y rows
-const SLOT_MAX = COL_X.length * ROW_Y.length  // 9 slots
+const WALL_Z   = 5.58       // just in front of facade exterior face
+const NOTE_W   = 0.28       // width in world units
+const NOTE_H   = 0.20       // height in world units
 
-// Slight random-looking tilt per slot (deterministic by index)
-const TILTS    = [-1.5, 1.2, -0.8, 1.8, -1.2, 0.6, -1.8, 1.0, -0.5]
+// 9 note positions [x, y] — spread across the whole facade front
+// Top row: above door/window arch level (y > 2.86)
+// Mid rows: in window height zone (naturally overlap decorations = charm)
+// Left/right bands stay near outer pilasters
+const NOTE_SLOTS: [number, number][] = [
+  // Top row — above arches, near cornice
+  [-3.0, 2.74], [ 0.0, 2.78], [ 3.0, 2.72],
+  // Mid-upper row — left section, right section, near-door strips
+  [-3.6, 2.10], [-1.4, 2.18], [ 1.4, 2.14], [ 3.6, 2.06],
+  // Lower row — outer bands below windows
+  [-3.5, 1.42], [ 3.5, 1.38],
+]
+const SLOT_MAX = NOTE_SLOTS.length  // 9
+
+// Deterministic tilt angles per slot (degrees → radians in Note)
+const TILTS = [-1.5, 1.2, -0.8, 1.8, -1.2, 0.6, -1.8, 1.0, -0.5]
 
 // ── Note texture ──────────────────────────────────────────────────────────────
 
@@ -90,11 +103,8 @@ interface NoteProps {
 }
 
 function Note({ entry, slotIndex, onSelect }: NoteProps) {
-  const col  = slotIndex % COL_X.length
-  const row  = Math.floor(slotIndex / COL_X.length)
-  const x    = COL_X[col] ?? 3.2
-  const y    = ROW_Y[row] ?? 1.95
-  const tilt = (TILTS[slotIndex % TILTS.length] ?? 0) * Math.PI / 180
+  const [x, y] = NOTE_SLOTS[slotIndex % NOTE_SLOTS.length] ?? [0, 2.0]
+  const tilt   = (TILTS[slotIndex % TILTS.length] ?? 0) * Math.PI / 180
 
   const tex = useMemo(() => makeNoteTexture(entry), [entry])
 
