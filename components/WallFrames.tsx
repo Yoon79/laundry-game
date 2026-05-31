@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import * as THREE from 'three'
 
 // ── Module-level texture cache ────────────────────────────────────────────────
@@ -164,16 +164,30 @@ interface FrameProps {
   position: [number, number, number]
   rotationY: number
   artIndex: number
+  photoIndex?: number   // 1-based index into /public/photos/photo{n}.png
   size?: FrameSize
   tilt?: number
 }
 
-function WallFrame({ position, rotationY, artIndex, size = 'portrait', tilt = 0 }: FrameProps) {
+function WallFrame({ position, rotationY, artIndex, photoIndex, size = 'portrait', tilt = 0 }: FrameProps) {
   const [fw, fh] = SIZES[size]
   const pw = fw - 0.076; const ph = fh - 0.076
 
-  // useMemo reads from cache — canvas is only created once per unique artIndex
-  const photoTex = useMemo(() => getArtTexture(artIndex), [artIndex])
+  // Start with canvas fallback; upgrade to real photo when loaded
+  const [photoTex, setPhotoTex] = useState<THREE.Texture>(() => getArtTexture(artIndex))
+
+  useEffect(() => {
+    if (!photoIndex) return
+    const loader = new THREE.TextureLoader()
+    let cancelled = false
+    loader.load(
+      `/photos/photo${photoIndex}.png`,
+      (tex) => { if (!cancelled) setPhotoTex(tex) },
+      undefined,
+      () => { /* file not found — keep canvas art */ }
+    )
+    return () => { cancelled = true }
+  }, [photoIndex, artIndex])
 
   return (
     <group position={position} rotation={[0, rotationY, tilt * Math.PI / 180]}>
@@ -214,52 +228,54 @@ function WallFrame({ position, rotationY, artIndex, size = 'portrait', tilt = 0 
 // ── Room layouts ──────────────────────────────────────────────────────────────
 
 export function LaundryRoomFrames() {
-  type F = { z: number; art: number; size: FrameSize; tilt: number }
+  type F = { z: number; art: number; photo: number; size: FrameSize; tilt: number }
+  // Left wall: photo1–5  /  Right wall: photo6–10
   const L: F[] = [
-    { z:  3.8, art: 0, size: 'portrait',  tilt: -1.0 },
-    { z:  1.2, art: 1, size: 'square',    tilt:  0.8 },
-    { z: -1.5, art: 2, size: 'landscape', tilt: -0.5 },
-    { z: -4.2, art: 3, size: 'portrait',  tilt:  1.2 },
-    { z: -7.0, art: 4, size: 'small',     tilt: -0.7 },
+    { z:  3.8, art: 0, photo:  1, size: 'portrait',  tilt: -1.0 },
+    { z:  1.2, art: 1, photo:  2, size: 'square',    tilt:  0.8 },
+    { z: -1.5, art: 2, photo:  3, size: 'landscape', tilt: -0.5 },
+    { z: -4.2, art: 3, photo:  4, size: 'portrait',  tilt:  1.2 },
+    { z: -7.0, art: 4, photo:  5, size: 'small',     tilt: -0.7 },
   ]
   const R: F[] = [
-    { z:  4.0, art: 5, size: 'small',     tilt:  0.9 },
-    { z:  1.4, art: 6, size: 'landscape', tilt: -0.6 },
-    { z: -1.2, art: 7, size: 'portrait',  tilt:  0.5 },
-    { z: -4.0, art: 8, size: 'square',    tilt: -1.1 },
-    { z: -7.2, art: 9, size: 'portrait',  tilt:  0.8 },
+    { z:  4.0, art: 5, photo:  6, size: 'small',     tilt:  0.9 },
+    { z:  1.4, art: 6, photo:  7, size: 'landscape', tilt: -0.6 },
+    { z: -1.2, art: 7, photo:  8, size: 'portrait',  tilt:  0.5 },
+    { z: -4.0, art: 8, photo:  9, size: 'square',    tilt: -1.1 },
+    { z: -7.2, art: 9, photo: 10, size: 'portrait',  tilt:  0.8 },
   ]
   return (
     <group>
-      {L.map((f,i) => <WallFrame key={`lf${i}`} position={[-1.97,2.08,f.z]} rotationY={Math.PI/2} artIndex={f.art} size={f.size} tilt={f.tilt} />)}
-      {R.map((f,i) => <WallFrame key={`rf${i}`} position={[ 1.97,2.08,f.z]} rotationY={-Math.PI/2} artIndex={f.art} size={f.size} tilt={f.tilt} />)}
+      {L.map((f,i) => <WallFrame key={`lf${i}`} position={[-1.97,2.08,f.z]} rotationY={Math.PI/2} artIndex={f.art} photoIndex={f.photo} size={f.size} tilt={f.tilt} />)}
+      {R.map((f,i) => <WallFrame key={`rf${i}`} position={[ 1.97,2.08,f.z]} rotationY={-Math.PI/2} artIndex={f.art} photoIndex={f.photo} size={f.size} tilt={f.tilt} />)}
     </group>
   )
 }
 
 export function ClothesRoomFrames() {
-  type F = { z: number; art: number; size: FrameSize; tilt: number }
-  type B = { x: number; art: number; size: FrameSize; tilt: number }
+  type F = { z: number; art: number; photo?: number; size: FrameSize; tilt: number }
+  type B = { x: number; art: number; photo?: number; size: FrameSize; tilt: number }
+  // Left: photo11–13 / Right: photo14–16 / Back: photo17 (last 2 → canvas fallback)
   const L: F[] = [
-    { z:-11.2, art:0, size:'portrait',  tilt: 1.0 },
-    { z:-13.8, art:2, size:'landscape', tilt:-0.8 },
-    { z:-16.5, art:4, size:'small',     tilt: 0.5 },
+    { z:-11.2, art:0, photo:11, size:'portrait',  tilt: 1.0 },
+    { z:-13.8, art:2, photo:12, size:'landscape', tilt:-0.8 },
+    { z:-16.5, art:4, photo:13, size:'small',     tilt: 0.5 },
   ]
   const R: F[] = [
-    { z:-11.0, art:7, size:'small',     tilt:-1.2 },
-    { z:-13.6, art:8, size:'portrait',  tilt: 0.7 },
-    { z:-16.8, art:9, size:'landscape', tilt:-0.5 },
+    { z:-11.0, art:7, photo:14, size:'small',     tilt:-1.2 },
+    { z:-13.6, art:8, photo:15, size:'portrait',  tilt: 0.7 },
+    { z:-16.8, art:9, photo:16, size:'landscape', tilt:-0.5 },
   ]
   const Back: B[] = [
-    { x:-1.0, art:5, size:'portrait',  tilt:-0.9 },
-    { x: 0.0, art:6, size:'landscape', tilt: 0.4 },
-    { x: 1.0, art:3, size:'portrait',  tilt: 1.0 },
+    { x:-1.0, art:5, photo:17, size:'portrait',  tilt:-0.9 },
+    { x: 0.0, art:6,           size:'landscape', tilt: 0.4 },
+    { x: 1.0, art:3,           size:'portrait',  tilt: 1.0 },
   ]
   return (
     <group>
-      {L.map((f,i)    => <WallFrame key={`cl${i}`} position={[-1.97,1.74,f.z]}  rotationY={Math.PI/2}  artIndex={f.art} size={f.size} tilt={f.tilt} />)}
-      {R.map((f,i)    => <WallFrame key={`cr${i}`} position={[ 1.97,1.74,f.z]}  rotationY={-Math.PI/2} artIndex={f.art} size={f.size} tilt={f.tilt} />)}
-      {Back.map((f,i) => <WallFrame key={`cb${i}`} position={[f.x, 1.82,-17.96]} rotationY={0}         artIndex={f.art} size={f.size} tilt={f.tilt} />)}
+      {L.map((f,i)    => <WallFrame key={`cl${i}`} position={[-1.97,1.74,f.z]}   rotationY={Math.PI/2}  artIndex={f.art} photoIndex={f.photo} size={f.size} tilt={f.tilt} />)}
+      {R.map((f,i)    => <WallFrame key={`cr${i}`} position={[ 1.97,1.74,f.z]}   rotationY={-Math.PI/2} artIndex={f.art} photoIndex={f.photo} size={f.size} tilt={f.tilt} />)}
+      {Back.map((f,i) => <WallFrame key={`cb${i}`} position={[f.x, 1.82,-17.96]} rotationY={0}          artIndex={f.art} photoIndex={f.photo} size={f.size} tilt={f.tilt} />)}
     </group>
   )
 }
