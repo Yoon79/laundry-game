@@ -23,6 +23,8 @@ import GuestbookModal from './GuestbookModal'
 import GuestbookWall from './GuestbookWall'
 import ShareModal from './ShareModal'
 import CDPlayer from './CDPlayer'
+import SpatialAudioUpdater from './SpatialAudioUpdater'
+import { initSpatialAudio } from '@/lib/spatialAudio'
 
 export default function GameClient() {
   const [entered, setEntered] = useState(false)
@@ -30,8 +32,7 @@ export default function GameClient() {
   const [muted, setMuted]     = useState(false)
   const [isMobile, setIsMobile]   = useState(false)
   const [cdPlaying, setCdPlaying] = useState(false)
-  const audioRef  = useRef<HTMLAudioElement | null>(null)
-  const fadeTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   // Detect mobile once on mount
   useEffect(() => {
@@ -41,52 +42,34 @@ export default function GameClient() {
   // On mobile, FPS is always active after entering (no pointer lock step)
   const fpsActive = isMobile ? entered : locked
 
-  // ── Initialise audio element once on entry (don't auto-play) ─────
+  // ── Create audio element once on entry (no auto-play) ────────────
   useEffect(() => {
     if (!entered) return
     const audio = new Audio('/music/bgm.mp3')
-    audio.loop   = true
-    audio.volume = 0
+    audio.loop = true
+    audio.volume = 1.0   // volume handled by Web Audio panner
     audioRef.current = audio
     return () => { audio.pause(); audio.src = '' }
   }, [entered])
 
-  // ── Play / pause based on CD player state with fade ───────────────
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-    if (fadeTimer.current) clearInterval(fadeTimer.current)
-
-    if (cdPlaying) {
-      audio.play().catch(() => {})
-      // Fade in
-      fadeTimer.current = setInterval(() => {
-        if (!audioRef.current) return
-        const v = Math.min(0.55, audioRef.current.volume + 0.015)
-        audioRef.current.volume = v
-        if (v >= 0.55 && fadeTimer.current) clearInterval(fadeTimer.current)
-      }, 60)
-    } else {
-      // Fade out then pause
-      fadeTimer.current = setInterval(() => {
-        if (!audioRef.current) return
-        const v = Math.max(0, audioRef.current.volume - 0.020)
-        audioRef.current.volume = v
-        if (v <= 0) {
-          audioRef.current.pause()
-          if (fadeTimer.current) clearInterval(fadeTimer.current)
-        }
-      }, 50)
-    }
-    return () => { if (fadeTimer.current) clearInterval(fadeTimer.current) }
-  }, [cdPlaying])
-
-  // Sync mute state to audio element
+  // Sync mute state
   useEffect(() => {
     if (audioRef.current) audioRef.current.muted = muted
   }, [muted])
 
-  const handleCDToggle = () => setCdPlaying(p => !p)
+  // ── CD player toggle — instant play/stop, spatial audio ──────────
+  const handleCDToggle = () => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (!cdPlaying) {
+      // Initialise Web Audio panner (safe to call multiple times)
+      initSpatialAudio(audio)
+      audio.play().catch(() => {})
+    } else {
+      audio.pause()
+    }
+    setCdPlaying(p => !p)
+  }
 
   // ── Album panel ───────────────────────────────────────────────────
   const [selectedAlbumId, setSelectedAlbumId] = useState<number | null>(null)
@@ -331,6 +314,7 @@ export default function GameClient() {
         style={{ background: '#68A8D8' }}
       >
         <FPSMovement active={fpsActive} isMobile={isMobile} sitting={sittingMode} />
+        <SpatialAudioUpdater />
         <Exterior onBenchClick={handleBenchClick} />
         <GuestbookWall
           entries={guestbookEntries}
