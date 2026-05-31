@@ -169,47 +169,53 @@ interface FrameProps {
   tilt?: number
 }
 
-// Photo state for contain mode: actual texture + computed plane dimensions
-interface PhotoState { tex: THREE.Texture; planW: number; planH: number }
+// Max/min frame dimensions in world units
+const MAX_DIM = 0.42
+const MIN_DIM = 0.18
 
 function WallFrame({ position, rotationY, artIndex, photoIndex, size = 'portrait', tilt = 0 }: FrameProps) {
-  const [fw, fh] = SIZES[size]
+  const [defaultFW, defaultFH] = SIZES[size]
+
+  // Frame dims start as the default; update to match photo aspect when loaded
+  const [fw, setFW] = useState(defaultFW)
+  const [fh, setFH] = useState(defaultFH)
   const pw = fw - 0.076; const ph = fh - 0.076
 
-  // Canvas fallback occupies the full photo area
   const fallbackTex = useMemo(() => getArtTexture(artIndex), [artIndex])
-  const [photo, setPhoto] = useState<PhotoState | null>(null)
+  const [photoTex, setPhotoTex] = useState<THREE.Texture | null>(null)
 
   useEffect(() => {
-    setPhoto(null)   // reset when frame changes
+    // Reset to default size when frame identity changes
+    setFW(defaultFW); setFH(defaultFH); setPhotoTex(null)
     if (!photoIndex) return
+
     const loader = new THREE.TextureLoader()
     let cancelled = false
     loader.load(
       `/photos/photo${photoIndex}.png`,
       (tex) => {
         if (cancelled) return
-        // object-fit: contain — show full photo, letterbox around it
         const img = tex.image as HTMLImageElement
-        const photoAspect = img.naturalWidth / img.naturalHeight
-        const frameAspect = pw / ph
-        let planW: number, planH: number
-        if (photoAspect > frameAspect) {
-          // Photo wider → fit by width, letterbox top/bottom
-          planW = pw
-          planH = pw / photoAspect
-        } else {
-          // Photo taller → fit by height, letterbox left/right
-          planH = ph
-          planW = ph * photoAspect
+        const aspect = img.naturalWidth / img.naturalHeight
+        // Resize the frame to match the photo's aspect ratio
+        let newFW: number, newFH: number
+        if (aspect >= 1) {          // landscape / square
+          newFW = MAX_DIM
+          newFH = Math.max(MIN_DIM, newFW / aspect)
+        } else {                    // portrait
+          newFH = MAX_DIM
+          newFW = Math.max(MIN_DIM, newFH * aspect)
         }
-        setPhoto({ tex, planW, planH })
+        setFW(newFW); setFH(newFH)
+        setPhotoTex(tex)
       },
       undefined,
-      () => { /* file not found — keep canvas art fallback */ }
+      () => { /* file not found → keep default size + canvas art */ }
     )
     return () => { cancelled = true }
-  }, [photoIndex, artIndex, pw, ph])
+  }, [photoIndex, defaultFW, defaultFH])
+
+  const activeTex = photoTex ?? fallbackTex
 
   return (
     <group position={position} rotation={[0, rotationY, tilt * Math.PI / 180]}>
@@ -228,15 +234,10 @@ function WallFrame({ position, rotationY, artIndex, photoIndex, size = 'portrait
         <boxGeometry args={[fw - 0.017, fh - 0.017, 0.014]} />
         <meshStandardMaterial color="#FAF4EC" roughness={0.78} />
       </mesh>
-      {/* Inner mat surface — visible in letterbox areas */}
-      <mesh position={[0, 0, 0.027]}>
-        <planeGeometry args={[pw, ph]} />
-        <meshStandardMaterial color="#FAF4EC" roughness={0.80} />
-      </mesh>
-      {/* Photo — contained (may be smaller than pw×ph if aspect differs) */}
+      {/* Photo — fills the exact photo area (frame already matches aspect) */}
       <mesh position={[0, 0, 0.028]}>
-        <planeGeometry args={[photo?.planW ?? pw, photo?.planH ?? ph]} />
-        <meshStandardMaterial map={photo?.tex ?? fallbackTex} roughness={0.52} />
+        <planeGeometry args={[pw, ph]} />
+        <meshStandardMaterial map={activeTex} roughness={0.52} />
       </mesh>
       {/* Glass sheen */}
       <mesh position={[0, 0, 0.030]}>
