@@ -236,51 +236,62 @@ const _noteCache = new Map<string, THREE.CanvasTexture>()
 
 function getNoteTexture(entry: GuestbookEntry): THREE.CanvasTexture {
   if (_noteCache.has(entry.id)) return _noteCache.get(entry.id)!
-  const W = 200, H = 148
+  const W = 256, H = 192
   const c = document.createElement('canvas'); c.width = W; c.height = H
   const ctx = c.getContext('2d')!
 
-  // Pastel paper (4 tones)
-  const papers = ['#FBF5E8', '#F5F0E8', '#EEF5E8', '#E8F0F5']
-  ctx.fillStyle = papers[parseInt(entry.id.slice(-1), 16) % papers.length]
-  ctx.fillRect(0, 0, W, H)
+  // White paper
+  ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, W, H)
 
-  // Grain
-  ctx.fillStyle = 'rgba(140,100,50,0.05)'
-  for (let i = 0; i < 28; i++) ctx.fillRect((i*41)%W, (i*31)%H, 3, 1)
+  // Very subtle warm tint (just a whisper)
+  ctx.fillStyle = 'rgba(255,248,238,0.45)'; ctx.fillRect(0, 0, W, H)
 
-  // Ruled lines
-  ctx.strokeStyle = 'rgba(130,100,60,0.16)'; ctx.lineWidth = 1
-  for (let y = 36; y < H - 12; y += 15) {
-    ctx.beginPath(); ctx.moveTo(12, y); ctx.lineTo(W-12, y); ctx.stroke()
+  // Ruled lines (light blue, notebook style)
+  ctx.strokeStyle = 'rgba(160,200,230,0.40)'; ctx.lineWidth = 1
+  for (let y = 42; y < H - 10; y += 18) {
+    ctx.beginPath(); ctx.moveTo(10, y); ctx.lineTo(W - 10, y); ctx.stroke()
   }
-  // Red margin
-  ctx.strokeStyle = 'rgba(200,70,50,0.20)'; ctx.lineWidth = 1.2
-  ctx.beginPath(); ctx.moveTo(32, 12); ctx.lineTo(32, H-12); ctx.stroke()
 
-  // Tape + pin
-  ctx.fillStyle = 'rgba(210,185,125,0.28)'
-  ctx.fillRect(W/2 - 18, 0, 36, 7)
-  ctx.fillStyle = 'rgba(140,55,35,0.55)'
-  ctx.beginPath(); ctx.arc(W/2, 4, 3.5, 0, Math.PI*2); ctx.fill()
+  // Red margin line
+  ctx.strokeStyle = 'rgba(220,80,60,0.35)'; ctx.lineWidth = 1.5
+  ctx.beginPath(); ctx.moveTo(36, 10); ctx.lineTo(36, H - 10); ctx.stroke()
 
-  // Date
+  // Tape strip at top (semi-transparent warm)
+  ctx.fillStyle = 'rgba(220,200,150,0.35)'
+  ctx.fillRect(W/2 - 22, 0, 44, 9)
+
+  // Pin dot
+  ctx.fillStyle = 'rgba(160,60,40,0.70)'
+  ctx.beginPath(); ctx.arc(W/2, 5, 4.5, 0, Math.PI*2); ctx.fill()
+  ctx.fillStyle = 'rgba(220,100,80,0.50)'
+  ctx.beginPath(); ctx.arc(W/2 - 1, 4, 2, 0, Math.PI*2); ctx.fill()
+
+  // Date (top right, small and clear)
   const date = new Date(entry.timestamp)
-  ctx.fillStyle = '#A07848'; ctx.font = '10px monospace'; ctx.textAlign = 'right'
-  ctx.fillText(`${date.getMonth()+1}/${date.getDate()}`, W-8, 15)
+  ctx.fillStyle = '#888888'
+  ctx.font = 'bold 11px "Mona12", monospace'
+  ctx.textAlign = 'right'
+  ctx.fillText(
+    `${date.getMonth() + 1}.${String(date.getDate()).padStart(2, '0')}`,
+    W - 10, 18
+  )
 
-  // Message
-  ctx.fillStyle = '#2A1808'
-  const fs = entry.text.length > 30 ? 11 : 13
-  ctx.font = `${fs}px serif`; ctx.textAlign = 'left'
+  // Message text — dark, clear
+  ctx.fillStyle = '#1A1A1A'
+  const fs = entry.text.length > 40 ? 13 : entry.text.length > 20 ? 15 : 17
+  ctx.font = `${fs}px "Mona12", sans-serif`
+  ctx.textAlign = 'left'
+  const maxLineW = W - 52
   const words = entry.text.split(' ')
   const lines: string[] = []; let cur = ''
   for (const w of words) {
     const t = cur ? `${cur} ${w}` : w
-    if (ctx.measureText(t).width > W-46 && cur) { lines.push(cur); cur = w } else cur = t
+    if (ctx.measureText(t).width > maxLineW && cur) { lines.push(cur); cur = w } else cur = t
   }
   if (cur) lines.push(cur)
-  lines.slice(0, 6).forEach((ln, i) => ctx.fillText(ln, 38, 32 + i*15))
+  const lineH = fs * 1.55
+  const startY = 38
+  lines.slice(0, 6).forEach((ln, i) => ctx.fillText(ln, 42, startY + i * lineH))
 
   const tex = new THREE.CanvasTexture(c)
   _noteCache.set(entry.id, tex); return tex
