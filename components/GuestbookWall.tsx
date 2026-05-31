@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import * as THREE from 'three'
 import type { GuestbookEntry } from '@/lib/guestbook'
 
@@ -115,6 +115,7 @@ function getTitleTex() {
 // ── Easel stand component ─────────────────────────────────────────────────────
 
 function EaselStand({ onBoardClick }: { onBoardClick?: () => void }) {
+  const [boardHovered, setBoardHovered] = useState(false)
   const corkTex  = useMemo(() => getCorkTex(), [])
   const titleTex = useMemo(() => getTitleTex(), [])
 
@@ -167,15 +168,25 @@ function EaselStand({ onBoardClick }: { onBoardClick?: () => void }) {
         </mesh>
       ))}
 
-      {/* ── Cork board surface (clickable → open guestbook form) ── */}
+      {/* ── Cork board surface — clickable, glows on hover ── */}
       <mesh
         position={[0, BY, 0.02]}
         onClick={(e) => { e.stopPropagation(); onBoardClick?.() }}
-        onPointerOver={(e) => { e.stopPropagation() }}
+        onPointerOver={(e) => { e.stopPropagation(); setBoardHovered(true) }}
+        onPointerOut={() => setBoardHovered(false)}
       >
         <planeGeometry args={[BW - FT * 2, BH - FT * 2]} />
-        <meshStandardMaterial map={corkTex} roughness={0.92} />
+        <meshStandardMaterial
+          map={corkTex}
+          roughness={0.92}
+          emissive={new THREE.Color('#FFD878')}
+          emissiveIntensity={boardHovered ? 0.28 : 0}
+        />
       </mesh>
+      {/* Hover glow point light */}
+      {boardHovered && (
+        <pointLight position={[0, BY, 0.6]} color="#FFD060" intensity={2.5} distance={1.2} />
+      )}
 
       {/* ── Frame rails: top+bottom CREAM, sides MINT ── */}
       {/* Top rail */}
@@ -285,19 +296,32 @@ interface NoteProps {
 
 function Note({ entry, slotIndex, onSelect }: NoteProps) {
   const [lx, ly] = NOTE_SLOTS[slotIndex % SLOT_MAX]
-  const tilt = (TILTS[slotIndex % TILTS.length] ?? 0) * Math.PI / 180
-  const tex  = useMemo(() => getNoteTexture(entry), [entry])
+  const tilt    = (TILTS[slotIndex % TILTS.length] ?? 0) * Math.PI / 180
+  const tex     = useMemo(() => getNoteTexture(entry), [entry])
+  const [hovered, setHovered] = useState(false)
 
   return (
     <group
-      position={[lx, ly, 0.05]}  // local coords within stand group
+      position={[lx, ly, 0.05]}
       rotation={[0, 0, tilt]}
       onClick={e => { e.stopPropagation(); onSelect(entry) }}
+      onPointerOver={e => { e.stopPropagation(); setHovered(true) }}
+      onPointerOut={() => setHovered(false)}
     >
+      {/* Paper — emissive glow on hover */}
       <mesh>
         <planeGeometry args={[NOTE_W, NOTE_H]} />
-        <meshStandardMaterial map={tex} roughness={0.84} />
+        <meshStandardMaterial
+          map={tex}
+          roughness={0.84}
+          emissive={new THREE.Color('#FFFDE0')}
+          emissiveIntensity={hovered ? 0.35 : 0}
+        />
       </mesh>
+      {/* Hover point light */}
+      {hovered && (
+        <pointLight position={[0, 0, 0.12]} color="#FFFAC0" intensity={1.8} distance={0.35} />
+      )}
       {/* Drop shadow */}
       <mesh position={[0.005, -0.005, -0.002]}>
         <planeGeometry args={[NOTE_W+0.006, NOTE_H+0.006]} />

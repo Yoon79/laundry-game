@@ -34,8 +34,6 @@ export default function FPSMovement({ active, isMobile = false, sitting = false 
 
   const prevActive   = useRef(false)
   const descendingY  = useRef(false)
-  const sitTargetQ   = useRef(new THREE.Quaternion())
-  const sitTempMat   = useRef(new THREE.Matrix4())
 
   // Set initial camera direction + correct rotation order for FPS
   useEffect(() => {
@@ -67,17 +65,25 @@ export default function FPSMovement({ active, isMobile = false, sitting = false 
   }, [isMobile])
 
   useFrame((_, delta) => {
-    // ── Sitting mode: smoothly move to bench view, face outward ──────────
+    // ── Sitting mode ──────────────────────────────────────────────────
+    // Position lerps to bench seat; rotation stays free (PointerLock on
+    // desktop, touch drag on mobile) so the user can look around.
     if (sitting) {
-      // Lerp position to seated spot
-      camera.position.lerp(SIT_POS, delta * 3.8)
+      camera.position.lerp(SIT_POS, delta * 4.0)
 
-      // Slerp rotation toward outward look direction
-      sitTempMat.current.lookAt(camera.position, SIT_LOOK, UP.current)
-      sitTargetQ.current.setFromRotationMatrix(sitTempMat.current)
-      camera.quaternion.slerp(sitTargetQ.current, delta * 3.0)
+      // Mobile: still allow touch look while sitting
+      if (isMobile && (touchState.lookDelta.x !== 0 || touchState.lookDelta.y !== 0)) {
+        camera.rotation.y -= touchState.lookDelta.x
+        camera.rotation.x  = THREE.MathUtils.clamp(
+          camera.rotation.x - touchState.lookDelta.y,
+          -Math.PI / 2.1,
+           Math.PI / 2.1,
+        )
+        touchState.lookDelta.x = 0
+        touchState.lookDelta.y = 0
+      }
 
-      prevActive.current = false   // reset so descent fires on stand-up
+      prevActive.current = false
       return
     }
 

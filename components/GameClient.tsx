@@ -88,14 +88,22 @@ export default function GameClient() {
     localStorage.setItem('sweden-laundry-guestbook', JSON.stringify(guestbookEntries))
   }, [guestbookEntries])
 
-  // Bench click → immediately sit (camera animates, no prompt)
+  // Bench click → immediately sit; keep pointer lock so user can look around
   const handleBenchClick = () => {
-    document.exitPointerLock()
     setSittingMode(true)
   }
   const handleStandUp = () => {
     setSittingMode(false)
   }
+
+  // 'E' key stands up while sitting
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === 'KeyE' && sittingMode) handleStandUp()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [sittingMode])
 
   // Board (easel cork) click → open guestbook input
   const handleBoardClick = () => {
@@ -248,9 +256,9 @@ export default function GameClient() {
         </div>
       )}
 
-      {/* ── 일어나기 버튼 (앉아있을 때만) ── */}
+      {/* ── 앉아있을 때: 일어나기 버튼 + E 키 힌트 ── */}
       {sittingMode && !selectedAlbum && !behindItem && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-20">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
           <button
             onClick={handleStandUp}
             className="px-8 py-3 text-[12px] tracking-[0.18em] uppercase"
@@ -264,6 +272,14 @@ export default function GameClient() {
           >
             🚶 일어나기
           </button>
+          {locked && (
+            <p
+              className="text-[9px] tracking-[0.20em] uppercase"
+              style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'var(--font-space-mono)' }}
+            >
+              E 키로 일어나기 · ESC 후 버튼 클릭
+            </p>
+          )}
         </div>
       )}
 
