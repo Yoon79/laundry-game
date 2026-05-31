@@ -468,6 +468,7 @@ export default function ClothesRoom() {
           ))}
         </group>
       ))}
+
     </group>
   )
 }

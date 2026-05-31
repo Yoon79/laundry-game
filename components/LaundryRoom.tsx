@@ -456,6 +456,7 @@ export default function LaundryRoom({ onSelectAlbum, deliveryTargetAlbumId, onDe
 
       <ChalkSign />
 
+
       {/* ── Washing machines: 12 cols × 2 stacks × 2 sides = 48 slots ── */}
       {/* albumId = col*4 + {left-bottom=0, left-top=1, right-bottom=2, right-top=3} */}
       {MACHINE_Z.map((z, col) => {

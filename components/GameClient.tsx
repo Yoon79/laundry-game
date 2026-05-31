@@ -13,6 +13,7 @@ import type { LostItem } from './LostLaundry'
 import Splash from './Splash'
 import HUD from './HUD'
 import AlbumPanel from './AlbumPanel'
+import { LaundryRoomFrames, ClothesRoomFrames } from './WallFrames'
 import BehindPhoto from './BehindPhoto'
 import ALBUMS from '@/lib/albums'
 
@@ -151,6 +152,8 @@ export default function GameClient() {
         />
         <ClothesRoom />
         <LostLaundry pickedUpIds={pickedUpIds} onPickup={handlePickup} />
+        <LaundryRoomFrames />
+        <ClothesRoomFrames />
 
         {entered && (
           <PointerLockControls
