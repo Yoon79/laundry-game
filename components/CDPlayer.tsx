@@ -163,7 +163,7 @@ export default function CDPlayer({ position, rotationY, playing, onToggle }: CDP
 
       {/* Ambient glow — half the original intensity */}
       {playing && (
-        <pointLight position={[0, 0, D / 2 + 0.15]} color="#80FFB0" intensity={0.25} distance={1.4} />
+        <pointLight position={[0, 0, D / 2 + 0.15]} color="#80FFB0" intensity={0.1} distance={1.4} />
       )}
 
       {/* Wall mount plate */}
