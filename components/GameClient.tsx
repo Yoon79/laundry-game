@@ -126,12 +126,12 @@ export default function GameClient() {
   const [pickedUpIds, setPickedUpIds]   = useState<Set<number>>(new Set())
   const [behindItem,  setBehindItem]    = useState<LostItem | null>(null)
 
-  // Exit pointer lock when UI panels open
+  // Exit pointer lock whenever any overlay panel is open
   useEffect(() => {
-    if (selectedAlbumId !== null || behindItem !== null) {
+    if (selectedAlbumId !== null || behindItem !== null || showGuestbookInput) {
       document.exitPointerLock()
     }
-  }, [selectedAlbumId, behindItem])
+  }, [selectedAlbumId, behindItem, showGuestbookInput])
 
   const handleSelectAlbum = (id: number) => {
     if (carriedItem) return   // can't open album panel while carrying laundry
