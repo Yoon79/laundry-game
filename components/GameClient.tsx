@@ -15,13 +15,24 @@ import HUD from './HUD'
 import AlbumPanel from './AlbumPanel'
 import { LaundryRoomFrames, ClothesRoomFrames } from './WallFrames'
 import BehindPhoto from './BehindPhoto'
+import MobileControls from './MobileControls'
+import OrientationGuard from './OrientationGuard'
 import ALBUMS from '@/lib/albums'
 
 export default function GameClient() {
   const [entered, setEntered] = useState(false)
-  const [locked, setLocked] = useState(false)
-  const [muted, setMuted]   = useState(false)
+  const [locked, setLocked]   = useState(false)
+  const [muted, setMuted]     = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Detect mobile once on mount
+  useEffect(() => {
+    setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0)
+  }, [])
+
+  // On mobile, FPS is always active after entering (no pointer lock step)
+  const fpsActive = isMobile ? entered : locked
 
   // ── Background music — starts on enter, fades in ──────────────────
   useEffect(() => {
@@ -103,13 +114,25 @@ export default function GameClient() {
       {/* ── HUD ── */}
       {entered && !selectedAlbum && !behindItem && <HUD locked={locked} />}
 
-      {/* ── Hint bar ── */}
-      {entered && !locked && !selectedAlbum && !behindItem && !carriedItem && (
+      {/* ── Mobile controls ── */}
+      <MobileControls active={isMobile && entered && !selectedAlbum && !behindItem} />
+
+      {/* ── Hint bar (desktop only) ── */}
+      {entered && !isMobile && !locked && !selectedAlbum && !behindItem && !carriedItem && (
         <div
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-10 text-center text-[10px] tracking-[0.18em] uppercase"
           style={{ color: 'rgba(255,255,255,0.50)', fontFamily: 'var(--font-space-mono)' }}
         >
           세탁기 클릭 → 앨범 보기 &nbsp;·&nbsp; 옷방 바닥의 빛나는 세탁물을 찾아보세요
+        </div>
+      )}
+      {/* ── Hint bar (mobile) ── */}
+      {entered && isMobile && !selectedAlbum && !behindItem && !carriedItem && (
+        <div
+          className="fixed bottom-[130px] left-1/2 -translate-x-1/2 z-10 text-center text-[10px] tracking-[0.16em] uppercase"
+          style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'var(--font-space-mono)' }}
+        >
+          세탁기 탭 → 앨범 보기
         </div>
       )}
 
@@ -199,7 +222,7 @@ export default function GameClient() {
         }}
         style={{ background: '#68A8D8' }}
       >
-        <FPSMovement active={locked} />
+        <FPSMovement active={fpsActive} isMobile={isMobile} />
         <Exterior />
         <LaundryRoom
           onSelectAlbum={handleSelectAlbum}
@@ -211,7 +234,8 @@ export default function GameClient() {
         <LaundryRoomFrames />
         <ClothesRoomFrames />
 
-        {entered && (
+        {/* PointerLockControls — desktop only */}
+        {entered && !isMobile && (
           <PointerLockControls
             onLock={() => setLocked(true)}
             onUnlock={() => setLocked(false)}
