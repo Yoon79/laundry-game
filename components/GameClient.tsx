@@ -22,13 +22,16 @@ import type { GuestbookEntry } from '@/lib/guestbook'
 import GuestbookModal from './GuestbookModal'
 import GuestbookWall from './GuestbookWall'
 import ShareModal from './ShareModal'
+import CDPlayer from './CDPlayer'
 
 export default function GameClient() {
   const [entered, setEntered] = useState(false)
   const [locked, setLocked]   = useState(false)
   const [muted, setMuted]     = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [isMobile, setIsMobile]   = useState(false)
+  const [cdPlaying, setCdPlaying] = useState(false)
+  const audioRef  = useRef<HTMLAudioElement | null>(null)
+  const fadeTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Detect mobile once on mount
   useEffect(() => {
@@ -38,38 +41,52 @@ export default function GameClient() {
   // On mobile, FPS is always active after entering (no pointer lock step)
   const fpsActive = isMobile ? entered : locked
 
-  // ── Background music — starts on enter, fades in ──────────────────
+  // ── Initialise audio element once on entry (don't auto-play) ─────
   useEffect(() => {
     if (!entered) return
-
     const audio = new Audio('/music/bgm.mp3')
     audio.loop   = true
     audio.volume = 0
     audioRef.current = audio
-
-    audio.play().catch(() => {
-      // File not present or autoplay blocked — fail silently
-    })
-
-    // Fade in over ~3 seconds
-    let vol = 0
-    const timer = setInterval(() => {
-      vol = Math.min(0.55, vol + 0.01)
-      if (audioRef.current) audioRef.current.volume = vol
-      if (vol >= 0.55) clearInterval(timer)
-    }, 55)
-
-    return () => {
-      clearInterval(timer)
-      audio.pause()
-      audio.src = ''
-    }
+    return () => { audio.pause(); audio.src = '' }
   }, [entered])
+
+  // ── Play / pause based on CD player state with fade ───────────────
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (fadeTimer.current) clearInterval(fadeTimer.current)
+
+    if (cdPlaying) {
+      audio.play().catch(() => {})
+      // Fade in
+      fadeTimer.current = setInterval(() => {
+        if (!audioRef.current) return
+        const v = Math.min(0.55, audioRef.current.volume + 0.015)
+        audioRef.current.volume = v
+        if (v >= 0.55 && fadeTimer.current) clearInterval(fadeTimer.current)
+      }, 60)
+    } else {
+      // Fade out then pause
+      fadeTimer.current = setInterval(() => {
+        if (!audioRef.current) return
+        const v = Math.max(0, audioRef.current.volume - 0.020)
+        audioRef.current.volume = v
+        if (v <= 0) {
+          audioRef.current.pause()
+          if (fadeTimer.current) clearInterval(fadeTimer.current)
+        }
+      }, 50)
+    }
+    return () => { if (fadeTimer.current) clearInterval(fadeTimer.current) }
+  }, [cdPlaying])
 
   // Sync mute state to audio element
   useEffect(() => {
     if (audioRef.current) audioRef.current.muted = muted
   }, [muted])
+
+  const handleCDToggle = () => setCdPlaying(p => !p)
 
   // ── Album panel ───────────────────────────────────────────────────
   const [selectedAlbumId, setSelectedAlbumId] = useState<number | null>(null)
@@ -225,8 +242,8 @@ export default function GameClient() {
         </div>
       )}
 
-      {/* ── Music toggle (top-left) ── */}
-      {entered && (
+      {/* ── Music toggle (top-left, only when CD is on) ── */}
+      {entered && cdPlaying && (
         <button
           onClick={() => setMuted(m => !m)}
           className="fixed top-4 left-4 z-10 w-8 h-8 flex items-center justify-center rounded-full"
@@ -327,6 +344,14 @@ export default function GameClient() {
         />
         <ClothesRoom />
         <LostLaundry pickedUpIds={pickedUpIds} onPickup={handlePickup} />
+
+        {/* CD player — right wall of laundry room, at eye level */}
+        <CDPlayer
+          position={[1.97, 1.78, 2.2]}
+          rotationY={-Math.PI / 2}
+          playing={cdPlaying}
+          onToggle={handleCDToggle}
+        />
         <LaundryRoomFrames />
         <ClothesRoomFrames />
 
