@@ -38,7 +38,7 @@ export default function GuestbookModal({ onSubmit, onClose }: Props) {
         <div className="flex items-center gap-3 mb-1">
           <span style={{ fontSize: 22 }}>🪑</span>
           <p className="text-[10px] tracking-[0.20em] uppercase" style={{ color: '#9A7A50' }}>
-            Sweden Laundry · 방명록
+            스웨덴세탁소 · 방명록
           </p>
         </div>
         <h2
@@ -102,7 +102,7 @@ export default function GuestbookModal({ onSubmit, onClose }: Props) {
           className="text-center text-[9px] tracking-[0.22em] uppercase mt-5"
           style={{ color: '#C0A070' }}
         >
-          EST. 2012 · 스웨덴세탁소
+          스웨덴세탁소 · EST. 2012
         </p>
 
         <button
