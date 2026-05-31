@@ -29,7 +29,9 @@ export default function MobileControls({ active }: Props) {
     }
 
     const handleStart = (e: TouchEvent) => {
-      e.preventDefault()
+      // Do NOT call preventDefault here — browser must be allowed to generate
+      // pointer events so R3F can raycast 3D mesh clicks (washing machines,
+      // CD player, bench, guestbook board, etc.)
       for (const t of Array.from(e.changedTouches)) {
         const isLeft = t.clientX < window.innerWidth * 0.45
         if (isLeft && joystickTouchId === -1) {
@@ -92,11 +94,12 @@ export default function MobileControls({ active }: Props) {
       }
     }
 
-    const opts = { passive: false } as const
-    document.addEventListener('touchstart',  handleStart,  opts)
-    document.addEventListener('touchmove',   handleMove,   opts)
-    document.addEventListener('touchend',    handleEnd,    opts)
-    document.addEventListener('touchcancel', handleEnd,    opts)
+    // touchstart/end: passive=true (no preventDefault, so pointer events fire)
+    // touchmove:      passive=false (need preventDefault to block scroll)
+    document.addEventListener('touchstart',  handleStart, { passive: true })
+    document.addEventListener('touchmove',   handleMove,  { passive: false })
+    document.addEventListener('touchend',    handleEnd,   { passive: true })
+    document.addEventListener('touchcancel', handleEnd,   { passive: true })
 
     return () => {
       document.removeEventListener('touchstart',  handleStart)

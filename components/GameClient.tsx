@@ -311,7 +311,7 @@ export default function GameClient() {
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.1,
         }}
-        style={{ background: '#68A8D8' }}
+        style={{ background: '#68A8D8', touchAction: 'none' }}
       >
         <FPSMovement active={fpsActive} isMobile={isMobile} sitting={sittingMode} />
         <SpatialAudioUpdater />
