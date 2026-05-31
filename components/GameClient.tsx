@@ -133,6 +133,19 @@ export default function GameClient() {
     }
   }, [showGuestbookInput, selectedAlbumId, behindItem, shareEntry])
 
+  // ESC closes whichever modal is currently open
+  useEffect(() => {
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.code !== 'Escape') return
+      if (shareEntry)          { setShareEntry(null);           return }
+      if (showGuestbookInput)  { setShowGuestbookInput(false);  return }
+      if (selectedAlbumId !== null) { setSelectedAlbumId(null); return }
+      if (behindItem)          { setBehindItem(null);           return }
+    }
+    window.addEventListener('keydown', onEsc)
+    return () => window.removeEventListener('keydown', onEsc)
+  }, [shareEntry, showGuestbookInput, selectedAlbumId, behindItem])
+
   const handleSelectAlbum = (id: number) => {
     if (carriedItem) return   // can't open album panel while carrying laundry
     setSelectedAlbumId(id)
