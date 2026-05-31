@@ -25,7 +25,7 @@ export default function OrientationGuard({ children }: Props) {
     return (
       <div
         className="fixed inset-0 z-50 flex flex-col items-center justify-center"
-        style={{ background: '#FAF0E6', fontFamily: 'var(--font-space-mono)' }}
+        style={{ background: '#FAF0E6', fontFamily: "'Mona', sans-serif" }}
       >
         {/* Rotating phone icon */}
         <div

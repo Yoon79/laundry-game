@@ -30,7 +30,7 @@ export default function AlbumPanel({ album, onClose }: Props) {
         style={{
           background: '#FAF4EC',
           border: '2px solid #C8A870',
-          fontFamily: 'var(--font-space-mono), monospace',
+          fontFamily: "'Mona', sans-serif",
           boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
         }}
         onClick={(e) => e.stopPropagation()}
@@ -53,7 +53,7 @@ export default function AlbumPanel({ album, onClose }: Props) {
           <h2
             className="text-2xl leading-tight mb-1"
             style={{
-              fontFamily: 'var(--font-playfair), serif',
+              fontFamily: "'Mona', sans-serif",
               color: '#2A1A08',
               letterSpacing: '-0.01em',
             }}

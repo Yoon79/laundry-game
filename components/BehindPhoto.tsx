@@ -94,7 +94,7 @@ export default function BehindPhoto({ item, onClose }: Props) {
           maxWidth: 320,
           width: '88vw',
           transform: 'rotate(-1.5deg)',
-          fontFamily: 'var(--font-space-mono), monospace',
+          fontFamily: "'Mona', sans-serif",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -110,7 +110,7 @@ export default function BehindPhoto({ item, onClose }: Props) {
             className="text-[13px] font-bold tracking-tight mb-1"
             style={{
               color: '#2A1A08',
-              fontFamily: 'var(--font-playfair), serif',
+              fontFamily: "'Mona', sans-serif",
               fontSize: 17,
             }}
           >
@@ -152,7 +152,7 @@ export default function BehindPhoto({ item, onClose }: Props) {
       {/* Hint */}
       <p
         className="absolute bottom-8 text-[11px] tracking-widest uppercase"
-        style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font-space-mono)' }}
+        style={{ color: 'rgba(255,255,255,0.35)', fontFamily: "'Mona', sans-serif" }}
       >
         클릭하면 닫힙니다
       </p>

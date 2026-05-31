@@ -172,7 +172,7 @@ export default function GameClient() {
       {entered && !isMobile && !locked && !selectedAlbum && !behindItem && !carriedItem && (
         <div
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-10 text-center text-[10px] tracking-[0.18em] uppercase"
-          style={{ color: 'rgba(255,255,255,0.50)', fontFamily: 'var(--font-space-mono)' }}
+          style={{ color: 'rgba(255,255,255,0.50)', fontFamily: "'Mona', sans-serif" }}
         >
           세탁기 클릭 → 앨범 보기 &nbsp;·&nbsp; 옷방 바닥의 빛나는 세탁물을 찾아보세요
         </div>
@@ -181,7 +181,7 @@ export default function GameClient() {
       {entered && isMobile && !selectedAlbum && !behindItem && !carriedItem && (
         <div
           className="fixed bottom-[130px] left-1/2 -translate-x-1/2 z-10 text-center text-[10px] tracking-[0.16em] uppercase"
-          style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'var(--font-space-mono)' }}
+          style={{ color: 'rgba(255,255,255,0.45)', fontFamily: "'Mona', sans-serif" }}
         >
           세탁기 탭 → 앨범 보기
         </div>
@@ -191,7 +191,7 @@ export default function GameClient() {
       {entered && carriedItem && (
         <div
           className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none"
-          style={{ fontFamily: 'var(--font-space-mono)' }}
+          style={{ fontFamily: "'Mona', sans-serif" }}
         >
           {/* Crosshair + carried item glow */}
           <div
@@ -209,7 +209,7 @@ export default function GameClient() {
           style={{
             background: 'rgba(20,12,6,0.75)',
             border: `1px solid ${carriedItem.color}`,
-            fontFamily: 'var(--font-space-mono)',
+            fontFamily: "'Mona', sans-serif",
             color: carriedItem.color,
             fontSize: 11,
             letterSpacing: '0.14em',
@@ -250,7 +250,7 @@ export default function GameClient() {
       {entered && totalFound > 0 && !behindItem && (
         <div
           className="fixed top-4 right-4 z-10 text-[10px] tracking-widest uppercase"
-          style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'var(--font-space-mono)' }}
+          style={{ color: 'rgba(255,255,255,0.45)', fontFamily: "'Mona', sans-serif" }}
         >
           🧺 {totalFound} / {LOST_ITEMS.length}
         </div>
@@ -265,7 +265,7 @@ export default function GameClient() {
             style={{
               background: '#FAF0E6',
               color: '#3A1808',
-              fontFamily: 'var(--font-space-mono)',
+              fontFamily: "'Mona', sans-serif",
               border: 'none',
               boxShadow: '0 6px 24px rgba(0,0,0,0.45)',
             }}
@@ -275,7 +275,7 @@ export default function GameClient() {
           {locked && (
             <p
               className="text-[9px] tracking-[0.20em] uppercase"
-              style={{ color: 'rgba(255,255,255,0.42)', fontFamily: 'var(--font-space-mono)' }}
+              style={{ color: 'rgba(255,255,255,0.42)', fontFamily: "'Mona', sans-serif" }}
             >
               E 키로 일어나기 · ESC 후 버튼 클릭
             </p>

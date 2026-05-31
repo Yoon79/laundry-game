@@ -152,7 +152,7 @@ export default function MobileControls({ active }: Props) {
           fontSize: 9,
           letterSpacing: '0.16em',
           color: 'rgba(255,255,255,0.22)',
-          fontFamily: 'var(--font-space-mono)',
+          fontFamily: "'Mona', sans-serif",
           pointerEvents: 'none',
           zIndex: 20,
           textTransform: 'uppercase',

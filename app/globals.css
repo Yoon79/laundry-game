@@ -12,9 +12,10 @@ body {
   height: 100%;
   overflow: hidden;
   background: #faf0e6;
+  font-family: 'Mona', sans-serif;
 }
 
-@theme inline {
-  --font-playfair: var(--font-playfair);
-  --font-space-mono: var(--font-space-mono);
+/* Global Mona font override */
+* {
+  font-family: 'Mona', sans-serif;
 }
