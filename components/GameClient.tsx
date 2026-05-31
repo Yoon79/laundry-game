@@ -125,6 +125,8 @@ export default function GameClient() {
   const [carriedItem, setCarriedItem]   = useState<LostItem | null>(null)
   const [pickedUpIds, setPickedUpIds]   = useState<Set<number>>(new Set())
   const [behindItem,  setBehindItem]    = useState<LostItem | null>(null)
+  const [pickupMsg,   setPickupMsg]     = useState('')
+  const pickupMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Exit pointer lock whenever any overlay panel opens
   useEffect(() => {
@@ -151,8 +153,14 @@ export default function GameClient() {
     setSelectedAlbumId(id)
   }
 
-  // Pickup a lost laundry item
+  // Pickup a lost laundry item (blocked if already carrying one)
   const handlePickup = (item: LostItem) => {
+    if (carriedItem) {
+      if (pickupMsgTimer.current) clearTimeout(pickupMsgTimer.current)
+      setPickupMsg('먼저 들고 있는 세탁물을 같은 색 세탁기에 넣어주세요')
+      pickupMsgTimer.current = setTimeout(() => setPickupMsg(''), 2800)
+      return
+    }
     setCarriedItem(item)
     setPickedUpIds(prev => new Set(prev).add(item.id))
   }
@@ -204,6 +212,22 @@ export default function GameClient() {
       )}
 
       {/* ── Carrying indicator (HUD) ── */}
+      {/* ── 픽업 차단 알림 ── */}
+      {entered && pickupMsg && (
+        <div
+          className="fixed top-1/3 left-1/2 -translate-x-1/2 z-20 px-5 py-3 text-center text-[11px] tracking-[0.14em]"
+          style={{
+            background: 'rgba(20,12,6,0.82)',
+            color: '#FAF0E6',
+            fontFamily: "'Mona12', sans-serif",
+            backdropFilter: 'blur(4px)',
+            pointerEvents: 'none',
+          }}
+        >
+          {pickupMsg}
+        </div>
+      )}
+
       {entered && carriedItem && (
         <div
           className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none"
