@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { PointerLockControls } from '@react-three/drei'
 import * as THREE from 'three'
@@ -20,6 +20,41 @@ import ALBUMS from '@/lib/albums'
 export default function GameClient() {
   const [entered, setEntered] = useState(false)
   const [locked, setLocked] = useState(false)
+  const [muted, setMuted]   = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // ── Background music — starts on enter, fades in ──────────────────
+  useEffect(() => {
+    if (!entered) return
+
+    const audio = new Audio('/music/bgm.mp3')
+    audio.loop   = true
+    audio.volume = 0
+    audioRef.current = audio
+
+    audio.play().catch(() => {
+      // File not present or autoplay blocked — fail silently
+    })
+
+    // Fade in over ~3 seconds
+    let vol = 0
+    const timer = setInterval(() => {
+      vol = Math.min(0.55, vol + 0.01)
+      if (audioRef.current) audioRef.current.volume = vol
+      if (vol >= 0.55) clearInterval(timer)
+    }, 55)
+
+    return () => {
+      clearInterval(timer)
+      audio.pause()
+      audio.src = ''
+    }
+  }, [entered])
+
+  // Sync mute state to audio element
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.muted = muted
+  }, [muted])
 
   // ── Album panel ───────────────────────────────────────────────────
   const [selectedAlbumId, setSelectedAlbumId] = useState<number | null>(null)
@@ -114,6 +149,27 @@ export default function GameClient() {
           &nbsp;세탁물을 들고 있어요&nbsp;·&nbsp;
           <span style={{ color: '#F0E8DC' }}>같은 색 세탁기</span>를 찾으세요
         </div>
+      )}
+
+      {/* ── Music toggle (top-left) ── */}
+      {entered && (
+        <button
+          onClick={() => setMuted(m => !m)}
+          className="fixed top-4 left-4 z-10 w-8 h-8 flex items-center justify-center rounded-full"
+          style={{
+            background: 'rgba(20,12,6,0.50)',
+            border: '1px solid rgba(255,255,255,0.20)',
+            color: muted ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.75)',
+            fontSize: 14,
+            backdropFilter: 'blur(4px)',
+            fontFamily: 'sans-serif',
+            lineHeight: 1,
+          }}
+          title={muted ? '음악 켜기' : '음악 끄기'}
+          aria-label={muted ? '음악 켜기' : '음악 끄기'}
+        >
+          {muted ? '🔇' : '♪'}
+        </button>
       )}
 
       {/* ── Found counter (top-right) ── */}
