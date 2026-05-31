@@ -182,12 +182,33 @@ function WallFrame({ position, rotationY, artIndex, photoIndex, size = 'portrait
     let cancelled = false
     loader.load(
       `/photos/photo${photoIndex}.png`,
-      (tex) => { if (!cancelled) setPhotoTex(tex) },
+      (tex) => {
+        if (cancelled) return
+        // object-fit: cover — fill frame, maintain photo's own aspect ratio, crop edges
+        const img = tex.image as HTMLImageElement
+        const texAspect = img.naturalWidth / img.naturalHeight
+        const frameAspect = pw / ph
+        tex.wrapS = THREE.ClampToEdgeWrapping
+        tex.wrapT = THREE.ClampToEdgeWrapping
+        if (texAspect > frameAspect) {
+          // Photo wider than frame → crop sides
+          const s = frameAspect / texAspect
+          tex.repeat.set(s, 1)
+          tex.offset.set((1 - s) / 2, 0)
+        } else {
+          // Photo taller than frame → crop top/bottom
+          const s = texAspect / frameAspect
+          tex.repeat.set(1, s)
+          tex.offset.set(0, (1 - s) / 2)
+        }
+        tex.needsUpdate = true
+        setPhotoTex(tex)
+      },
       undefined,
       () => { /* file not found — keep canvas art */ }
     )
     return () => { cancelled = true }
-  }, [photoIndex, artIndex])
+  }, [photoIndex, artIndex, pw, ph])
 
   return (
     <group position={position} rotation={[0, rotationY, tilt * Math.PI / 180]}>
