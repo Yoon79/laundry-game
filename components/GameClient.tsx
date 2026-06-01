@@ -204,7 +204,7 @@ export default function GameClient() {
       {/* ── Hint bar (mobile) ── */}
       {entered && isMobile && !selectedAlbum && !behindItem && !carriedItem && (
         <div
-          className="fixed bottom-[130px] left-1/2 -translate-x-1/2 z-10 text-center text-[10px] tracking-[0.16em] uppercase"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-10 text-center text-[10px] tracking-[0.16em] uppercase"
           style={{ color: 'rgba(255,255,255,0.45)', fontFamily: "'Mona12', sans-serif" }}
         >
           세탁기 탭 → 앨범 보기
