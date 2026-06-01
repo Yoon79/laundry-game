@@ -16,10 +16,16 @@ export default function MobileControls({ active }: Props) {
   useEffect(() => {
     if (!active) return
 
-    let joystickTouchId = -1
-    let lookTouchId     = -1
-    let lastLookX = 0
-    let lastLookY = 0
+    let joystickTouchId  = -1
+    let lookTouchId      = -1
+    let lastLookX        = 0
+    let lastLookY        = 0
+    let lookStartX       = 0
+    let lookStartY       = 0
+    let lookDragging     = false  // true only after threshold crossed
+
+    // Only rotate camera after finger moves >8px — pure taps stay as R3F clicks
+    const DRAG_THRESHOLD = 8
 
     const getBaseCenter = () => {
       const r = baseRef.current?.getBoundingClientRect()
@@ -37,9 +43,12 @@ export default function MobileControls({ active }: Props) {
         if (isLeft && joystickTouchId === -1) {
           joystickTouchId = t.identifier
         } else if (!isLeft && lookTouchId === -1) {
-          lookTouchId = t.identifier
-          lastLookX   = t.clientX
-          lastLookY   = t.clientY
+          lookTouchId  = t.identifier
+          lastLookX    = t.clientX
+          lastLookY    = t.clientY
+          lookStartX   = t.clientX
+          lookStartY   = t.clientY
+          lookDragging = false
         }
       }
     }
@@ -68,12 +77,23 @@ export default function MobileControls({ active }: Props) {
           }
         }
 
-        // ── Camera look ──
+        // ── Camera look (only after drag threshold — pure taps stay as R3F clicks) ──
         if (t.identifier === lookTouchId) {
-          touchState.lookDelta.x += (t.clientX - lastLookX) * 0.0045
-          touchState.lookDelta.y += (t.clientY - lastLookY) * 0.0045
-          lastLookX = t.clientX
-          lastLookY = t.clientY
+          if (!lookDragging) {
+            const dx = t.clientX - lookStartX
+            const dy = t.clientY - lookStartY
+            if (Math.sqrt(dx * dx + dy * dy) >= DRAG_THRESHOLD) {
+              lookDragging = true
+              lastLookX = t.clientX
+              lastLookY = t.clientY
+            }
+          }
+          if (lookDragging) {
+            touchState.lookDelta.x += (t.clientX - lastLookX) * 0.0045
+            touchState.lookDelta.y += (t.clientY - lastLookY) * 0.0045
+            lastLookX = t.clientX
+            lastLookY = t.clientY
+          }
         }
       }
     }
@@ -89,7 +109,8 @@ export default function MobileControls({ active }: Props) {
           }
         }
         if (t.identifier === lookTouchId) {
-          lookTouchId = -1
+          lookTouchId  = -1
+          lookDragging = false
         }
       }
     }
