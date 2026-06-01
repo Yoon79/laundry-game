@@ -393,9 +393,13 @@ export default function GameClient() {
         <LaundryRoomFrames />
         <ClothesRoomFrames />
 
-        {/* PointerLockControls — desktop only, always mounted so onLock fires */}
+        {/* PointerLockControls — always mounted; disabled while any overlay is
+            open so a canvas click (e.g. the same click that opened a modal)
+            cannot immediately re-acquire pointer lock. onLock still fires
+            when tryRelock() calls canvas.requestPointerLock() directly. */}
         {entered && !isMobile && (
           <PointerLockControls
+            enabled={!anyOverlayOpen}
             onLock={() => setLocked(true)}
             onUnlock={() => setLocked(false)}
           />

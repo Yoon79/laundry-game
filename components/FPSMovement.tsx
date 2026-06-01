@@ -41,9 +41,15 @@ export default function FPSMovement({ active, isMobile = false, sitting = false 
     camera.lookAt(0, 1.5, 5.5)
   }, [camera])
 
-  // Desktop keyboard
+  // Desktop keyboard — only register listeners while active.
+  // When active=false (modal open, etc.) listeners are removed entirely
+  // so arrow keys / WASD cannot influence the scene at all.
   useEffect(() => {
-    if (isMobile) return
+    if (isMobile || !active) {
+      // Clear any stuck keys when deactivated
+      keys.current = { w: false, a: false, s: false, d: false }
+      return
+    }
     const onDown = (e: KeyboardEvent) => {
       if (e.code === 'KeyW' || e.code === 'ArrowUp')    keys.current.w = true
       if (e.code === 'KeyA' || e.code === 'ArrowLeft')  keys.current.a = true
@@ -61,8 +67,9 @@ export default function FPSMovement({ active, isMobile = false, sitting = false 
     return () => {
       window.removeEventListener('keydown', onDown)
       window.removeEventListener('keyup',   onUp)
+      keys.current = { w: false, a: false, s: false, d: false }
     }
-  }, [isMobile])
+  }, [isMobile, active])
 
   useFrame((_, delta) => {
     // ── Sitting mode ──────────────────────────────────────────────────
