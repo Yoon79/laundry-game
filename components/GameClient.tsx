@@ -204,7 +204,7 @@ export default function GameClient() {
       {entered && !selectedAlbum && !behindItem && <HUD locked={locked} />}
 
       {/* ── Mobile controls ── */}
-      <MobileControls active={isMobile && entered && !selectedAlbum && !behindItem} />
+      <MobileControls active={isMobile && entered && !anyOverlayOpen} />
 
       {/* ── Hint bar (desktop only) ── */}
       {entered && !isMobile && !locked && !selectedAlbum && !behindItem && !carriedItem && (
@@ -367,7 +367,7 @@ export default function GameClient() {
         }}
         style={{ background: '#68A8D8', touchAction: 'none' }}
       >
-        <FPSMovement active={fpsActive} isMobile={isMobile} sitting={sittingMode} />
+        <FPSMovement active={fpsActive && !anyOverlayOpen} isMobile={isMobile} sitting={sittingMode} />
         <SpatialAudioUpdater />
         <Exterior onBenchClick={handleBenchClick} />
         <GuestbookWall
