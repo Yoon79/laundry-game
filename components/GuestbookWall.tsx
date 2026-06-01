@@ -221,6 +221,12 @@ function EaselStand({ onBoardClick }: { onBoardClick?: () => void }) {
         <meshStandardMaterial map={titleTex} roughness={0.32} metalness={0.28} />
       </mesh>
 
+      {/* ── Large invisible hit zone (wider than visible board) ── */}
+      <mesh position={[0, BY, 0.07]}>
+        <planeGeometry args={[BW + 0.30, BH + 0.30]} />
+        <meshBasicMaterial transparent opacity={0.001} depthWrite={false} />
+      </mesh>
+
       {/* ── Board drop shadow ── */}
       <mesh position={[0.008, BY - 0.008, 0.005]}>
         <planeGeometry args={[BW + 0.02, BH + 0.02]} />
@@ -352,8 +358,14 @@ interface GuestbookWallProps {
 
 export default function GuestbookWall({ entries, onSelectEntry, onClickBoard }: GuestbookWallProps) {
   const visible = entries.slice(0, SLOT_MAX)
+  // Whole easel is clickable — notes use stopPropagation so they still
+  // open the share modal independently without triggering this.
   return (
-    <group position={[PX, 0, PZ]} rotation={[0, ROT_Y, 0]}>
+    <group
+      position={[PX, 0, PZ]}
+      rotation={[0, ROT_Y, 0]}
+      onClick={(e) => { e.stopPropagation(); onClickBoard?.() }}
+    >
       <EaselStand onBoardClick={onClickBoard} />
       {visible.map((entry, i) => (
         <Note key={entry.id} entry={entry} slotIndex={i} onSelect={onSelectEntry} />
