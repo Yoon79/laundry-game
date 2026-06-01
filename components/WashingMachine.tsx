@@ -37,7 +37,7 @@ export default function WashingMachine({
       position={position}
       rotation={[0, rotationY, 0]}
       onClick={handleClick}
-      onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
+      onPointerOver={(e) => { e.stopPropagation(); if (document.pointerLockElement) setHovered(true) }}
       onPointerOut={() => setHovered(false)}
     >
       {/* Golden delivery-target glow ring */}

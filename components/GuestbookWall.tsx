@@ -172,7 +172,7 @@ function EaselStand({ onBoardClick }: { onBoardClick?: () => void }) {
       <mesh
         position={[0, BY, 0.02]}
         onClick={(e) => { e.stopPropagation(); onBoardClick?.() }}
-        onPointerOver={(e) => { e.stopPropagation(); setBoardHovered(true) }}
+        onPointerOver={(e) => { e.stopPropagation(); if (document.pointerLockElement) setBoardHovered(true) }}
         onPointerOut={() => setBoardHovered(false)}
       >
         <planeGeometry args={[BW - FT * 2, BH - FT * 2]} />
@@ -322,7 +322,7 @@ function Note({ entry, slotIndex, onSelect }: NoteProps) {
       position={[lx, ly, 0.05]}
       rotation={[0, 0, tilt]}
       onClick={e => { e.stopPropagation(); onSelect(entry) }}
-      onPointerOver={e => { e.stopPropagation(); setHovered(true) }}
+      onPointerOver={e => { e.stopPropagation(); if (document.pointerLockElement) setHovered(true) }}
       onPointerOut={() => setHovered(false)}
     >
       {/* Paper — emissive glow on hover */}

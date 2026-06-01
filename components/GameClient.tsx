@@ -162,10 +162,10 @@ export default function GameClient() {
   useEffect(() => {
     const onEsc = (e: KeyboardEvent) => {
       if (e.code !== 'Escape') return
-      if (shareEntry)          { setShareEntry(null);           return }
-      if (showGuestbookInput)  { setShowGuestbookInput(false);  return }
-      if (selectedAlbumId !== null) { setSelectedAlbumId(null); return }
-      if (behindItem)          { setBehindItem(null);           return }
+      if (shareEntry)               { setShareEntry(null);           enablePointerLock(); return }
+      if (showGuestbookInput)       { setShowGuestbookInput(false);  enablePointerLock(); return }
+      if (selectedAlbumId !== null) { setSelectedAlbumId(null);      enablePointerLock(); return }
+      if (behindItem)               { setBehindItem(null);           enablePointerLock(); return }
     }
     window.addEventListener('keydown', onEsc)
     return () => window.removeEventListener('keydown', onEsc)

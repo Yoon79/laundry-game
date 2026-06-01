@@ -554,7 +554,7 @@ function Bench() {
   return (
     <group
       position={[3.0, 0, FACADE_Z + 0.9]}
-      onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
+      onPointerOver={(e) => { e.stopPropagation(); if (document.pointerLockElement) setHovered(true) }}
       onPointerOut={() => setHovered(false)}
     >
       {/* Legs */}

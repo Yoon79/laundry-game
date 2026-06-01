@@ -501,7 +501,7 @@ function FloatingItem({ item, isPickedUp, onPickup }: ItemProps) {
   return (
     <group ref={groupRef} position={item.position}
       onClick={(e) => { e.stopPropagation(); onPickup(item) }}
-      onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
+      onPointerOver={(e) => { e.stopPropagation(); if (document.pointerLockElement) setHovered(true) }}
       onPointerOut={() => setHovered(false)}
     >
       <ClothingShape />

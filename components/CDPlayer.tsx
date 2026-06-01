@@ -85,7 +85,7 @@ export default function CDPlayer({ position, rotationY, playing, onToggle }: CDP
       position={position}
       rotation={[0, rotationY, 0]}
       onClick={(e) => { e.stopPropagation(); onToggle() }}
-      onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
+      onPointerOver={(e) => { e.stopPropagation(); if (document.pointerLockElement) setHovered(true) }}
       onPointerOut={() => setHovered(false)}
     >
       {/* Body */}
