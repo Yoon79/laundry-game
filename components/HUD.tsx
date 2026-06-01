@@ -5,10 +5,12 @@ interface Props {
 export default function HUD({ locked }: Props) {
   return (
     <div className="pointer-events-none fixed inset-0 z-10">
-      {/* Center crosshair */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-[5px] h-[5px] rounded-full bg-[#5A3E32]/50" />
-      </div>
+      {/* Center crosshair — only visible in FPS mode (pointer locked) */}
+      {locked && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-[5px] h-[5px] rounded-full bg-[#5A3E32]/50" />
+        </div>
+      )}
 
       {/* "Click to explore" hint when unlocked */}
       {!locked && (
