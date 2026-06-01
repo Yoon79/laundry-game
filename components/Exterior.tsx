@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import * as THREE from 'three'
 import BuildingShell from './BuildingShell'
 import Environment from './Environment'
@@ -548,18 +548,25 @@ function FlowerPot({ x, z, flowerColor, size = 1 }: PotProps) {
 }
 
 function Bench() {
+  const [hovered, setHovered] = useState(false)
+  const ei = hovered ? 0.18 : 0   // emissive intensity
+
   return (
-    <group position={[3.0, 0, FACADE_Z + 0.9]}>
+    <group
+      position={[3.0, 0, FACADE_Z + 0.9]}
+      onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
+      onPointerOut={() => setHovered(false)}
+    >
       {/* Legs */}
       {([-0.36, 0.36] as const).map((lx, i) => (
         <group key={i}>
           <mesh position={[lx, 0.2, -0.14]}>
             <boxGeometry args={[0.05, 0.4, 0.05]} />
-            <meshStandardMaterial color={MINT} metalness={0.15} roughness={0.6} />
+            <meshStandardMaterial color={MINT} metalness={0.15} roughness={0.6} emissive={MINT} emissiveIntensity={ei} />
           </mesh>
           <mesh position={[lx, 0.2, 0.14]}>
             <boxGeometry args={[0.05, 0.4, 0.05]} />
-            <meshStandardMaterial color={MINT} metalness={0.15} roughness={0.6} />
+            <meshStandardMaterial color={MINT} metalness={0.15} roughness={0.6} emissive={MINT} emissiveIntensity={ei} />
           </mesh>
         </group>
       ))}
@@ -567,18 +574,18 @@ function Bench() {
       {([-0.08, 0, 0.08] as const).map((slatz, i) => (
         <mesh key={i} position={[0, 0.41, slatz]}>
           <boxGeometry args={[0.78, 0.05, 0.06]} />
-          <meshStandardMaterial color={CREAM} roughness={0.7} />
+          <meshStandardMaterial color={CREAM} roughness={0.7} emissive={CREAM} emissiveIntensity={ei * 0.7} />
         </mesh>
       ))}
       {/* Back rest */}
       <mesh position={[0, 0.66, -0.12]}>
         <boxGeometry args={[0.78, 0.25, 0.05]} />
-        <meshStandardMaterial color={MINT} metalness={0.15} roughness={0.5} />
+        <meshStandardMaterial color={MINT} metalness={0.15} roughness={0.5} emissive={MINT} emissiveIntensity={ei} />
       </mesh>
       {/* Connecting stretcher */}
       <mesh position={[0, 0.1, 0]}>
         <boxGeometry args={[0.75, 0.04, 0.04]} />
-        <meshStandardMaterial color={MINT} metalness={0.15} roughness={0.6} />
+        <meshStandardMaterial color={MINT} metalness={0.15} roughness={0.6} emissive={MINT} emissiveIntensity={ei} />
       </mesh>
     </group>
   )
