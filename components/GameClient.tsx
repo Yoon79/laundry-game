@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { PointerLockControls } from '@react-three/drei'
 import * as THREE from 'three'
 import FPSMovement from './FPSMovement'
 import LaundryRoom from './LaundryRoom'
@@ -33,8 +32,8 @@ export default function GameClient() {
   const [isMobile, setIsMobile]   = useState(false)
   const [cdPlaying, setCdPlaying] = useState(false)
   const audioRef  = useRef<HTMLAudioElement | null>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const plcRef    = useRef<any>(null)   // PointerLockControls instance
+  // Ref for SYNCHRONOUS modal-state tracking (React state is async)
+  const modalOpenRef = useRef(false)
 
   // Detect mobile once on mount
   useEffect(() => {
@@ -43,6 +42,26 @@ export default function GameClient() {
 
   // On mobile, FPS is always active after entering (no pointer lock step)
   const fpsActive = isMobile ? entered : locked
+
+  // ── Manual pointer lock (replaces drei PointerLockControls) ──────
+  // canvas click → lock (only when no modal open, checked via ref)
+  useEffect(() => {
+    if (!entered || isMobile) return
+    const canvas = document.querySelector('canvas')
+    const onCanvasClick = () => {
+      if (!modalOpenRef.current) canvas?.requestPointerLock()
+    }
+    canvas?.addEventListener('click', onCanvasClick)
+    return () => canvas?.removeEventListener('click', onCanvasClick)
+  }, [entered, isMobile])
+
+  // document pointerlockchange → update locked state
+  useEffect(() => {
+    const canvas = document.querySelector('canvas')
+    const onChange = () => setLocked(document.pointerLockElement === canvas)
+    document.addEventListener('pointerlockchange', onChange)
+    return () => document.removeEventListener('pointerlockchange', onChange)
+  }, [])
 
   // ── Create audio element once on entry (no auto-play) ────────────
   useEffect(() => {
@@ -179,19 +198,20 @@ export default function GameClient() {
   }
 
   // ── Pointer lock helpers ──────────────────────────────────────────
-  // disablePointerLock: called SYNCHRONOUSLY before setShowXxx(true) so
-  // that PointerLockControls' own canvas-click handler sees enabled=false
-  // and does NOT re-acquire lock on the same click event (race condition).
+  // modalOpenRef is set BEFORE exitPointerLock so our canvas click handler
+  // (which runs synchronously in the same click event) skips re-locking.
   const disablePointerLock = () => {
-    if (plcRef.current) plcRef.current.enabled = false
+    modalOpenRef.current = true
     document.exitPointerLock()
   }
-  // enablePointerLock: re-enables controls and reclaims lock. Must be
-  // called inside a user-gesture handler so browser grants the request.
   const enablePointerLock = () => {
-    if (plcRef.current) plcRef.current.enabled = true
+    modalOpenRef.current = false
     if (!isMobile) document.querySelector('canvas')?.requestPointerLock()
   }
+  // Keep ref in sync with React state (belt-and-suspenders)
+  useLayoutEffect(() => {
+    modalOpenRef.current = anyOverlayOpen
+  })
 
   const closeBehindPhoto = () => { setBehindItem(null);              enablePointerLock() }
   const closeAlbumPanel  = () => { setSelectedAlbumId(null);         enablePointerLock() }
@@ -402,17 +422,10 @@ export default function GameClient() {
         <LaundryRoomFrames />
         <ClothesRoomFrames />
 
-        {/* PointerLockControls — ref lets us imperatively set enabled=false
-            SYNCHRONOUSLY inside the same click event that opens a modal,
-            preventing the race condition where it re-acquires pointer lock
-            on the same click that called exitPointerLock(). */}
-        {entered && !isMobile && (
-          <PointerLockControls
-            ref={plcRef}
-            onLock={() => setLocked(true)}
-            onUnlock={() => setLocked(false)}
-          />
-        )}
+        {/* Pointer lock is now managed manually (see useEffect above).
+            drei's PointerLockControls was removed because its canvas click
+            handler ignores the enabled flag and always calls
+            requestPointerLock(), causing a race condition. */}
       </Canvas>
     </div>
   )

@@ -41,6 +41,22 @@ export default function FPSMovement({ active, isMobile = false, sitting = false 
     camera.lookAt(0, 1.5, 5.5)
   }, [camera])
 
+  // Desktop mouse look — only when active (removed by PointerLockControls removal)
+  useEffect(() => {
+    if (isMobile || !active) return
+    const onMouseMove = (e: MouseEvent) => {
+      if (!document.pointerLockElement) return
+      camera.rotation.y -= e.movementX * 0.002
+      camera.rotation.x = THREE.MathUtils.clamp(
+        camera.rotation.x - e.movementY * 0.002,
+        -Math.PI / 2.1,
+         Math.PI / 2.1,
+      )
+    }
+    document.addEventListener('mousemove', onMouseMove)
+    return () => document.removeEventListener('mousemove', onMouseMove)
+  }, [isMobile, active, camera])
+
   // Desktop keyboard — only register listeners while active.
   // When active=false (modal open, etc.) listeners are removed entirely
   // so arrow keys / WASD cannot influence the scene at all.
