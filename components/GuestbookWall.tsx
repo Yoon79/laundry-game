@@ -104,7 +104,7 @@ function getTitleTex() {
 
   // Text
   ctx.shadowColor = 'rgba(80,30,10,0.22)'; ctx.shadowBlur = 1.5
-  ctx.fillStyle = '#4A2410'; ctx.font = 'bold 26px serif'
+  ctx.fillStyle = '#4A2410'; ctx.font = 'bold 26px "Mona12", sans-serif'
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
   ctx.fillText('방  명  록', W/2, H/2)
   ctx.shadowBlur = 0
@@ -221,11 +221,7 @@ function EaselStand({ onBoardClick }: { onBoardClick?: () => void }) {
         <meshStandardMaterial map={titleTex} roughness={0.32} metalness={0.28} />
       </mesh>
 
-      {/* ── Large invisible hit zone (wider than visible board) ── */}
-      <mesh position={[0, BY, 0.07]}>
-        <planeGeometry args={[BW + 0.30, BH + 0.30]} />
-        <meshBasicMaterial transparent opacity={0.001} depthWrite={false} />
-      </mesh>
+
 
       {/* ── Board drop shadow ── */}
       <mesh position={[0.008, BY - 0.008, 0.005]}>
@@ -275,7 +271,7 @@ function getNoteTexture(entry: GuestbookEntry): THREE.CanvasTexture {
   // Date (top right, small and clear)
   const date = new Date(entry.timestamp)
   ctx.fillStyle = '#888888'
-  ctx.font = 'bold 11px "Mona12", monospace'
+  ctx.font = 'bold 11px "Mona12", sans-serif'
   ctx.textAlign = 'right'
   ctx.fillText(
     `${date.getMonth() + 1}.${String(date.getDate()).padStart(2, '0')}`,

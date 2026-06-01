@@ -28,11 +28,11 @@ import { initSpatialAudio } from '@/lib/spatialAudio'
 
 export default function GameClient() {
   const [entered, setEntered] = useState(false)
-  const [locked, setLocked]   = useState(false)
-  const [muted, setMuted]     = useState(false)
-  const [isMobile, setIsMobile]   = useState(false)
+  const [locked, setLocked] = useState(false)
+  const [muted, setMuted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const [cdPlaying, setCdPlaying] = useState(false)
-  const audioRef  = useRef<HTMLAudioElement | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   // Ref for SYNCHRONOUS modal-state tracking (React state is async)
   const modalOpenRef = useRef(false)
 
@@ -86,7 +86,7 @@ export default function GameClient() {
     if (!cdPlaying) {
       // Initialise Web Audio panner (safe to call multiple times)
       initSpatialAudio(audio)
-      audio.play().catch(() => {})
+      audio.play().catch(() => { })
     } else {
       audio.pause()
     }
@@ -97,13 +97,13 @@ export default function GameClient() {
   const [selectedAlbumId, setSelectedAlbumId] = useState<number | null>(null)
 
   // ── Guestbook ─────────────────────────────────────────────────────
-  const [sittingMode, setSittingMode]           = useState(false)
+  const [sittingMode, setSittingMode] = useState(false)
   const [showGuestbookInput, setShowGuestbookInput] = useState(false)
   const [guestbookEntries, setGuestbookEntries] = useState<GuestbookEntry[]>(() => {
     if (typeof window === 'undefined') return []
     try { return JSON.parse(localStorage.getItem('sweden-laundry-guestbook') ?? '[]') } catch { return [] }
   })
-  const [shareEntry, setShareEntry]             = useState<GuestbookEntry | null>(null)
+  const [shareEntry, setShareEntry] = useState<GuestbookEntry | null>(null)
 
   // Persist entries to localStorage
   useEffect(() => {
@@ -146,10 +146,10 @@ export default function GameClient() {
   }
 
   // ── Lost laundry game ─────────────────────────────────────────────
-  const [carriedItem, setCarriedItem]   = useState<LostItem | null>(null)
-  const [pickedUpIds, setPickedUpIds]   = useState<Set<number>>(new Set())
-  const [behindItem,  setBehindItem]    = useState<LostItem | null>(null)
-  const [pickupMsg,   setPickupMsg]     = useState('')
+  const [carriedItem, setCarriedItem] = useState<LostItem | null>(null)
+  const [pickedUpIds, setPickedUpIds] = useState<Set<number>>(new Set())
+  const [behindItem, setBehindItem] = useState<LostItem | null>(null)
+  const [pickupMsg, setPickupMsg] = useState('')
   const pickupMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Exit pointer lock whenever any overlay panel opens
@@ -163,10 +163,10 @@ export default function GameClient() {
   useEffect(() => {
     const onEsc = (e: KeyboardEvent) => {
       if (e.code !== 'Escape') return
-      if (shareEntry)               { setShareEntry(null);           enablePointerLock(); return }
-      if (showGuestbookInput)       { setShowGuestbookInput(false);  enablePointerLock(); return }
-      if (selectedAlbumId !== null) { setSelectedAlbumId(null);      enablePointerLock(); return }
-      if (behindItem)               { setBehindItem(null);           enablePointerLock(); return }
+      if (shareEntry) { setShareEntry(null); enablePointerLock(); return }
+      if (showGuestbookInput) { setShowGuestbookInput(false); enablePointerLock(); return }
+      if (selectedAlbumId !== null) { setSelectedAlbumId(null); enablePointerLock(); return }
+      if (behindItem) { setBehindItem(null); enablePointerLock(); return }
     }
     window.addEventListener('keydown', onEsc)
     return () => window.removeEventListener('keydown', onEsc)
@@ -214,13 +214,13 @@ export default function GameClient() {
     modalOpenRef.current = anyOverlayOpen
   })
 
-  const closeBehindPhoto = () => { setBehindItem(null);              enablePointerLock() }
-  const closeAlbumPanel  = () => { setSelectedAlbumId(null);         enablePointerLock() }
-  const closeShareEntry  = () => { setShareEntry(null);              enablePointerLock() }
-  const closeGuestbook   = () => { setShowGuestbookInput(false);     enablePointerLock() }
+  const closeBehindPhoto = () => { setBehindItem(null); enablePointerLock() }
+  const closeAlbumPanel = () => { setSelectedAlbumId(null); enablePointerLock() }
+  const closeShareEntry = () => { setShareEntry(null); enablePointerLock() }
+  const closeGuestbook = () => { setShowGuestbookInput(false); enablePointerLock() }
 
   const selectedAlbum = selectedAlbumId !== null ? (ALBUMS[selectedAlbumId] ?? null) : null
-  const totalFound    = pickedUpIds.size
+  const totalFound = pickedUpIds.size
 
   // True whenever ANY overlay panel is open — used to suppress pointer lock
   const anyOverlayOpen = showGuestbookInput || selectedAlbum !== null || behindItem !== null || shareEntry !== null
@@ -305,7 +305,7 @@ export default function GameClient() {
             style={{ background: carriedItem.color }}
           />
           &nbsp;세탁물을 들고 있어요&nbsp;·&nbsp;
-          <span style={{ color: '#F0E8DC' }}>같은 색 세탁기</span>를 찾으세요
+          <span style={{ color: '#F0E8DC' }}>밝게 빛나는 세탁기</span>를 찾으세요
         </div>
       )}
 
@@ -342,7 +342,7 @@ export default function GameClient() {
 
       {/* ── 앉아있을 때: 일어나기 버튼 + E 키 힌트 ── */}
       {sittingMode && !selectedAlbum && !behindItem && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
           <button
             onClick={handleStandUp}
             className="px-8 py-3 text-[12px] tracking-[0.18em] uppercase"
@@ -358,10 +358,10 @@ export default function GameClient() {
           </button>
           {locked && (
             <p
-              className="text-[9px] tracking-[0.20em] uppercase"
+              className="text-[10px] tracking-[0.30em] uppercase"
               style={{ color: 'rgba(255,255,255,0.42)', fontFamily: "'Mona12', sans-serif" }}
             >
-              E 키로 일어나기 · ESC 후 버튼 클릭
+              E 키로 일어나기 혹은 ESC 후 버튼 클릭
             </p>
           )}
         </div>

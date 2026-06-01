@@ -56,14 +56,14 @@ function PolaroidImage({ color, albumTitle }: { color: string; albumTitle: strin
     // Small decorative corners
     ctx.strokeStyle = 'rgba(255,255,255,0.35)'
     ctx.lineWidth = 1.5
-    ;[[8,8],[352,8],[8,292],[352,292]].forEach(([x,y]) => {
-      const s = 14
-      const sx = x < 180 ? 1 : -1
-      const sy = y < 150 ? 1 : -1
-      ctx.beginPath()
-      ctx.moveTo(x, y + sy * s); ctx.lineTo(x, y); ctx.lineTo(x + sx * s, y)
-      ctx.stroke()
-    })
+      ;[[8, 8], [352, 8], [8, 292], [352, 292]].forEach(([x, y]) => {
+        const s = 14
+        const sx = x < 180 ? 1 : -1
+        const sy = y < 150 ? 1 : -1
+        ctx.beginPath()
+        ctx.moveTo(x, y + sy * s); ctx.lineTo(x, y); ctx.lineTo(x + sx * s, y)
+        ctx.stroke()
+      })
 
     return c.toDataURL()
   }, [color, albumTitle])
@@ -154,7 +154,7 @@ export default function BehindPhoto({ item, onClose }: Props) {
         className="absolute bottom-8 text-[11px] tracking-widest uppercase"
         style={{ color: 'rgba(255,255,255,0.35)', fontFamily: "'Mona12', sans-serif" }}
       >
-        클릭하면 닫힙니다
+        바깥을 클릭하면 닫힙니다
       </p>
     </div>
   )

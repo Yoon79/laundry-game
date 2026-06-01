@@ -41,10 +41,10 @@ export default function Splash({ onEnter }: Props) {
       {/* Enter button */}
       <button
         onClick={onEnter}
-        className="mt-10 text-[#A07860] text-[11px] tracking-[0.45em] uppercase transition-colors hover:text-[#3D2B1E] cursor-pointer animate-pulse"
+        className="absolute bottom-1/4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[#A07860] text-[11px] tracking-[0.45em] uppercase transition-colors hover:text-[#3D2B1E] cursor-pointer animate-pulse"
         style={{ fontFamily: "'Mona12', sans-serif" }}
       >
-        ↓ &nbsp;Enter the Laundry&nbsp; ↓
+        ✨ &nbsp;Enter the Laundry&nbsp; ✨
       </button>
     </div>
   )

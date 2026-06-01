@@ -48,13 +48,13 @@ export function generateShareImage(entry: GuestbookEntry): string {
   ctx.globalAlpha = 1
 
   ctx.fillStyle = '#C8A870'; ctx.textAlign = 'center'
-  ctx.font = '88px serif'; ctx.fillText('🧺', W / 2, 260)
+  ctx.font = '88px "Mona12", sans-serif'; ctx.fillText('🧺', W / 2, 260)
 
   ctx.fillStyle = '#2A1808'
-  ctx.font = `bold 72px serif`
+  ctx.font = `bold 72px "Mona12", sans-serif`
   ctx.fillText('스웨덴세탁소', W / 2, 370)
 
-  ctx.font = '32px monospace'; ctx.fillStyle = '#9A7040'
+  ctx.font = '32px "Mona12", sans-serif'; ctx.fillStyle = '#9A7040'
   ctx.fillText('방명록 · Guestbook', W / 2, 430)
 
   // Top divider
@@ -65,7 +65,7 @@ export function generateShareImage(entry: GuestbookEntry): string {
   ctx.beginPath(); ctx.moveTo(120, 490); ctx.lineTo(W - 120, 490); ctx.stroke()
 
   // ── Quote marks ───────────────────────────────────────────────────
-  ctx.font = '200px serif'; ctx.fillStyle = 'rgba(180,140,80,0.10)'
+  ctx.font = '200px "Mona12", sans-serif'; ctx.fillStyle = 'rgba(180,140,80,0.10)'
   ctx.textAlign = 'left'; ctx.fillText('“', 80, 760)
   ctx.textAlign = 'right'; ctx.fillText('”', W - 80, H - 480)
 
@@ -76,7 +76,7 @@ export function generateShareImage(entry: GuestbookEntry): string {
   const fontSize = entry.text.length > 80 ? 44
     : entry.text.length > 40 ? 52
     : 62
-  ctx.font = `${fontSize}px serif`
+  ctx.font = `${fontSize}px "Mona12", sans-serif`
 
   // Word wrap (Korean characters don't split on spaces, handle char by char if needed)
   const maxLineW = W - 240
@@ -111,14 +111,14 @@ export function generateShareImage(entry: GuestbookEntry): string {
     year: 'numeric', month: 'long', day: 'numeric',
   })
 
-  ctx.font = '34px serif'; ctx.fillStyle = '#6A4A20'; ctx.textAlign = 'center'
+  ctx.font = '34px "Mona12", sans-serif'; ctx.fillStyle = '#6A4A20'; ctx.textAlign = 'center'
   ctx.fillText(`"${date}"`, W / 2, H - 400)
 
-  ctx.font = '28px monospace'; ctx.fillStyle = '#A08050'
+  ctx.font = '28px "Mona12", sans-serif'; ctx.fillStyle = '#A08050'
   ctx.fillText('swedenlaundry.com', W / 2, H - 340)
 
   // EST badge
-  ctx.font = '24px monospace'; ctx.fillStyle = '#C8A870'
+  ctx.font = '24px "Mona12", sans-serif'; ctx.fillStyle = '#C8A870'
   ctx.fillText('─── EST. 2012 ───', W / 2, H - 280)
 
   // Wes Anderson-style stripe at very bottom

@@ -16,16 +16,26 @@ export interface LostItem {
 }
 
 export const LOST_ITEMS: LostItem[] = [
-  { id: 0, position: [-1.2, 0.06, -11.5], albumId: 27, color: '#C8D8B8', albumTitle: '마음',
-    story: '레코딩 당일 이루마 씨가 스튜디오에 들어서던 순간, 피아노 선율이 처음 울려 퍼졌습니다. 그 고요한 아침의 공기를 사진 한 장에 담았습니다.' },
-  { id: 1, position: [0.9, 0.06, -12.9], albumId: 36, color: '#B8D4E8', albumTitle: '잠들 때까지',
-    story: '데뷔 앨범 발매 전날 밤, 멤버들이 홍대의 작은 카페에 모여 처음으로 전곡을 들었습니다. 누군가 "이거 진짜 좋다"고 했고, 모두 웃었습니다.' },
-  { id: 2, position: [-0.7, 0.06, -14.3], albumId: 6, color: '#B8D4E8', albumTitle: '오렌지빛을 쥐고',
-    story: '가사 속 "치과 충동 방문" 에피소드의 실제 현장. 커피를 사러 나갔다가 간판을 보고 그냥 들어가버린 최인영. 그게 한 곡이 됐습니다.' },
-  { id: 3, position: [1.1, 0.06, -15.6], albumId: 12, color: '#C8D8B8', albumTitle: '꿈결',
-    story: '"비스듬히" 녹음 세션. 멜로디를 처음 들은 왕세윤이 "그냥 비스듬히 기대는 느낌"이라고 했고, 그 한마디가 곡 이름이 됐습니다.' },
-  { id: 4, position: [-1.0, 0.06, -16.9], albumId: 0, color: '#E8B4B8', albumTitle: '파도와 파랑',
-    story: '"파랑" 데모는 핸드폰 메모장에서 시작됐습니다. 새벽 3시, 불 꺼진 거실에서 손전등 빛에 의지해 악보를 완성한 그 밤의 사진입니다.' },
+  {
+    id: 0, position: [-1.2, 0.06, -11.5], albumId: 27, color: '#C8D8B8', albumTitle: '마음',
+    story: '레코딩 당일 이루마 씨가 스튜디오에 들어서던 순간, 피아노 선율이 처음 울려 퍼졌습니다. 그 고요한 아침의 공기를 사진 한 장에 담았습니다.'
+  },
+  {
+    id: 1, position: [0.9, 0.06, -12.9], albumId: 36, color: '#B8D4E8', albumTitle: '잠들 때까지',
+    story: '데뷔 앨범 발매 전날 밤, 멤버들이 홍대의 작은 카페에 모여 처음으로 전곡을 들었습니다. 누군가 "이거 진짜 좋다"고 했고, 모두 웃었습니다.'
+  },
+  {
+    id: 2, position: [-0.7, 0.06, -14.3], albumId: 6, color: '#B8D4E8', albumTitle: '오렌지빛을 쥐고',
+    story: '가사 속 "치과 충동 방문" 에피소드의 실제 현장. 커피를 사러 나갔다가 간판을 보고 그냥 들어가버린 최시유. 그게 한 곡이 됐습니다.'
+  },
+  {
+    id: 3, position: [1.1, 0.06, -15.6], albumId: 12, color: '#C8D8B8', albumTitle: '꿈결',
+    story: '"비스듬히" 녹음 세션. 멜로디를 처음 들은 왕세윤이 "그냥 비스듬히 기대는 느낌"이라고 했고, 그 한마디가 곡 이름이 됐습니다.'
+  },
+  {
+    id: 4, position: [-1.0, 0.06, -16.9], albumId: 0, color: '#E8B4B8', albumTitle: '파도와 파랑',
+    story: '"파랑" 데모는 핸드폰 메모장에서 시작됐습니다. 새벽 3시, 불 꺼진 거실에서 손전등 빛에 의지해 악보를 완성한 그 밤의 사진입니다.'
+  },
 ]
 
 // ── Fabric texture generators ────────────────────────────────────────────────
@@ -274,9 +284,9 @@ function CrumpledTshirt() {
 }
 
 function FoldedPants() {
-  const denimTex  = useMemo(() => makeDenimTex('#7090BE'), [])
+  const denimTex = useMemo(() => makeDenimTex('#7090BE'), [])
   const darkDenim = useMemo(() => makeDenimTex('#4A6090'), [])
-  const pantsGeo  = useMemo(() => new THREE.ShapeGeometry(makePantsShape(), 12), [])
+  const pantsGeo = useMemo(() => new THREE.ShapeGeometry(makePantsShape(), 12), [])
   const m = (tex: THREE.Texture, rough = 0.86) => (
     <meshStandardMaterial map={tex} roughness={rough} side={THREE.DoubleSide} />
   )
@@ -320,10 +330,10 @@ function FoldedPants() {
 }
 
 function CrumpledDress() {
-  const floraTex   = useMemo(() => makeFloraTex('#A8C8E0'), [])
-  const bodTex     = useMemo(() => makeJerseyTex('#B8D4EC', 1.5), [])
-  const dressGeo   = useMemo(() => new THREE.ShapeGeometry(makeDressShape(), 14), [])
-  const shadowTex  = useMemo(() => makeJerseyTex('#8AACCF', 1), [])
+  const floraTex = useMemo(() => makeFloraTex('#A8C8E0'), [])
+  const bodTex = useMemo(() => makeJerseyTex('#B8D4EC', 1.5), [])
+  const dressGeo = useMemo(() => new THREE.ShapeGeometry(makeDressShape(), 14), [])
+  const shadowTex = useMemo(() => makeJerseyTex('#8AACCF', 1), [])
   const m = (tex: THREE.Texture, rough = 0.87) => (
     <meshStandardMaterial map={tex} roughness={rough} side={THREE.DoubleSide} />
   )
@@ -360,8 +370,8 @@ function CrumpledDress() {
 }
 
 function CrumpledCoat() {
-  const woolTex    = useMemo(() => makeHerringTex('#7A9C7A', 'rgba(180,220,180,0.55)'), [])
-  const liningTex  = useMemo(() => {
+  const woolTex = useMemo(() => makeHerringTex('#7A9C7A', 'rgba(180,220,180,0.55)'), [])
+  const liningTex = useMemo(() => {
     const c = document.createElement('canvas'); c.width = 64; c.height = 64
     const ctx = c.getContext('2d')!
     ctx.fillStyle = '#EEE0CC'; ctx.fillRect(0, 0, 64, 64)
@@ -370,7 +380,7 @@ function CrumpledCoat() {
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping
     t.repeat.set(3, 3); return t
   }, [])
-  const coatGeo    = useMemo(() => new THREE.ShapeGeometry(makeCoatShape(), 14), [])
+  const coatGeo = useMemo(() => new THREE.ShapeGeometry(makeCoatShape(), 14), [])
   const m = (tex: THREE.Texture, rough = 0.88) => (
     <meshStandardMaterial map={tex} roughness={rough} side={THREE.DoubleSide} />
   )
@@ -417,8 +427,8 @@ function CrumpledCoat() {
 }
 
 function RolledSocks() {
-  const ribTex  = useMemo(() => makeRibTex('#E8B4B8', '#C888A0'), [])
-  const rimMat  = <meshStandardMaterial color="#C07090" roughness={0.68} metalness={0.05} side={THREE.DoubleSide} />
+  const ribTex = useMemo(() => makeRibTex('#E8B4B8', '#C888A0'), [])
+  const rimMat = <meshStandardMaterial color="#C07090" roughness={0.68} metalness={0.05} side={THREE.DoubleSide} />
   const m = (rough = 0.84) => <meshStandardMaterial map={ribTex} roughness={rough} side={THREE.DoubleSide} />
   return (
     <group>
@@ -477,7 +487,7 @@ interface ItemProps { item: LostItem; isPickedUp: boolean; onPickup: (item: Lost
 
 function FloatingItem({ item, isPickedUp, onPickup }: ItemProps) {
   const groupRef = useRef<THREE.Group>(null)
-  const ringRef  = useRef<THREE.Mesh>(null)
+  const ringRef = useRef<THREE.Mesh>(null)
   const lightRef = useRef<THREE.PointLight>(null)
   const [hovered, setHovered] = useState(false)
 
