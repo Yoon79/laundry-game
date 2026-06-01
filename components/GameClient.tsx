@@ -117,8 +117,10 @@ export default function GameClient() {
       text,
       timestamp: Date.now(),
     }
-    setGuestbookEntries(prev => [entry, ...prev])
+    // Prepend and keep only the newest 9 (oldest fall off — FIFO)
+    setGuestbookEntries(prev => [entry, ...prev].slice(0, 9))
     setShowGuestbookInput(false)
+    tryRelock()
   }
 
   // ── Lost laundry game ─────────────────────────────────────────────
@@ -172,8 +174,20 @@ export default function GameClient() {
     setCarriedItem(null)
   }
 
-  const closeBehindPhoto = () => setBehindItem(null)
-  const closeAlbumPanel  = () => setSelectedAlbumId(null)
+  // Re-acquire pointer lock after closing a modal (desktop only).
+  // Must be called synchronously inside a user-gesture handler so the
+  // browser grants the lock without requiring an extra canvas click.
+  const tryRelock = () => {
+    if (!isMobile) {
+      const canvas = document.querySelector('canvas')
+      canvas?.requestPointerLock()
+    }
+  }
+
+  const closeBehindPhoto = () => { setBehindItem(null);        tryRelock() }
+  const closeAlbumPanel  = () => { setSelectedAlbumId(null);  tryRelock() }
+  const closeShareEntry  = () => { setShareEntry(null);        tryRelock() }
+  const closeGuestbook   = () => { setShowGuestbookInput(false); tryRelock() }
 
   const selectedAlbum = selectedAlbumId !== null ? (ALBUMS[selectedAlbumId] ?? null) : null
   const totalFound    = pickedUpIds.size
@@ -327,13 +341,13 @@ export default function GameClient() {
       {showGuestbookInput && (
         <GuestbookModal
           onSubmit={handleGuestbookSubmit}
-          onClose={() => setShowGuestbookInput(false)}
+          onClose={closeGuestbook}
         />
       )}
 
       {/* ── Share modal ── */}
       {shareEntry && (
-        <ShareModal entry={shareEntry} onClose={() => setShareEntry(null)} />
+        <ShareModal entry={shareEntry} onClose={closeShareEntry} />
       )}
 
       {/* ── Album panel ── */}
@@ -379,8 +393,8 @@ export default function GameClient() {
         <LaundryRoomFrames />
         <ClothesRoomFrames />
 
-        {/* PointerLockControls — desktop only, unmount when any overlay is open */}
-        {entered && !isMobile && !anyOverlayOpen && (
+        {/* PointerLockControls — desktop only, always mounted so onLock fires */}
+        {entered && !isMobile && (
           <PointerLockControls
             onLock={() => setLocked(true)}
             onUnlock={() => setLocked(false)}
