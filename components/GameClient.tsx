@@ -23,6 +23,7 @@ import GuestbookWall from './GuestbookWall'
 import ShareModal from './ShareModal'
 import CDPlayer from './CDPlayer'
 import SpatialAudioUpdater from './SpatialAudioUpdater'
+import PointerLockRaycastFix from './PointerLockRaycastFix'
 import { initSpatialAudio } from '@/lib/spatialAudio'
 
 export default function GameClient() {
@@ -395,25 +396,10 @@ export default function GameClient() {
           toneMappingExposure: 1.1,
         }}
         style={{ background: '#68A8D8', touchAction: 'none' }}
-        onCreated={({ events }) => {
-          // When pointer is locked the browser freezes clientX/clientY at the
-          // position where lock was acquired. Override compute so R3F always
-          // raycasts from the canvas centre (= crosshair) while locked.
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const ev = events as any
-          const orig = ev.compute
-          ev.compute = (event: PointerEvent, state: any, prev: any) => {
-            if (document.pointerLockElement) {
-              state.pointer.set(0, 0)
-              state.raycaster.setFromCamera(state.pointer, state.camera)
-            } else if (orig) {
-              orig(event, state, prev)
-            }
-          }
-        }}
       >
         <FPSMovement active={fpsActive && !anyOverlayOpen} isMobile={isMobile} sitting={sittingMode} />
         <SpatialAudioUpdater />
+        <PointerLockRaycastFix />
         <Exterior onBenchClick={handleBenchClick} />
         <GuestbookWall
           entries={guestbookEntries}
