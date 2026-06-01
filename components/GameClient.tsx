@@ -32,7 +32,9 @@ export default function GameClient() {
   const [muted, setMuted]     = useState(false)
   const [isMobile, setIsMobile]   = useState(false)
   const [cdPlaying, setCdPlaying] = useState(false)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioRef  = useRef<HTMLAudioElement | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const plcRef    = useRef<any>(null)   // PointerLockControls instance
 
   // Detect mobile once on mount
   useEffect(() => {
@@ -107,7 +109,7 @@ export default function GameClient() {
 
   // Board (easel cork) click → open guestbook input
   const handleBoardClick = () => {
-    document.exitPointerLock()
+    disablePointerLock()
     setShowGuestbookInput(true)
   }
 
@@ -120,7 +122,7 @@ export default function GameClient() {
     // Prepend and keep only the newest 9 (oldest fall off — FIFO)
     setGuestbookEntries(prev => [entry, ...prev].slice(0, 9))
     setShowGuestbookInput(false)
-    tryRelock()
+    enablePointerLock()
   }
 
   // ── Lost laundry game ─────────────────────────────────────────────
@@ -152,6 +154,7 @@ export default function GameClient() {
 
   const handleSelectAlbum = (id: number) => {
     if (carriedItem) return   // can't open album panel while carrying laundry
+    disablePointerLock()
     setSelectedAlbumId(id)
   }
 
@@ -167,27 +170,33 @@ export default function GameClient() {
     setPickedUpIds(prev => new Set(prev).add(item.id))
   }
 
-  // Deliver to the correct machine
+  // Deliver to the correct machine → opens behind-photo modal
   const handleDeliver = (albumId: number) => {
     if (!carriedItem || carriedItem.albumId !== albumId) return
+    disablePointerLock()
     setBehindItem(carriedItem)
     setCarriedItem(null)
   }
 
-  // Re-acquire pointer lock after closing a modal (desktop only).
-  // Must be called synchronously inside a user-gesture handler so the
-  // browser grants the lock without requiring an extra canvas click.
-  const tryRelock = () => {
-    if (!isMobile) {
-      const canvas = document.querySelector('canvas')
-      canvas?.requestPointerLock()
-    }
+  // ── Pointer lock helpers ──────────────────────────────────────────
+  // disablePointerLock: called SYNCHRONOUSLY before setShowXxx(true) so
+  // that PointerLockControls' own canvas-click handler sees enabled=false
+  // and does NOT re-acquire lock on the same click event (race condition).
+  const disablePointerLock = () => {
+    if (plcRef.current) plcRef.current.enabled = false
+    document.exitPointerLock()
+  }
+  // enablePointerLock: re-enables controls and reclaims lock. Must be
+  // called inside a user-gesture handler so browser grants the request.
+  const enablePointerLock = () => {
+    if (plcRef.current) plcRef.current.enabled = true
+    if (!isMobile) document.querySelector('canvas')?.requestPointerLock()
   }
 
-  const closeBehindPhoto = () => { setBehindItem(null);        tryRelock() }
-  const closeAlbumPanel  = () => { setSelectedAlbumId(null);  tryRelock() }
-  const closeShareEntry  = () => { setShareEntry(null);        tryRelock() }
-  const closeGuestbook   = () => { setShowGuestbookInput(false); tryRelock() }
+  const closeBehindPhoto = () => { setBehindItem(null);              enablePointerLock() }
+  const closeAlbumPanel  = () => { setSelectedAlbumId(null);         enablePointerLock() }
+  const closeShareEntry  = () => { setShareEntry(null);              enablePointerLock() }
+  const closeGuestbook   = () => { setShowGuestbookInput(false);     enablePointerLock() }
 
   const selectedAlbum = selectedAlbumId !== null ? (ALBUMS[selectedAlbumId] ?? null) : null
   const totalFound    = pickedUpIds.size
@@ -372,7 +381,7 @@ export default function GameClient() {
         <Exterior onBenchClick={handleBenchClick} />
         <GuestbookWall
           entries={guestbookEntries}
-          onSelectEntry={setShareEntry}
+          onSelectEntry={(e) => { disablePointerLock(); setShareEntry(e) }}
           onClickBoard={handleBoardClick}
         />
         <LaundryRoom
@@ -393,13 +402,13 @@ export default function GameClient() {
         <LaundryRoomFrames />
         <ClothesRoomFrames />
 
-        {/* PointerLockControls — always mounted; disabled while any overlay is
-            open so a canvas click (e.g. the same click that opened a modal)
-            cannot immediately re-acquire pointer lock. onLock still fires
-            when tryRelock() calls canvas.requestPointerLock() directly. */}
+        {/* PointerLockControls — ref lets us imperatively set enabled=false
+            SYNCHRONOUSLY inside the same click event that opens a modal,
+            preventing the race condition where it re-acquires pointer lock
+            on the same click that called exitPointerLock(). */}
         {entered && !isMobile && (
           <PointerLockControls
-            enabled={!anyOverlayOpen}
+            ref={plcRef}
             onLock={() => setLocked(true)}
             onUnlock={() => setLocked(false)}
           />
