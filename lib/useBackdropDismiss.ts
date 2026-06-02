@@ -1,43 +1,43 @@
 'use client'
 
 import { useRef } from 'react'
-import type { MouseEvent, PointerEvent } from 'react'
+import type { MouseEvent } from 'react'
 
 /**
- * Prevents the "ghost click" that closes a modal on the very same tap that
- * opened it.
+ * Returns an onClick prop to spread on a full-screen backdrop div so that:
+ *   • Clicks that land on a child card (e.target !== e.currentTarget) are ignored.
+ *   • The ghost-click that arrives from the *same tap* that opened the modal is
+ *     ignored via a 500 ms time gate from mount.
+ *   • Deliberate taps on the backdrop background (> 500 ms after mount) close
+ *     the modal normally.
  *
- * On touch devices, opening a modal from a 3D object works like this:
- *   pointerdown (on canvas) → modal mounts → pointerup → click
- * The trailing `click` is dispatched to whatever element now sits under the
- * finger — which is the freshly-mounted modal backdrop. A naive
- * `onClick={onClose}` therefore closes the modal immediately, so the tap
- * appears to do nothing.
+ * Why time-based instead of tracking startedOnBackdrop?
+ * -------------------------------------------------------
+ * React 18 can synchronously flush a state update that was triggered by
+ * onPointerDown on a 3D mesh, mounting the backdrop DURING the same DOM event
+ * dispatch.  The backdrop then receives that very same pointerdown event (because
+ * React re-dispatches it through the newly mounted subtree), setting
+ * startedOnBackdrop = true.  The trailing ghost click therefore passes the old
+ * check and closes the modal immediately.
  *
- * Fix: only treat a backdrop click as a dismiss when the pointer press also
- * STARTED on the backdrop. The opening tap's pointerdown happened on the
- * canvas (the backdrop did not even exist yet), so its trailing click is
- * ignored. A deliberate tap on the backdrop — press and release both on the
- * backdrop — still dismisses normally.
+ * A simple time gate avoids all of this: ghost-clicks arrive within ~50 ms of
+ * mount; intentional "close" taps happen after the user consciously decides to
+ * dismiss — always well above 500 ms.
  *
- * Spread the returned handlers onto the backdrop element:
+ * Usage:
  *   const dismiss = useBackdropDismiss(onClose)
- *   <div className="backdrop" {...dismiss}> ... </div>
+ *   <div className="fixed inset-0 ..." {...dismiss}> … </div>
  */
 export function useBackdropDismiss(onClose: () => void) {
-  const startedOnBackdrop = useRef(false)
+  // Date.now() evaluated at render time ≈ mount time.
+  // useRef guarantees this is only computed once per component instance.
+  const mountedAt = useRef(Date.now())
 
   return {
-    onPointerDown: (e: PointerEvent) => {
-      // Only flag presses that begin on the backdrop itself, not on its
-      // children (the modal card stops propagation anyway).
-      startedOnBackdrop.current = e.target === e.currentTarget
-    },
-    onClick: (e: MouseEvent) => {
-      if (e.target === e.currentTarget && startedOnBackdrop.current) {
-        onClose()
-      }
-      startedOnBackdrop.current = false
+    onClick(e: MouseEvent) {
+      if (e.target !== e.currentTarget) return          // click was on the card
+      if (Date.now() - mountedAt.current < 500) return  // ghost-click from opening tap
+      onClose()
     },
   }
 }
