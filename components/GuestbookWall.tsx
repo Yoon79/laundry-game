@@ -313,12 +313,24 @@ function Note({ entry, slotIndex, onSelect }: NoteProps) {
   const tilt    = (TILTS[slotIndex % TILTS.length] ?? 0) * Math.PI / 180
   const tex     = useMemo(() => getNoteTexture(entry), [entry])
   const [hovered, setHovered] = useState(false)
+  const firedRef = useRef(false)
+
+  const triggerNote = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation()
+    if (firedRef.current) return
+    firedRef.current = true
+    setTimeout(() => { firedRef.current = false }, 400)
+    onSelect(entry)
+  }
 
   return (
     <group
       position={[lx, ly, 0.05]}
       rotation={[0, 0, tilt]}
-      onClick={e => { e.stopPropagation(); onSelect(entry) }}
+      onClick={triggerNote}
+      // Stop pointerDown from bubbling to easel parent so it doesn't
+      // accidentally open the guestbook input instead of the share modal
+      onPointerDown={(e) => { e.stopPropagation(); if (!touchState.dragging) triggerNote(e) }}
       onPointerOver={e => { e.stopPropagation(); if (document.pointerLockElement) setHovered(true) }}
       onPointerOut={() => setHovered(false)}
     >
