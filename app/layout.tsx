@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: '스웨덴세탁소',
-  description: 'Sweden Laundry — An indie band experience',
+  title: '스웨덴세탁소에 놀러와요',
+  description: '스웨덴세탁소 공식 웹사이트 미니게임',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

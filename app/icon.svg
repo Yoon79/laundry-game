@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <!-- outer dark border -->
+  <rect x="1" y="1" width="14" height="1" fill="#2A1A08"/>
+  <rect x="1" y="14" width="14" height="1" fill="#2A1A08"/>
+  <rect x="1" y="1" width="1" height="14" fill="#2A1A08"/>
+  <rect x="14" y="1" width="1" height="14" fill="#2A1A08"/>
+
+  <!-- cream body -->
+  <rect x="2" y="2" width="12" height="12" fill="#F5EFE7"/>
+
+  <!-- control panel (top 3 rows, slightly warmer) -->
+  <rect x="2" y="2" width="12" height="3" fill="#EBE0CF"/>
+
+  <!-- left button -->
+  <rect x="4" y="3" width="1" height="1" fill="#C8A870"/>
+  <!-- right button -->
+  <rect x="10" y="3" width="1" height="1" fill="#C8A870"/>
+  <!-- center dial -->
+  <rect x="7" y="3" width="2" height="1" fill="#A08050"/>
+
+  <!-- panel / drum separator -->
+  <rect x="2" y="5" width="12" height="1" fill="#C8B090"/>
+
+  <!-- golden porthole ring — top -->
+  <rect x="5" y="6" width="6" height="1" fill="#C8A870"/>
+  <!-- golden porthole ring — bottom -->
+  <rect x="5" y="12" width="6" height="1" fill="#C8A870"/>
+  <!-- golden porthole ring — left -->
+  <rect x="4" y="7" width="1" height="5" fill="#C8A870"/>
+  <!-- golden porthole ring — right -->
+  <rect x="11" y="7" width="1" height="5" fill="#C8A870"/>
+
+  <!-- drum (blue) -->
+  <rect x="5" y="7" width="6" height="5" fill="#5B99C8"/>
+
+  <!-- drum highlight -->
+  <rect x="6" y="8" width="2" height="1" fill="#8FC4E8"/>
+  <rect x="6" y="9" width="1" height="1" fill="#7FBADB"/>
+</svg>
