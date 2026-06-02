@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { GuestbookEntry } from '@/lib/guestbook'
 import { generateShareImage } from '@/lib/guestbook'
+import { useBackdropDismiss } from '@/lib/useBackdropDismiss'
 
 interface Props {
   entry: GuestbookEntry
@@ -11,6 +12,7 @@ interface Props {
 
 export default function ShareModal({ entry, onClose }: Props) {
   const [copied, setCopied] = useState(false)
+  const dismiss = useBackdropDismiss(onClose)
 
   const saveImage = () => {
     const dataUrl = generateShareImage(entry)
@@ -65,7 +67,7 @@ export default function ShareModal({ entry, onClose }: Props) {
     <div
       className="fixed inset-0 z-40 flex items-center justify-center"
       style={{ background: 'rgba(20,12,6,0.75)', backdropFilter: 'blur(4px)' }}
-      onClick={onClose}
+      {...dismiss}
     >
       <div
         className="relative flex flex-col w-[min(440px,90vw)]"

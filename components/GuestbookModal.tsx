@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useBackdropDismiss } from '@/lib/useBackdropDismiss'
 
 interface Props {
   onSubmit: (text: string) => void
@@ -10,6 +11,7 @@ interface Props {
 export default function GuestbookModal({ onSubmit, onClose }: Props) {
   const [text, setText] = useState('')
   const MAX = 120
+  const dismiss = useBackdropDismiss(onClose)
 
   const handleSubmit = () => {
     const trimmed = text.trim()
@@ -21,7 +23,7 @@ export default function GuestbookModal({ onSubmit, onClose }: Props) {
     <div
       className="fixed inset-0 z-40 flex items-center justify-center"
       style={{ background: 'rgba(20,12,6,0.72)', backdropFilter: 'blur(3px)' }}
-      onClick={onClose}
+      {...dismiss}
     >
       <div
         className="relative flex flex-col w-[min(480px,90vw)]"

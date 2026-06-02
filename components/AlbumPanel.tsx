@@ -1,6 +1,7 @@
 'use client'
 
 import type { Album } from '@/lib/albums'
+import { useBackdropDismiss } from '@/lib/useBackdropDismiss'
 
 interface Props {
   album: Album
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function AlbumPanel({ album, onClose }: Props) {
+  const dismiss = useBackdropDismiss(onClose)
   const knownDurations = album.tracks.filter(t => t.duration && t.duration !== '4:00')
   const totalSeconds = knownDurations.reduce((sum, t) => {
     const [m, s] = t.duration!.split(':').map(Number)
@@ -22,7 +24,7 @@ export default function AlbumPanel({ album, onClose }: Props) {
     <div
       className="fixed inset-0 z-30 flex items-center justify-center"
       style={{ background: 'rgba(20,12,6,0.72)', backdropFilter: 'blur(3px)' }}
-      onClick={onClose}
+      {...dismiss}
     >
       {/* Panel card */}
       <div

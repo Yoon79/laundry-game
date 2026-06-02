@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import type { LostItem } from './LostLaundry'
+import { useBackdropDismiss } from '@/lib/useBackdropDismiss'
 
 interface Props {
   item: LostItem
@@ -78,11 +79,12 @@ function PolaroidImage({ color, albumTitle }: { color: string; albumTitle: strin
 }
 
 export default function BehindPhoto({ item, onClose }: Props) {
+  const dismiss = useBackdropDismiss(onClose)
   return (
     <div
       className="fixed inset-0 z-40 flex items-center justify-center"
       style={{ background: 'rgba(10,6,4,0.88)', backdropFilter: 'blur(4px)' }}
-      onClick={onClose}
+      {...dismiss}
     >
       {/* Polaroid card */}
       <div
