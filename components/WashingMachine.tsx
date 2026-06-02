@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import * as THREE from 'three'
+import { touchState } from '@/lib/touchState'
 
 // Wes Anderson pastel palette — each machine gets its own color
 const BODY_COLORS = [
@@ -25,9 +26,14 @@ export default function WashingMachine({
 }: Props) {
   const [hovered, setHovered] = useState(false)
   const bodyColor = BODY_COLORS[colorIndex % BODY_COLORS.length]
+  // Prevent double-trigger when both onClick and onPointerDown fire
+  const firedRef = useRef(false)
 
-  const handleClick = (e: { stopPropagation: () => void }) => {
+  const trigger = (e: { stopPropagation: () => void }) => {
     e.stopPropagation()
+    if (firedRef.current) return
+    firedRef.current = true
+    setTimeout(() => { firedRef.current = false }, 400)
     if (isDeliveryTarget && onDeliver) onDeliver()
     else onSelect?.()
   }
@@ -36,7 +42,11 @@ export default function WashingMachine({
     <group
       position={position}
       rotation={[0, rotationY, 0]}
-      onClick={handleClick}
+      onClick={trigger}
+      // onPointerDown fires before the DOM 'click' event — reliable fallback
+      // on iOS Safari where click can be suppressed by touch handling.
+      // Guard: skip if a camera-drag gesture is in progress.
+      onPointerDown={(e) => { if (!touchState.dragging) trigger(e) }}
       onPointerOver={(e) => { e.stopPropagation(); if (document.pointerLockElement) setHovered(true) }}
       onPointerOut={() => setHovered(false)}
     >

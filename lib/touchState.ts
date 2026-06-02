@@ -5,4 +5,5 @@
 export const touchState = {
   joystick: { x: 0, y: 0 },   // normalised −1 … 1 per axis
   lookDelta: { x: 0, y: 0 },  // accumulated pixel delta, consumed each frame
+  dragging: false,             // true while camera look-drag is in progress
 }

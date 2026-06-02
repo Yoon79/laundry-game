@@ -54,7 +54,17 @@ export default function MobileControls({ active }: Props) {
     }
 
     const handleMove = (e: TouchEvent) => {
-      e.preventDefault()
+      // Only call preventDefault for actual joystick / camera-drag touches.
+      // Calling it unconditionally suppresses the DOM 'click' event on iOS
+      // Safari, which breaks R3F's onClick for washing machines and guestbook.
+      // The canvas already has touchAction:'none' so scroll is prevented anyway.
+      let needsPrevent = false
+      for (const t of Array.from(e.changedTouches)) {
+        if (t.identifier === joystickTouchId) { needsPrevent = true; break }
+        if (t.identifier === lookTouchId && lookDragging) { needsPrevent = true; break }
+      }
+      if (needsPrevent && e.cancelable) e.preventDefault()
+
       const center = getBaseCenter()
 
       for (const t of Array.from(e.changedTouches)) {
@@ -89,6 +99,7 @@ export default function MobileControls({ active }: Props) {
             }
           }
           if (lookDragging) {
+            touchState.dragging = true
             touchState.lookDelta.x += (t.clientX - lastLookX) * 0.0045
             touchState.lookDelta.y += (t.clientY - lastLookY) * 0.0045
             lastLookX = t.clientX
@@ -109,8 +120,9 @@ export default function MobileControls({ active }: Props) {
           }
         }
         if (t.identifier === lookTouchId) {
-          lookTouchId  = -1
-          lookDragging = false
+          lookTouchId        = -1
+          lookDragging       = false
+          touchState.dragging = false
         }
       }
     }

@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import type { GuestbookEntry } from '@/lib/guestbook'
+import { touchState } from '@/lib/touchState'
 
 // ── Stand world position ──────────────────────────────────────────────────────
 // Behind and to the left of bench [3.0, 0, 6.4], propped against the building.
@@ -354,13 +355,24 @@ interface GuestbookWallProps {
 
 export default function GuestbookWall({ entries, onSelectEntry, onClickBoard }: GuestbookWallProps) {
   const visible = entries.slice(0, SLOT_MAX)
+  const firedRef = useRef(false)
+
+  const triggerBoard = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation()
+    if (firedRef.current) return
+    firedRef.current = true
+    setTimeout(() => { firedRef.current = false }, 400)
+    onClickBoard?.()
+  }
+
   // Whole easel is clickable — notes use stopPropagation so they still
   // open the share modal independently without triggering this.
   return (
     <group
       position={[PX, 0, PZ]}
       rotation={[0, ROT_Y, 0]}
-      onClick={(e) => { e.stopPropagation(); onClickBoard?.() }}
+      onClick={triggerBoard}
+      onPointerDown={(e) => { if (!touchState.dragging) triggerBoard(e) }}
     >
       <EaselStand onBoardClick={onClickBoard} />
       {visible.map((entry, i) => (
