@@ -24,6 +24,7 @@ import ShareModal from './ShareModal'
 import CDPlayer from './CDPlayer'
 import SpatialAudioUpdater from './SpatialAudioUpdater'
 import PointerLockRaycastFix from './PointerLockRaycastFix'
+import MobileTapPick from './MobileTapPick'
 import { initSpatialAudio } from '@/lib/spatialAudio'
 
 export default function GameClient() {
@@ -400,6 +401,8 @@ export default function GameClient() {
         <FPSMovement active={fpsActive && !anyOverlayOpen} isMobile={isMobile} sitting={sittingMode} />
         <SpatialAudioUpdater />
         <PointerLockRaycastFix />
+        {/* iOS-reliable 3D tap picking (bypasses the broken WebKit click pipeline) */}
+        <MobileTapPick enabled={isMobile && entered && !anyOverlayOpen} />
         <Exterior onBenchClick={handleBenchClick} />
         <GuestbookWall
           entries={guestbookEntries}
