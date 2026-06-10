@@ -1,43 +1,61 @@
 'use client'
 
 import { useRef } from 'react'
-import type { MouseEvent } from 'react'
+import type { MouseEvent, PointerEvent } from 'react'
 
 /**
- * Returns an onClick prop to spread on a full-screen backdrop div so that:
- *   • Clicks that land on a child card (e.target !== e.currentTarget) are ignored.
- *   • The ghost-click that arrives from the *same tap* that opened the modal is
- *     ignored via a 500 ms time gate from mount.
- *   • Deliberate taps on the backdrop background (> 500 ms after mount) close
- *     the modal normally.
+ * Dismisses a full-screen modal when the user genuinely taps/clicks the
+ * backdrop — while ignoring the two false-dismiss traps on touch devices.
  *
- * Why time-based instead of tracking startedOnBackdrop?
- * -------------------------------------------------------
- * React 18 can synchronously flush a state update that was triggered by
- * onPointerDown on a 3D mesh, mounting the backdrop DURING the same DOM event
- * dispatch.  The backdrop then receives that very same pointerdown event (because
- * React re-dispatches it through the newly mounted subtree), setting
- * startedOnBackdrop = true.  The trailing ghost click therefore passes the old
- * check and closes the modal immediately.
+ * ─────────────────────────────────────────────────────────────────────────
+ * Verified behaviour (Playwright + CDP touch, React 19 / Next 16):
  *
- * A simple time gate avoids all of this: ghost-clicks arrive within ~50 ms of
- * mount; intentional "close" taps happen after the user consciously decides to
- * dismiss — always well above 500 ms.
+ *  1. The tap that OPENS the modal (pointerdown on a 3D mesh in the canvas)
+ *     does NOT re-dispatch a pointerdown onto the freshly-mounted backdrop.
+ *     → The backdrop is never "armed" by the opening gesture, so it stays open.
+ *
+ *  2. A real backdrop tap fires pointerdown→click both on the backdrop.
+ *     → armed === true on the click ⇒ dismiss. ✓
+ *
+ *  3. iOS Safari synthesises ghost MOUSE events (~300 ms after touchend) at
+ *     the original touch point — which now sits over the backdrop. Those would
+ *     otherwise arm + click the backdrop and close the modal instantly.
+ *     → We ignore a `pointerType==='mouse'` pointerdown that lands within
+ *       GHOST_WINDOW_MS of the last real touch, so the ghost never arms it.
+ *
+ * The mechanism is timing-free for the cases that matter (it tracks the actual
+ * pointerdown target, not elapsed time); the only time check is the narrow
+ * mouse-ghost filter, which cannot misfire from real input.
  *
  * Usage:
  *   const dismiss = useBackdropDismiss(onClose)
- *   <div className="fixed inset-0 ..." {...dismiss}> … </div>
+ *   <div className="fixed inset-0 …" {...dismiss}> … </div>
  */
+
+// ── Module-level touch recency tracker (shared by all backdrops) ──────────────
+const GHOST_WINDOW_MS = 700
+let lastTouchAt = 0
+if (typeof window !== 'undefined') {
+  const mark = () => { lastTouchAt = Date.now() }
+  // capture phase so we record the touch even if something stops propagation
+  window.addEventListener('touchstart', mark, { capture: true, passive: true })
+  window.addEventListener('touchend', mark, { capture: true, passive: true })
+}
+
 export function useBackdropDismiss(onClose: () => void) {
-  // Date.now() evaluated at render time ≈ mount time.
-  // useRef guarantees this is only computed once per component instance.
-  const mountedAt = useRef(Date.now())
+  // Armed only by a genuine pointerdown that begins on the backdrop itself.
+  const armed = useRef(false)
 
   return {
+    onPointerDown(e: PointerEvent) {
+      if (e.target !== e.currentTarget) return        // began on the card, ignore
+      // Ignore ghost mouse pointerdown synthesised right after a touch.
+      if (e.pointerType === 'mouse' && Date.now() - lastTouchAt < GHOST_WINDOW_MS) return
+      armed.current = true
+    },
     onClick(e: MouseEvent) {
-      if (e.target !== e.currentTarget) return          // click was on the card
-      if (Date.now() - mountedAt.current < 500) return  // ghost-click from opening tap
-      onClose()
+      if (e.target === e.currentTarget && armed.current) onClose()
+      armed.current = false
     },
   }
 }

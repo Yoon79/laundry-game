@@ -43,9 +43,10 @@ export default function WashingMachine({
       position={position}
       rotation={[0, rotationY, 0]}
       onClick={trigger}
-      // onPointerDown fires before the DOM 'click' event — reliable fallback
-      // on iOS Safari where click can be suppressed by touch handling.
-      // Guard: skip if a camera-drag gesture is in progress.
+      // onPointerDown fires on touchstart — before the DOM 'click' event, and
+      // before any drag threshold trips — so a tap reliably opens the modal on
+      // iOS Safari even when the trailing click is suppressed by touch handling.
+      // Guard: skip if a camera-drag gesture is already in progress.
       onPointerDown={(e) => { if (!touchState.dragging) trigger(e) }}
       onPointerOver={(e) => { e.stopPropagation(); if (document.pointerLockElement) setHovered(true) }}
       onPointerOut={() => setHovered(false)}
