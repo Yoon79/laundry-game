@@ -36,6 +36,8 @@ export default function GameClient() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   // Ref for SYNCHRONOUS modal-state tracking (React state is async)
   const modalOpenRef = useRef(false)
+  // TEMP mobile tap diagnostics (shown on-screen so we can read real iOS data)
+  const [tapDbg, setTapDbg] = useState('tap debug: waiting…')
 
   // Detect mobile once on mount
   useEffect(() => {
@@ -231,6 +233,21 @@ export default function GameClient() {
       {/* ── Splash ── */}
       {!entered && <Splash onEnter={() => setEntered(true)} />}
 
+      {/* ── TEMP mobile tap diagnostics (remove after debugging) ── */}
+      {entered && (
+        <div
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 60,
+            background: 'rgba(0,0,0,0.78)', color: '#7CFFB0',
+            fontFamily: 'ui-monospace, monospace', fontSize: 11, lineHeight: 1.5,
+            padding: '6px 10px', pointerEvents: 'none', whiteSpace: 'pre-wrap',
+            wordBreak: 'break-all',
+          }}
+        >
+          {`mobile=${String(isMobile)} entered=${String(entered)} overlay=${String(anyOverlayOpen)}\n${tapDbg}`}
+        </div>
+      )}
+
       {/* ── HUD ── */}
       {entered && !selectedAlbum && !behindItem && <HUD locked={locked} />}
 
@@ -402,7 +419,7 @@ export default function GameClient() {
         <SpatialAudioUpdater />
         <PointerLockRaycastFix />
         {/* iOS-reliable 3D tap picking (bypasses the broken WebKit click pipeline) */}
-        <MobileTapPick enabled={isMobile && entered && !anyOverlayOpen} />
+        <MobileTapPick enabled={isMobile && entered && !anyOverlayOpen} onDebug={setTapDbg} />
         <Exterior onBenchClick={handleBenchClick} />
         <GuestbookWall
           entries={guestbookEntries}

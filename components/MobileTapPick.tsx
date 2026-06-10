@@ -34,6 +34,7 @@ const DEDUPE_MS       = 450    // ignore a second pick fired within this window
 
 interface Props {
   enabled: boolean
+  onDebug?: (msg: string) => void
 }
 
 // Minimal R3F-handler shape we read off picked objects.
@@ -44,7 +45,7 @@ interface R3FInstance {
   }
 }
 
-export default function MobileTapPick({ enabled }: Props) {
+export default function MobileTapPick({ enabled, onDebug }: Props) {
   const camera    = useThree((s) => s.camera)
   const gl        = useThree((s) => s.gl)
   const raycaster = useThree((s) => s.raycaster)
@@ -52,8 +53,10 @@ export default function MobileTapPick({ enabled }: Props) {
   const internal  = useThree((s) => s.internal as unknown as { interaction?: THREE.Object3D[] })
 
   useEffect(() => {
-    if (!enabled) return
+    const dbg = (m: string) => onDebug?.(m)
+    if (!enabled) { dbg('disabled (not mobile / overlay open)'); return }
     const el = gl.domElement
+    dbg('ready — tap a machine')
 
     let startX = 0
     let startY = 0
@@ -80,18 +83,18 @@ export default function MobileTapPick({ enabled }: Props) {
     }
 
     const onEnd = (e: TouchEvent) => {
-      if (multi || moved) return
-      if (Date.now() - startT > TAP_MAX_MS) return
-      // Use the touch end position when available, else the recorded start.
+      const dt = Date.now() - startT
+      if (multi || moved) { dbg(`end: skip (multi=${multi} moved=${moved})`); return }
+      if (dt > TAP_MAX_MS) { dbg(`end: skip (too long ${dt}ms)`); return }
       const t = e.changedTouches[0]
       const px = t ? t.clientX : startX
       const py = t ? t.clientY : startY
 
       const now = Date.now()
-      if (now - lastPickAt < DEDUPE_MS) return
+      if (now - lastPickAt < DEDUPE_MS) { dbg('end: skip (dedupe)'); return }
 
       const rect = el.getBoundingClientRect()
-      if (rect.width === 0 || rect.height === 0) return
+      if (rect.width === 0 || rect.height === 0) { dbg('end: skip (rect 0)'); return }
 
       const ndc = new THREE.Vector2(
         ((px - rect.left) / rect.width) * 2 - 1,
@@ -99,8 +102,7 @@ export default function MobileTapPick({ enabled }: Props) {
       )
       raycaster.setFromCamera(ndc, camera)
 
-      // Prefer R3F's interaction list (only objects with handlers); fall back
-      // to the whole scene if it is unavailable for any reason.
+      const interLen = internal?.interaction?.length ?? -1
       const targets = internal?.interaction?.length ? internal.interaction : scene.children
       const hits = raycaster.intersectObjects(targets, true)
 
@@ -111,12 +113,14 @@ export default function MobileTapPick({ enabled }: Props) {
           if (r3f?.eventCount && r3f.handlers?.onClick) {
             lastPickAt = now
             const target = obj
+            dbg(`HIT ✓ inter=${interLen} hits=${hits.length} -> ${target.name || target.type} CALLED`)
             r3f.handlers.onClick({ stopPropagation() {}, object: target })
             return
           }
           obj = obj.parent
         }
       }
+      dbg(`tap@(${px | 0},${py | 0}) ndc(${ndc.x.toFixed(2)},${ndc.y.toFixed(2)}) inter=${interLen} hits=${hits.length} -> NO handler`)
     }
 
     el.addEventListener('touchstart', onStart, { passive: true })
@@ -128,7 +132,7 @@ export default function MobileTapPick({ enabled }: Props) {
       el.removeEventListener('touchmove',  onMove)
       el.removeEventListener('touchend',   onEnd)
     }
-  }, [enabled, camera, gl, raycaster, scene, internal])
+  }, [enabled, camera, gl, raycaster, scene, internal, onDebug])
 
   return null
 }
