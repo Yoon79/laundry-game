@@ -1,11 +1,8 @@
 'use client'
 
-import { useEffect } from 'react'
 import type { Album } from '@/lib/albums'
 import { useBackdropDismiss } from '@/lib/useBackdropDismiss'
-
-const dbg = (m: string) =>
-  (globalThis as unknown as { __dbg?: (m: string) => void }).__dbg?.(m)
+import { useIsMobile } from '@/lib/useIsMobile'
 
 interface Props {
   album: Album
@@ -13,11 +10,8 @@ interface Props {
 }
 
 export default function AlbumPanel({ album, onClose }: Props) {
-  useEffect(() => {
-    dbg('AlbumPanel MOUNT')
-    return () => dbg('AlbumPanel UNMOUNT')
-  }, [])
   const dismiss = useBackdropDismiss(onClose)
+  const compact = useIsMobile()
   const knownDurations = album.tracks.filter(t => t.duration && t.duration !== '4:00')
   const totalSeconds = knownDurations.reduce((sum, t) => {
     const [m, s] = t.duration!.split(':').map(Number)
@@ -42,6 +36,8 @@ export default function AlbumPanel({ album, onClose }: Props) {
           border: '2px solid #C8A870',
           fontFamily: "'Mona12', sans-serif",
           boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+          transform: compact ? 'scale(0.82)' : undefined,
+          transformOrigin: 'center',
         }}
         onClick={(e) => e.stopPropagation()}
       >

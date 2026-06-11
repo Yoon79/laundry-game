@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useBackdropDismiss } from '@/lib/useBackdropDismiss'
+import { useIsMobile } from '@/lib/useIsMobile'
 
 interface Props {
   onSubmit: (text: string) => void
@@ -12,6 +13,7 @@ export default function GuestbookModal({ onSubmit, onClose }: Props) {
   const [text, setText] = useState('')
   const MAX = 120
   const dismiss = useBackdropDismiss(onClose)
+  const compact = useIsMobile()
 
   const handleSubmit = () => {
     const trimmed = text.trim()
@@ -26,13 +28,15 @@ export default function GuestbookModal({ onSubmit, onClose }: Props) {
       {...dismiss}
     >
       <div
-        className="relative flex flex-col w-[min(480px,90vw)]"
+        className="relative flex flex-col w-[min(480px,90vw)] max-h-[90vh] overflow-y-auto"
         style={{
           background: '#FAF4EC',
           border: '2px solid #C8A870',
           padding: '36px 32px 28px',
           boxShadow: '0 24px 60px rgba(0,0,0,0.50)',
           fontFamily: "'Mona12', sans-serif",
+          transform: compact ? 'scale(0.82)' : undefined,
+          transformOrigin: 'center',
         }}
         onClick={e => e.stopPropagation()}
       >

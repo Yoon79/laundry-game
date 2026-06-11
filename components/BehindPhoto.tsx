@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import type { LostItem } from './LostLaundry'
 import { useBackdropDismiss } from '@/lib/useBackdropDismiss'
+import { useIsMobile } from '@/lib/useIsMobile'
 
 interface Props {
   item: LostItem
@@ -80,6 +81,7 @@ function PolaroidImage({ color, albumTitle }: { color: string; albumTitle: strin
 
 export default function BehindPhoto({ item, onClose }: Props) {
   const dismiss = useBackdropDismiss(onClose)
+  const compact = useIsMobile()
   return (
     <div
       className="fixed inset-0 z-40 flex items-center justify-center"
@@ -95,7 +97,8 @@ export default function BehindPhoto({ item, onClose }: Props) {
           boxShadow: '0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(200,180,140,0.3)',
           maxWidth: 320,
           width: '88vw',
-          transform: 'rotate(-1.5deg)',
+          transform: compact ? 'rotate(-1.5deg) scale(0.82)' : 'rotate(-1.5deg)',
+          transformOrigin: 'center',
           fontFamily: "'Mona12', sans-serif",
         }}
         onClick={(e) => e.stopPropagation()}

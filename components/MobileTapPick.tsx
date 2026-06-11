@@ -7,23 +7,15 @@ import * as THREE from 'three'
 /**
  * Reliable 3D object tapping for touch devices.
  *
- * ─────────────────────────────────────────────────────────────────────────
- * Why this exists
+ * On iOS WebKit (every iPhone browser), R3F's pointer/click pipeline does not
+ * reliably deliver taps to 3D meshes (MobileControls' preventDefault on
+ * touchmove suppresses the synthesized click R3F listens for). So we detect a
+ * clean tap on the canvas ourselves and raycast directly.
  *
- * On iOS WebKit (every iPhone browser, including "Chrome"), R3F's pointer/
- * click pipeline does NOT reliably deliver taps to 3D meshes:
- *   - The document-level touch handlers in MobileControls call preventDefault
- *     on touchmove, which suppresses the synthesized DOM `click` that R3F
- *     listens for.
- *   - R3F gates onClick behind a matching pointerdown raycast; if anything
- *     interferes with that pairing the click silently never dispatches.
- * Net effect: tapping a washing machine / guestbook does nothing.
- *
- * The fix: bypass the DOM event pipeline entirely. We listen to `touchend`
- * on the canvas, and on a clean tap we raycast ourselves (the exact same math
- * R3F uses) against the objects that carry event handlers, then invoke their
- * onClick directly. This depends only on the camera + raycaster — which
- * already work on desktop — so it is immune to the iOS event quirks above.
+ * Occlusion: we raycast the WHOLE scene and only act on the CLOSEST hit. If the
+ * nearest surface is a wall/floor (no event handler), the tap is ignored — this
+ * stops taps from "passing through" walls to machines behind them. Only when the
+ * frontmost surface is an interactive object do we invoke its onClick.
  *
  * Must live INSIDE <Canvas> so useThree() returns the running store.
  */
@@ -31,13 +23,12 @@ import * as THREE from 'three'
 const TAP_MAX_MOVE_PX = 12     // finger may jitter this much and still be a tap
 const TAP_MAX_MS      = 500    // longer press = not a tap
 const DEDUPE_MS       = 450    // ignore a second pick fired within this window
+const JOYSTICK_ZONE_PX = 150   // bottom-left square reserved for the move joystick
 
 interface Props {
   enabled: boolean
-  onDebug?: (msg: string) => void
 }
 
-// Minimal R3F-handler shape we read off picked objects.
 interface R3FInstance {
   eventCount?: number
   handlers?: {
@@ -45,18 +36,15 @@ interface R3FInstance {
   }
 }
 
-export default function MobileTapPick({ enabled, onDebug }: Props) {
+export default function MobileTapPick({ enabled }: Props) {
   const camera    = useThree((s) => s.camera)
   const gl        = useThree((s) => s.gl)
   const raycaster = useThree((s) => s.raycaster)
   const scene     = useThree((s) => s.scene)
-  const internal  = useThree((s) => s.internal as unknown as { interaction?: THREE.Object3D[] })
 
   useEffect(() => {
-    const dbg = (m: string) => onDebug?.(m)
-    if (!enabled) { dbg('disabled (not mobile / overlay open)'); return }
+    if (!enabled) return
     const el = gl.domElement
-    dbg('ready — tap a machine')
 
     let startX = 0
     let startY = 0
@@ -83,18 +71,21 @@ export default function MobileTapPick({ enabled, onDebug }: Props) {
     }
 
     const onEnd = (e: TouchEvent) => {
-      const dt = Date.now() - startT
-      if (multi || moved) { dbg(`end: skip (multi=${multi} moved=${moved})`); return }
-      if (dt > TAP_MAX_MS) { dbg(`end: skip (too long ${dt}ms)`); return }
+      if (multi || moved) return
+      if (Date.now() - startT > TAP_MAX_MS) return
+
       const t = e.changedTouches[0]
       const px = t ? t.clientX : startX
       const py = t ? t.clientY : startY
 
       const now = Date.now()
-      if (now - lastPickAt < DEDUPE_MS) { dbg('end: skip (dedupe)'); return }
+      if (now - lastPickAt < DEDUPE_MS) return
+
+      // Ignore taps over the on-screen movement joystick (bottom-left corner).
+      if (px < JOYSTICK_ZONE_PX && py > window.innerHeight - JOYSTICK_ZONE_PX) return
 
       const rect = el.getBoundingClientRect()
-      if (rect.width === 0 || rect.height === 0) { dbg('end: skip (rect 0)'); return }
+      if (rect.width === 0 || rect.height === 0) return
 
       const ndc = new THREE.Vector2(
         ((px - rect.left) / rect.width) * 2 - 1,
@@ -102,25 +93,24 @@ export default function MobileTapPick({ enabled, onDebug }: Props) {
       )
       raycaster.setFromCamera(ndc, camera)
 
-      const interLen = internal?.interaction?.length ?? -1
-      const targets = internal?.interaction?.length ? internal.interaction : scene.children
-      const hits = raycaster.intersectObjects(targets, true)
+      // Raycast the whole scene so opaque geometry (walls, floor) occludes
+      // interactive objects behind it. The nearest hit is what the user sees.
+      const hits = raycaster.intersectObjects(scene.children, true)
+      if (!hits.length) return
 
-      for (const hit of hits) {
-        let obj: THREE.Object3D | null = hit.object
-        while (obj) {
-          const r3f = (obj as THREE.Object3D & { __r3f?: R3FInstance }).__r3f
-          if (r3f?.eventCount && r3f.handlers?.onClick) {
-            lastPickAt = now
-            const target = obj
-            dbg(`HIT ✓ inter=${interLen} hits=${hits.length} -> ${target.name || target.type} CALLED`)
-            r3f.handlers.onClick({ stopPropagation() {}, object: target })
-            return
-          }
-          obj = obj.parent
+      // Only fire if the frontmost surface is (or belongs to) an interactive
+      // object. If it is a plain wall/decor mesh, the tap is blocked.
+      let obj: THREE.Object3D | null = hits[0].object
+      while (obj) {
+        const r3f = (obj as THREE.Object3D & { __r3f?: R3FInstance }).__r3f
+        if (r3f?.eventCount && r3f.handlers?.onClick) {
+          lastPickAt = now
+          r3f.handlers.onClick({ stopPropagation() {}, object: hits[0].object })
+          return
         }
+        obj = obj.parent
       }
-      dbg(`tap@(${px | 0},${py | 0}) ndc(${ndc.x.toFixed(2)},${ndc.y.toFixed(2)}) inter=${interLen} hits=${hits.length} -> NO handler`)
+      // Frontmost surface has no handler → occluded, ignore the tap.
     }
 
     el.addEventListener('touchstart', onStart, { passive: true })
@@ -132,7 +122,7 @@ export default function MobileTapPick({ enabled, onDebug }: Props) {
       el.removeEventListener('touchmove',  onMove)
       el.removeEventListener('touchend',   onEnd)
     }
-  }, [enabled, camera, gl, raycaster, scene, internal, onDebug])
+  }, [enabled, camera, gl, raycaster, scene])
 
   return null
 }

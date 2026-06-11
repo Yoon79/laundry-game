@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import FPSMovement from './FPSMovement'
@@ -36,17 +36,6 @@ export default function GameClient() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   // Ref for SYNCHRONOUS modal-state tracking (React state is async)
   const modalOpenRef = useRef(false)
-  // TEMP mobile tap diagnostics (shown on-screen so we can read real iOS data)
-  const [tapDbg, setTapDbg] = useState('tap debug: waiting…')
-  // STABLE reference — must not change between renders, or effects depending on
-  // it (MobileTapPick) thrash and re-mount their listeners every render.
-  const pushDbg = useCallback((m: string) => {
-    setTapDbg(prev => (prev + '\n' + m).split('\n').slice(-7).join('\n'))
-  }, [])
-  // Expose a global logger so modals / backdrop dismiss can report into the panel
-  useEffect(() => {
-    ;(window as unknown as { __dbg?: (m: string) => void }).__dbg = pushDbg
-  }, [pushDbg])
 
   // Detect mobile once on mount
   useEffect(() => {
@@ -93,7 +82,6 @@ export default function GameClient() {
 
   // ── CD player toggle — instant play/stop, spatial audio ──────────
   const handleCDToggle = () => {
-    pushDbg('→ handleCDToggle')
     const audio = audioRef.current
     if (!audio) return
     if (!cdPlaying) {
@@ -125,7 +113,6 @@ export default function GameClient() {
 
   // Bench click → immediately sit; keep pointer lock so user can look around
   const handleBenchClick = () => {
-    pushDbg('→ handleBenchClick (sit)')
     setSittingMode(true)
   }
   const handleStandUp = () => {
@@ -143,7 +130,6 @@ export default function GameClient() {
 
   // Board (easel cork) click → open guestbook input
   const handleBoardClick = () => {
-    pushDbg('→ handleBoardClick')
     disablePointerLock()
     setShowGuestbookInput(true)
   }
@@ -188,7 +174,6 @@ export default function GameClient() {
   }, [shareEntry, showGuestbookInput, selectedAlbumId, behindItem])
 
   const handleSelectAlbum = (id: number) => {
-    pushDbg(`→ handleSelectAlbum id=${id} carried=${!!carriedItem} ALBUMS[id]=${ALBUMS[id] ? 'ok' : 'MISSING'}`)
     if (carriedItem) return   // can't open album panel while carrying laundry
     disablePointerLock()
     setSelectedAlbumId(id)
@@ -196,7 +181,6 @@ export default function GameClient() {
 
   // Pickup a lost laundry item (blocked if already carrying one)
   const handlePickup = (item: LostItem) => {
-    pushDbg(`→ handlePickup item=${item.id}`)
     if (carriedItem) {
       if (pickupMsgTimer.current) clearTimeout(pickupMsgTimer.current)
       setPickupMsg('먼저 들고 있는 세탁물을 같은 색 세탁기에 넣어주세요')
@@ -209,7 +193,6 @@ export default function GameClient() {
 
   // Deliver to the correct machine → opens behind-photo modal
   const handleDeliver = (albumId: number) => {
-    pushDbg(`→ handleDeliver album=${albumId}`)
     if (!carriedItem || carriedItem.albumId !== albumId) return
     disablePointerLock()
     setBehindItem(carriedItem)
@@ -251,21 +234,6 @@ export default function GameClient() {
     <div className="relative w-full h-full">
       {/* ── Splash ── */}
       {!entered && <Splash onEnter={() => setEntered(true)} />}
-
-      {/* ── TEMP mobile tap diagnostics (remove after debugging) ── */}
-      {entered && (
-        <div
-          style={{
-            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 60,
-            background: 'rgba(0,0,0,0.78)', color: '#7CFFB0',
-            fontFamily: 'ui-monospace, monospace', fontSize: 11, lineHeight: 1.5,
-            padding: '6px 10px', pointerEvents: 'none', whiteSpace: 'pre-wrap',
-            wordBreak: 'break-all',
-          }}
-        >
-          {`mobile=${String(isMobile)} sel=${String(selectedAlbumId)} gb=${String(showGuestbookInput)} overlay=${String(anyOverlayOpen)}\n${tapDbg}`}
-        </div>
-      )}
 
       {/* ── HUD ── */}
       {entered && !selectedAlbum && !behindItem && <HUD locked={locked} />}
@@ -438,11 +406,11 @@ export default function GameClient() {
         <SpatialAudioUpdater />
         <PointerLockRaycastFix />
         {/* iOS-reliable 3D tap picking (bypasses the broken WebKit click pipeline) */}
-        <MobileTapPick enabled={isMobile && entered && !anyOverlayOpen} onDebug={pushDbg} />
+        <MobileTapPick enabled={isMobile && entered && !anyOverlayOpen} />
         <Exterior onBenchClick={handleBenchClick} />
         <GuestbookWall
           entries={guestbookEntries}
-          onSelectEntry={(e) => { pushDbg('→ onSelectEntry (share note)'); disablePointerLock(); setShareEntry(e) }}
+          onSelectEntry={(e) => { disablePointerLock(); setShareEntry(e) }}
           onClickBoard={handleBoardClick}
         />
         <LaundryRoom
