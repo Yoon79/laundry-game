@@ -170,7 +170,7 @@ export default function GameClient() {
   // Exit pointer lock whenever any overlay panel opens
   useEffect(() => {
     if (showGuestbookInput || selectedAlbumId !== null || behindItem !== null || shareEntry !== null) {
-      document.exitPointerLock()
+      document.exitPointerLock?.()
     }
   }, [showGuestbookInput, selectedAlbumId, behindItem, shareEntry])
 
@@ -221,7 +221,11 @@ export default function GameClient() {
   // (which runs synchronously in the same click event) skips re-locking.
   const disablePointerLock = () => {
     modalOpenRef.current = true
-    document.exitPointerLock()
+    // iOS WebKit has no Pointer Lock API — document.exitPointerLock is
+    // undefined there. Calling it unguarded throws a TypeError, which used to
+    // abort handleSelectAlbum BEFORE setSelectedAlbumId ran, so modals never
+    // opened on iPhone. Optional-call keeps desktop behaviour, no-ops on iOS.
+    document.exitPointerLock?.()
   }
   const enablePointerLock = () => {
     modalOpenRef.current = false
