@@ -93,6 +93,7 @@ export default function GameClient() {
 
   // ── CD player toggle — instant play/stop, spatial audio ──────────
   const handleCDToggle = () => {
+    pushDbg('→ handleCDToggle')
     const audio = audioRef.current
     if (!audio) return
     if (!cdPlaying) {
@@ -124,6 +125,7 @@ export default function GameClient() {
 
   // Bench click → immediately sit; keep pointer lock so user can look around
   const handleBenchClick = () => {
+    pushDbg('→ handleBenchClick (sit)')
     setSittingMode(true)
   }
   const handleStandUp = () => {
@@ -141,6 +143,7 @@ export default function GameClient() {
 
   // Board (easel cork) click → open guestbook input
   const handleBoardClick = () => {
+    pushDbg('→ handleBoardClick')
     disablePointerLock()
     setShowGuestbookInput(true)
   }
@@ -185,6 +188,7 @@ export default function GameClient() {
   }, [shareEntry, showGuestbookInput, selectedAlbumId, behindItem])
 
   const handleSelectAlbum = (id: number) => {
+    pushDbg(`→ handleSelectAlbum id=${id} carried=${!!carriedItem} ALBUMS[id]=${ALBUMS[id] ? 'ok' : 'MISSING'}`)
     if (carriedItem) return   // can't open album panel while carrying laundry
     disablePointerLock()
     setSelectedAlbumId(id)
@@ -192,6 +196,7 @@ export default function GameClient() {
 
   // Pickup a lost laundry item (blocked if already carrying one)
   const handlePickup = (item: LostItem) => {
+    pushDbg(`→ handlePickup item=${item.id}`)
     if (carriedItem) {
       if (pickupMsgTimer.current) clearTimeout(pickupMsgTimer.current)
       setPickupMsg('먼저 들고 있는 세탁물을 같은 색 세탁기에 넣어주세요')
@@ -204,6 +209,7 @@ export default function GameClient() {
 
   // Deliver to the correct machine → opens behind-photo modal
   const handleDeliver = (albumId: number) => {
+    pushDbg(`→ handleDeliver album=${albumId}`)
     if (!carriedItem || carriedItem.albumId !== albumId) return
     disablePointerLock()
     setBehindItem(carriedItem)
@@ -432,7 +438,7 @@ export default function GameClient() {
         <Exterior onBenchClick={handleBenchClick} />
         <GuestbookWall
           entries={guestbookEntries}
-          onSelectEntry={(e) => { disablePointerLock(); setShareEntry(e) }}
+          onSelectEntry={(e) => { pushDbg('→ onSelectEntry (share note)'); disablePointerLock(); setShareEntry(e) }}
           onClickBoard={handleBoardClick}
         />
         <LaundryRoom
