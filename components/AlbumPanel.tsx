@@ -1,7 +1,11 @@
 'use client'
 
+import { useEffect } from 'react'
 import type { Album } from '@/lib/albums'
 import { useBackdropDismiss } from '@/lib/useBackdropDismiss'
+
+const dbg = (m: string) =>
+  (globalThis as unknown as { __dbg?: (m: string) => void }).__dbg?.(m)
 
 interface Props {
   album: Album
@@ -9,6 +13,10 @@ interface Props {
 }
 
 export default function AlbumPanel({ album, onClose }: Props) {
+  useEffect(() => {
+    dbg('AlbumPanel MOUNT')
+    return () => dbg('AlbumPanel UNMOUNT')
+  }, [])
   const dismiss = useBackdropDismiss(onClose)
   const knownDurations = album.tracks.filter(t => t.duration && t.duration !== '4:00')
   const totalSeconds = knownDurations.reduce((sum, t) => {

@@ -38,6 +38,12 @@ export default function GameClient() {
   const modalOpenRef = useRef(false)
   // TEMP mobile tap diagnostics (shown on-screen so we can read real iOS data)
   const [tapDbg, setTapDbg] = useState('tap debug: waiting…')
+  const pushDbg = (m: string) =>
+    setTapDbg(prev => (prev + '\n' + m).split('\n').slice(-6).join('\n'))
+  // Expose a global logger so modals / backdrop dismiss can report into the panel
+  useEffect(() => {
+    ;(window as unknown as { __dbg?: (m: string) => void }).__dbg = pushDbg
+  })
 
   // Detect mobile once on mount
   useEffect(() => {
@@ -244,7 +250,7 @@ export default function GameClient() {
             wordBreak: 'break-all',
           }}
         >
-          {`mobile=${String(isMobile)} entered=${String(entered)} overlay=${String(anyOverlayOpen)}\n${tapDbg}`}
+          {`mobile=${String(isMobile)} sel=${String(selectedAlbumId)} gb=${String(showGuestbookInput)} overlay=${String(anyOverlayOpen)}\n${tapDbg}`}
         </div>
       )}
 
@@ -419,7 +425,7 @@ export default function GameClient() {
         <SpatialAudioUpdater />
         <PointerLockRaycastFix />
         {/* iOS-reliable 3D tap picking (bypasses the broken WebKit click pipeline) */}
-        <MobileTapPick enabled={isMobile && entered && !anyOverlayOpen} onDebug={setTapDbg} />
+        <MobileTapPick enabled={isMobile && entered && !anyOverlayOpen} onDebug={pushDbg} />
         <Exterior onBenchClick={handleBenchClick} />
         <GuestbookWall
           entries={guestbookEntries}

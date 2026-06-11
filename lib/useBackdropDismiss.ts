@@ -46,15 +46,22 @@ export function useBackdropDismiss(onClose: () => void) {
   // Armed only by a genuine pointerdown that begins on the backdrop itself.
   const armed = useRef(false)
 
+  const dbg = (m: string) =>
+    (globalThis as unknown as { __dbg?: (m: string) => void }).__dbg?.(m)
+
   return {
     onPointerDown(e: PointerEvent) {
       if (e.target !== e.currentTarget) return        // began on the card, ignore
+      const ghost = e.pointerType === 'mouse' && Date.now() - lastTouchAt < GHOST_WINDOW_MS
+      dbg(`bd.down type=${e.pointerType} dt=${Date.now() - lastTouchAt}ms ghost=${ghost}`)
       // Ignore ghost mouse pointerdown synthesised right after a touch.
-      if (e.pointerType === 'mouse' && Date.now() - lastTouchAt < GHOST_WINDOW_MS) return
+      if (ghost) return
       armed.current = true
     },
     onClick(e: MouseEvent) {
-      if (e.target === e.currentTarget && armed.current) onClose()
+      const self = e.target === e.currentTarget
+      dbg(`bd.click self=${self} armed=${armed.current}`)
+      if (self && armed.current) { dbg('bd → onClose()'); onClose() }
       armed.current = false
     },
   }
