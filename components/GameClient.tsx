@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useLayoutEffect } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import FPSMovement from './FPSMovement'
@@ -38,12 +38,15 @@ export default function GameClient() {
   const modalOpenRef = useRef(false)
   // TEMP mobile tap diagnostics (shown on-screen so we can read real iOS data)
   const [tapDbg, setTapDbg] = useState('tap debug: waiting…')
-  const pushDbg = (m: string) =>
-    setTapDbg(prev => (prev + '\n' + m).split('\n').slice(-6).join('\n'))
+  // STABLE reference — must not change between renders, or effects depending on
+  // it (MobileTapPick) thrash and re-mount their listeners every render.
+  const pushDbg = useCallback((m: string) => {
+    setTapDbg(prev => (prev + '\n' + m).split('\n').slice(-7).join('\n'))
+  }, [])
   // Expose a global logger so modals / backdrop dismiss can report into the panel
   useEffect(() => {
     ;(window as unknown as { __dbg?: (m: string) => void }).__dbg = pushDbg
-  })
+  }, [pushDbg])
 
   // Detect mobile once on mount
   useEffect(() => {
