@@ -25,6 +25,13 @@ const TAP_MAX_MS      = 500    // longer press = not a tap
 const DEDUPE_MS       = 450    // ignore a second pick fired within this window
 const JOYSTICK_ZONE_PX = 150   // bottom-left square reserved for the move joystick
 
+// Building facade plane (matches FACADE_Z in FPSMovement / ROOM_FRONT in
+// LaundryRoom). Interior objects live at z < FACADE_Z, exterior ones beyond.
+// The exterior walls are FrontSide planes facing inward, so rays cast from
+// OUTSIDE pass through their back faces and would otherwise reach the
+// machines inside — we gate on position instead of relying on wall occlusion.
+const FACADE_Z = 5.5
+
 interface Props {
   enabled: boolean
 }
@@ -97,6 +104,10 @@ export default function MobileTapPick({ enabled }: Props) {
       // interactive objects behind it. The nearest hit is what the user sees.
       const hits = raycaster.intersectObjects(scene.children, true)
       if (!hits.length) return
+
+      // Outside the building, interior objects are untouchable — even where a
+      // FrontSide wall plane fails to occlude the ray from its back face.
+      if (camera.position.z > FACADE_Z && hits[0].point.z < FACADE_Z) return
 
       // Only fire if the frontmost surface is (or belongs to) an interactive
       // object. If it is a plain wall/decor mesh, the tap is blocked.
