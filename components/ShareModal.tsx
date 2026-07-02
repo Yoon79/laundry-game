@@ -9,10 +9,12 @@ import { useIsMobile } from '@/lib/useIsMobile'
 interface Props {
   entry: GuestbookEntry
   onClose: () => void
+  onDelete?: (id: string) => void
 }
 
-export default function ShareModal({ entry, onClose }: Props) {
+export default function ShareModal({ entry, onClose, onDelete }: Props) {
   const [copied, setCopied] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const dismiss = useBackdropDismiss(onClose)
   const compact = useIsMobile()
 
@@ -162,6 +164,25 @@ export default function ShareModal({ entry, onClose }: Props) {
             <span style={{ fontSize: 16 }}>{copied ? '✓' : '📋'}</span>
             {copied ? '복사됨!' : '텍스트 복사'}
           </button>
+
+          {/* Delete own note — two-tap confirm */}
+          {onDelete && (
+            <button
+              onClick={() => {
+                if (!confirmingDelete) { setConfirmingDelete(true); return }
+                onDelete(entry.id)
+              }}
+              className="flex items-center gap-3 px-4 py-3 text-[12px] tracking-wider text-left"
+              style={{
+                background: confirmingDelete ? '#B04030' : '#FAF0E6',
+                color: confirmingDelete ? '#FAF0E6' : '#B04030',
+                border: '1px solid #C88070',
+              }}
+            >
+              <span style={{ fontSize: 16 }}>🗑️</span>
+              {confirmingDelete ? '한 번 더 누르면 삭제됩니다' : '이 글 삭제하기'}
+            </button>
+          )}
         </div>
 
         <button

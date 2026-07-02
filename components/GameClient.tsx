@@ -382,7 +382,14 @@ export default function GameClient() {
 
       {/* ── Share modal ── */}
       {shareEntry && (
-        <ShareModal entry={shareEntry} onClose={closeShareEntry} />
+        <ShareModal
+          entry={shareEntry}
+          onClose={closeShareEntry}
+          onDelete={(id) => {
+            setGuestbookEntries(prev => prev.filter(e => e.id !== id))
+            closeShareEntry()
+          }}
+        />
       )}
 
       {/* ── Album panel ── */}
