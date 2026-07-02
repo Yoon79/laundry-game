@@ -100,8 +100,10 @@ export default function MobileControls({ active }: Props) {
           }
           if (lookDragging) {
             touchState.dragging = true
-            touchState.lookDelta.x += (t.clientX - lastLookX) * 0.0045
-            touchState.lookDelta.y += (t.clientY - lastLookY) * 0.0045
+            // Inverted (natural/grab) direction: swipe right → look left,
+            // as if dragging the scene itself rather than the camera.
+            touchState.lookDelta.x -= (t.clientX - lastLookX) * 0.0045
+            touchState.lookDelta.y -= (t.clientY - lastLookY) * 0.0045
             lastLookX = t.clientX
             lastLookY = t.clientY
           }
