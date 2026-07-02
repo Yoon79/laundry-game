@@ -7,8 +7,12 @@ export default function Splash({ onEnter }: Props) {
     <div className="fixed inset-0 z-20 flex flex-col items-center justify-center bg-[#FAF0E6]">
       {/* Title card */}
       <div
-        className="relative border-[3px] border-[#C8A08A] px-20 py-12 bg-[#FBF3EC]"
-        style={{ minWidth: 360 }}
+        className="relative border-[3px] border-[#C8A08A] bg-[#FBF3EC]"
+        style={{
+          minWidth: 'min(360px, 88vw)',
+          maxWidth: '92vw',
+          padding: 'clamp(28px, 8vw, 48px) clamp(24px, 10vw, 80px)',
+        }}
       >
         {/* Corner marks */}
         <span className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[#C8A08A]" />
@@ -24,8 +28,12 @@ export default function Splash({ onEnter }: Props) {
         </p>
         <div className="w-20 h-px bg-[#C8A08A] mx-auto mb-5" />
         <h1
-          className="text-center text-[56px] leading-tight text-[#3D2B1E]"
-          style={{ fontFamily: "'Mona12', sans-serif" }}
+          className="text-center leading-tight text-[#3D2B1E]"
+          style={{
+            fontFamily: "'Mona12', sans-serif",
+            fontSize: 'clamp(30px, 10vw, 56px)',
+            whiteSpace: 'nowrap',
+          }}
         >
           스웨덴세탁소
         </h1>

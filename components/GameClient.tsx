@@ -15,7 +15,6 @@ import AlbumPanel from './AlbumPanel'
 import { LaundryRoomFrames, ClothesRoomFrames } from './WallFrames'
 import BehindPhoto from './BehindPhoto'
 import MobileControls from './MobileControls'
-import OrientationGuard from './OrientationGuard'
 import ALBUMS from '@/lib/albums'
 import type { GuestbookEntry } from '@/lib/guestbook'
 import GuestbookModal from './GuestbookModal'
@@ -25,6 +24,7 @@ import CDPlayer from './CDPlayer'
 import SpatialAudioUpdater from './SpatialAudioUpdater'
 import PointerLockRaycastFix from './PointerLockRaycastFix'
 import MobileTapPick from './MobileTapPick'
+import AdaptiveFov from './AdaptiveFov'
 import { initSpatialAudio } from '@/lib/spatialAudio'
 
 export default function GameClient() {
@@ -405,6 +405,7 @@ export default function GameClient() {
         <FPSMovement active={fpsActive && !anyOverlayOpen} isMobile={isMobile} sitting={sittingMode} />
         <SpatialAudioUpdater />
         <PointerLockRaycastFix />
+        <AdaptiveFov />
         {/* iOS-reliable 3D tap picking (bypasses the broken WebKit click pipeline) */}
         <MobileTapPick enabled={isMobile && entered && !anyOverlayOpen} />
         <Exterior onBenchClick={handleBenchClick} />
