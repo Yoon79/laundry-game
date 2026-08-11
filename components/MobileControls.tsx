@@ -100,10 +100,13 @@ export default function MobileControls({ active }: Props) {
           }
           if (lookDragging) {
             touchState.dragging = true
-            // Inverted (natural/grab) direction: swipe right → look left,
-            // as if dragging the scene itself rather than the camera.
-            touchState.lookDelta.x -= (t.clientX - lastLookX) * 0.0045
-            touchState.lookDelta.y -= (t.clientY - lastLookY) * 0.0045
+            // Grab/drag direction: swipe right → the scene appears to drag
+            // right with your finger, which means the camera turns LEFT
+            // (confirmed empirically on device — this is the opposite sign
+            // from the previous "-=" version, which tested as swipe-right
+            // → look-right).
+            touchState.lookDelta.x += (t.clientX - lastLookX) * 0.0045
+            touchState.lookDelta.y += (t.clientY - lastLookY) * 0.0045
             lastLookX = t.clientX
             lastLookY = t.clientY
           }
