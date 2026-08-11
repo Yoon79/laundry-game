@@ -6,6 +6,11 @@ import { touchState } from '@/lib/touchState'
 // Joystick geometry (px)
 const BASE_R = 56   // base circle radius
 const KNOB_R = 24   // inner knob radius
+// How far from the joystick's visual center a touch may start and still
+// count as "grabbing" it. Generous enough for an imprecise thumb, but bounded
+// — NOT the old "whole left half of the screen" zone, which stole look-drags
+// anywhere on the left side, even far above the joystick.
+const JOYSTICK_HIT_R = BASE_R + 24
 
 interface Props { active: boolean }
 
@@ -38,11 +43,14 @@ export default function MobileControls({ active }: Props) {
       // Do NOT call preventDefault here — browser must be allowed to generate
       // pointer events so R3F can raycast 3D mesh clicks (washing machines,
       // CD player, bench, guestbook board, etc.)
+      const center = getBaseCenter()
       for (const t of Array.from(e.changedTouches)) {
-        const isLeft = t.clientX < window.innerWidth * 0.45
-        if (isLeft && joystickTouchId === -1) {
+        const dx = t.clientX - center.x
+        const dy = t.clientY - center.y
+        const onJoystick = Math.sqrt(dx * dx + dy * dy) <= JOYSTICK_HIT_R
+        if (onJoystick && joystickTouchId === -1) {
           joystickTouchId = t.identifier
-        } else if (!isLeft && lookTouchId === -1) {
+        } else if (!onJoystick && lookTouchId === -1) {
           lookTouchId  = t.identifier
           lastLookX    = t.clientX
           lastLookY    = t.clientY
