@@ -72,10 +72,10 @@ function buildArt(key: number): THREE.CanvasTexture {
 
   } else if (key === 3) { // typography
     ctx.fillStyle = a; ctx.textAlign = 'center'; ctx.globalAlpha = 0.85
-    ctx.font = `bold ${W*0.13}px serif`; ctx.fillText('SWEDEN', W/2, H*0.38)
-    ctx.fillText('LAUNDRY', W/2, H*0.52)
-    ctx.font = `${W*0.08}px serif`; ctx.globalAlpha = 0.55
-    ctx.fillText('EST. 2012', W/2, H*0.65)
+    ctx.font = `bold ${W*0.115}px "Mona12", sans-serif`; ctx.fillText('스웨덴세탁소', W/2, H*0.38)
+    ctx.fillText('단독콘서트', W/2, H*0.52)
+    ctx.font = `${W*0.08}px "Mona12", sans-serif`; ctx.globalAlpha = 0.55
+    ctx.fillText('2026.10.25', W/2, H*0.65)
     ctx.globalAlpha = 0.28; ctx.fillRect(W*0.18, H*0.565, W*0.64, 1.5)
 
   } else if (key === 4) { // night sky
