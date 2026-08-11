@@ -135,15 +135,6 @@ export default function FPSMovement({ active, isMobile = false, sitting = false 
       }
     }
 
-    // TEMP diagnostic — exposes yaw/world-direction for swipe-direction
-    // verification. No UI, just a window global. Remove after confirming.
-    if (typeof window !== 'undefined') {
-      (window as unknown as { __cam?: unknown }).__cam = {
-        rotY: camera.rotation.y,
-        dir: camera.getWorldDirection(new THREE.Vector3()).toArray(),
-      }
-    }
-
     // ── Movement ──────────────────────────────────────────────────────
     camera.getWorldDirection(fwd.current)
     fwd.current.y = 0
