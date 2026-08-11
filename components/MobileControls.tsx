@@ -100,13 +100,13 @@ export default function MobileControls({ active }: Props) {
           }
           if (lookDragging) {
             touchState.dragging = true
-            // Grab/drag direction: swipe right → the scene appears to drag
-            // right with your finger, which means the camera turns LEFT
-            // (confirmed empirically on device — this is the opposite sign
-            // from the previous "-=" version, which tested as swipe-right
-            // → look-right).
-            touchState.lookDelta.x += (t.clientX - lastLookX) * 0.0045
-            touchState.lookDelta.y += (t.clientY - lastLookY) * 0.0045
+            // FPS-style look: swipe right → camera turns to face right, so
+            // on-screen content shifts LEFT (opposite of the finger) — the
+            // same convention as desktop mouselook. Confirmed on-device:
+            // content-frame observation (not camera-frame, which is easy to
+            // misread) is what settled this after repeated sign confusion.
+            touchState.lookDelta.x -= (t.clientX - lastLookX) * 0.0045
+            touchState.lookDelta.y -= (t.clientY - lastLookY) * 0.0045
             lastLookX = t.clientX
             lastLookY = t.clientY
           }
