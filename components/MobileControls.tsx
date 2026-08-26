@@ -6,6 +6,8 @@ import { touchState } from '@/lib/touchState'
 // Joystick geometry (px)
 const BASE_R = 56   // base circle radius
 const KNOB_R = 24   // inner knob radius
+const JOY_LEFT   = 24   // visible ring offset from the left edge
+const JOY_BOTTOM = 36   // visible ring offset from the bottom edge
 // How far from the joystick's visual center a touch may start and still
 // count as "grabbing" it. Generous enough for an imprecise thumb, but bounded
 // — NOT the old "whole left half of the screen" zone, which stole look-drags
@@ -36,7 +38,7 @@ export default function MobileControls({ active }: Props) {
       const r = baseRef.current?.getBoundingClientRect()
       const center = r
         ? { x: r.left + r.width / 2, y: r.top + r.height / 2 }
-        : { x: BASE_R + 24, y: window.innerHeight - BASE_R - 36 }
+        : { x: JOY_LEFT + BASE_R, y: window.innerHeight - JOY_BOTTOM - BASE_R }
       // Publish it so MobileTapPick excludes exactly this area from 3D picking.
       touchState.joystickZone.x = center.x
       touchState.joystickZone.y = center.y
@@ -163,10 +165,25 @@ export default function MobileControls({ active }: Props) {
 
   if (!active) return null
 
-  const base: React.CSSProperties = {
+  // Transparent circle that actually swallows touches, concentric with the
+  // visible ring and sized to the full grab radius. Without this the joystick
+  // had pointerEvents:'none', so taps passed straight through to the canvas
+  // and R3F's own click pipeline picked whatever 3D object sat behind it.
+  const hitArea: React.CSSProperties = {
     position: 'fixed',
-    left: 24,
-    bottom: 36,
+    left:   JOY_LEFT   + BASE_R - JOYSTICK_HIT_R,
+    bottom: JOY_BOTTOM + BASE_R - JOYSTICK_HIT_R,
+    width:  JOYSTICK_HIT_R * 2,
+    height: JOYSTICK_HIT_R * 2,
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 20,
+    pointerEvents: 'auto',
+    touchAction: 'none',
+  }
+  const base: React.CSSProperties = {
     width:  BASE_R * 2,
     height: BASE_R * 2,
     borderRadius: '50%',
@@ -175,9 +192,7 @@ export default function MobileControls({ active }: Props) {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 20,
     pointerEvents: 'none',
-    touchAction: 'none',
   }
   const knob: React.CSSProperties = {
     width:  KNOB_R * 2,
@@ -191,9 +206,11 @@ export default function MobileControls({ active }: Props) {
 
   return (
     <>
-      {/* Left joystick */}
-      <div ref={baseRef} style={base}>
-        <div ref={knobRef} style={knob} />
+      {/* Left joystick — outer circle captures touches, inner circle is the ring */}
+      <div style={hitArea}>
+        <div ref={baseRef} style={base}>
+          <div ref={knobRef} style={knob} />
+        </div>
       </div>
 
       {/* Right drag-zone hint */}

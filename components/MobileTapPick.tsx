@@ -26,15 +26,16 @@ const TAP_MAX_MS      = 500    // longer press = not a tap
 const DEDUPE_MS       = 450    // ignore a second pick fired within this window
 
 /**
- * True for taps in the bottom-left control corner: on the joystick itself or
- * anywhere below/left of it. Uses the joystick's measured on-screen position
- * (published by MobileControls) rather than a guess from window.innerHeight,
- * which drifts as mobile browser toolbars resize.
+ * True for taps anywhere on the joystick — from its center out to the full
+ * grab radius, which reaches past the visible ring. Uses the joystick's
+ * measured on-screen position (published by MobileControls) rather than a
+ * guess from window.innerHeight, which drifts as mobile toolbars resize, and
+ * matches exactly the radius MobileControls treats as grabbing the stick.
  */
-function inJoystickCorner(px: number, py: number): boolean {
+function onJoystick(px: number, py: number): boolean {
   const { x, y, r } = touchState.joystickZone
   if (r === 0) return false          // not measured yet (desktop / pre-layout)
-  return px <= x + r && py >= y - r
+  return Math.hypot(px - x, py - y) <= r
 }
 
 // Building facade plane (matches FACADE_Z in FPSMovement / ROOM_FRONT in
@@ -100,8 +101,8 @@ export default function MobileTapPick({ enabled }: Props) {
       const now = Date.now()
       if (now - lastPickAt < DEDUPE_MS) return
 
-      // Ignore taps on the movement joystick or anywhere below it.
-      if (inJoystickCorner(px, py)) return
+      // Ignore taps that land on the movement joystick.
+      if (onJoystick(px, py)) return
 
       const rect = el.getBoundingClientRect()
       if (rect.width === 0 || rect.height === 0) return
