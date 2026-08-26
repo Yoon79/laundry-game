@@ -116,11 +116,12 @@ export default function MobileControls({ active }: Props) {
           }
           if (lookDragging) {
             touchState.dragging = true
-            // Grab/drag look: on-screen content follows the finger, as if
-            // dragging the scene itself (swipe right → the room slides right,
-            // camera turns left). Opposite sign from FPS-style mouselook.
-            touchState.lookDelta.x += (t.clientX - lastLookX) * 0.0045
-            touchState.lookDelta.y += (t.clientY - lastLookY) * 0.0045
+            // FPS-style look: swipe right → camera turns right, so on-screen
+            // content shifts LEFT (opposite the finger). Matches desktop
+            // mouselook and the mobile-FPS convention (joystick to walk,
+            // right-side drag to look).
+            touchState.lookDelta.x -= (t.clientX - lastLookX) * 0.0045
+            touchState.lookDelta.y -= (t.clientY - lastLookY) * 0.0045
             lastLookX = t.clientX
             lastLookY = t.clientY
           }
