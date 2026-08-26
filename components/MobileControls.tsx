@@ -34,10 +34,16 @@ export default function MobileControls({ active }: Props) {
 
     const getBaseCenter = () => {
       const r = baseRef.current?.getBoundingClientRect()
-      return r
+      const center = r
         ? { x: r.left + r.width / 2, y: r.top + r.height / 2 }
         : { x: BASE_R + 24, y: window.innerHeight - BASE_R - 36 }
+      // Publish it so MobileTapPick excludes exactly this area from 3D picking.
+      touchState.joystickZone.x = center.x
+      touchState.joystickZone.y = center.y
+      touchState.joystickZone.r = JOYSTICK_HIT_R
+      return center
     }
+    getBaseCenter()
 
     const handleStart = (e: TouchEvent) => {
       // Do NOT call preventDefault here — browser must be allowed to generate
@@ -108,13 +114,11 @@ export default function MobileControls({ active }: Props) {
           }
           if (lookDragging) {
             touchState.dragging = true
-            // FPS-style look: swipe right → camera turns to face right, so
-            // on-screen content shifts LEFT (opposite of the finger) — the
-            // same convention as desktop mouselook. Confirmed on-device:
-            // content-frame observation (not camera-frame, which is easy to
-            // misread) is what settled this after repeated sign confusion.
-            touchState.lookDelta.x -= (t.clientX - lastLookX) * 0.0045
-            touchState.lookDelta.y -= (t.clientY - lastLookY) * 0.0045
+            // Grab/drag look: on-screen content follows the finger, as if
+            // dragging the scene itself (swipe right → the room slides right,
+            // camera turns left). Opposite sign from FPS-style mouselook.
+            touchState.lookDelta.x += (t.clientX - lastLookX) * 0.0045
+            touchState.lookDelta.y += (t.clientY - lastLookY) * 0.0045
             lastLookX = t.clientX
             lastLookY = t.clientY
           }

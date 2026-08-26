@@ -3,6 +3,7 @@
 import { useRef, useState, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { useFireOnce } from '@/lib/useFireOnce'
 
 // ── CD disc canvas texture ────────────────────────────────────────────────────
 // Drawn once: label area with off-centre marking makes rotation clearly visible.
@@ -67,6 +68,8 @@ export default function CDPlayer({ position, rotationY, playing, onToggle }: CDP
   const discRef = useRef<THREE.Group>(null)
   const [hovered, setHovered] = useState(false)
   const cdTex = useMemo(() => makeCDTexture(), [])
+  // Play/stop is a toggle, so a duplicate dispatch would cancel itself out.
+  const fireOnce = useFireOnce()
 
   useFrame((_, delta) => {
     if (discRef.current && playing) {
@@ -84,7 +87,7 @@ export default function CDPlayer({ position, rotationY, playing, onToggle }: CDP
     <group
       position={position}
       rotation={[0, rotationY, 0]}
-      onClick={(e) => { e.stopPropagation(); onToggle() }}
+      onClick={(e) => { e.stopPropagation(); fireOnce(onToggle) }}
       onPointerOver={(e) => { e.stopPropagation(); if (document.pointerLockElement) setHovered(true) }}
       onPointerOut={() => setHovered(false)}
     >

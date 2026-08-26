@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
+import { touchState } from '@/lib/touchState'
 
 /**
  * Reliable 3D object tapping for touch devices.
@@ -23,7 +24,18 @@ import * as THREE from 'three'
 const TAP_MAX_MOVE_PX = 12     // finger may jitter this much and still be a tap
 const TAP_MAX_MS      = 500    // longer press = not a tap
 const DEDUPE_MS       = 450    // ignore a second pick fired within this window
-const JOYSTICK_ZONE_PX = 150   // bottom-left square reserved for the move joystick
+
+/**
+ * True for taps in the bottom-left control corner: on the joystick itself or
+ * anywhere below/left of it. Uses the joystick's measured on-screen position
+ * (published by MobileControls) rather than a guess from window.innerHeight,
+ * which drifts as mobile browser toolbars resize.
+ */
+function inJoystickCorner(px: number, py: number): boolean {
+  const { x, y, r } = touchState.joystickZone
+  if (r === 0) return false          // not measured yet (desktop / pre-layout)
+  return px <= x + r && py >= y - r
+}
 
 // Building facade plane (matches FACADE_Z in FPSMovement / ROOM_FRONT in
 // LaundryRoom). Interior objects live at z < FACADE_Z, exterior ones beyond.
@@ -88,8 +100,8 @@ export default function MobileTapPick({ enabled }: Props) {
       const now = Date.now()
       if (now - lastPickAt < DEDUPE_MS) return
 
-      // Ignore taps over the on-screen movement joystick (bottom-left corner).
-      if (px < JOYSTICK_ZONE_PX && py > window.innerHeight - JOYSTICK_ZONE_PX) return
+      // Ignore taps on the movement joystick or anywhere below it.
+      if (inJoystickCorner(px, py)) return
 
       const rect = el.getBoundingClientRect()
       if (rect.width === 0 || rect.height === 0) return
