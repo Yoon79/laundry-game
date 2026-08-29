@@ -90,7 +90,7 @@ function getCorkTex() {
 let _titleTex: THREE.CanvasTexture | null = null
 function getTitleTex() {
   if (_titleTex) return _titleTex
-  const W = 220, H = 56
+  const W = 220, H = 76
   const c = document.createElement('canvas'); c.width = W; c.height = H
   const ctx = c.getContext('2d')!
 
@@ -103,12 +103,16 @@ function getTitleTex() {
   ctx.strokeStyle = 'rgba(120,70,40,0.30)'; ctx.lineWidth = 1.5
   ctx.strokeRect(4, 4, W-8, H-8)
 
-  // Text
+  // Title
   ctx.shadowColor = 'rgba(80,30,10,0.22)'; ctx.shadowBlur = 1.5
-  ctx.fillStyle = '#4A2410'; ctx.font = 'bold 26px "Mona12", sans-serif'
+  ctx.fillStyle = '#4A2410'; ctx.font = 'bold 24px "Mona12", sans-serif'
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-  ctx.fillText('방  명  록', W/2, H/2)
+  ctx.fillText('방  명  록', W/2, H*0.38)
   ctx.shadowBlur = 0
+
+  // Privacy note
+  ctx.fillStyle = 'rgba(74,36,16,0.60)'; ctx.font = '11px "Mona12", sans-serif'
+  ctx.fillText('이 글은 본인만 볼 수 있어요', W/2, H*0.76)
 
   _titleTex = new THREE.CanvasTexture(c); return _titleTex
 }
@@ -218,7 +222,7 @@ function EaselStand({ onBoardClick }: { onBoardClick?: () => void }) {
 
       {/* ── Title plate ── */}
       <mesh position={[0, BY + BH/2 - FT*1.8, 0.050]}>
-        <planeGeometry args={[0.34, 0.068]} />
+        <planeGeometry args={[0.34, 0.092]} />
         <meshStandardMaterial map={titleTex} roughness={0.32} metalness={0.28} />
       </mesh>
 
