@@ -47,6 +47,9 @@ export default function GuestbookModal({ onSubmit, onClose }: Props) {
             스웨덴세탁소 · 방명록
           </p>
         </div>
+        <p className="text-[10px] mb-3" style={{ color: '#B0A080' }}>
+          이 글은 본인만 볼 수 있어요
+        </p>
         <h2
           style={{
             fontFamily: "'Mona12', sans-serif",
